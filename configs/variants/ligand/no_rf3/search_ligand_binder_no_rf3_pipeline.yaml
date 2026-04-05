@@ -1,0 +1,111 @@
+# Derived variant for ligand-conditioned generation when RF3 is unavailable.
+#
+# Purpose:
+# - keep ligand conditional generation enabled
+# - disable RF3-dependent reward/refolding
+# - run monomer-only evaluation/analyze on the generated binder chain
+#
+# This variant validates:
+#   ligand-conditioned generation -> filter -> monomer evaluation -> monomer analyze
+#
+# It does NOT validate:
+#   min_ipAE / ligand_scRMSD / RF3-based ligand binding confidence
+
+defaults:
+  - /pipeline/ligand_binder/ligand_binder_generate@generation
+  - /pipeline/ligand_binder/ligand_binder_evaluate@_global_
+  - /pipeline/ligand_binder/ligand_binder_analyze@_global_
+  - _self_
+
+# =============================================================================
+# Run identification
+# =============================================================================
+run_name: search_ligand_binder_no_rf3
+ckpt_path: ./ckpts
+ckpt_name: complexa_ligand.ckpt
+autoencoder_ckpt_path: ./ckpts/complexa_ligand_ae.ckpt
+
+# =============================================================================
+# LoRA (required by ligand checkpoint)
+# =============================================================================
+lora:
+  r: 32
+  lora_alpha: 64.0
+  lora_dropout: 0.0
+  train_bias: none
+
+# =============================================================================
+# Job management
+# =============================================================================
+ncpus_: 24
+seed: 5
+gen_njobs: 1
+eval_njobs: 1
+
+# =============================================================================
+# Analyze configuration
+# =============================================================================
+result_type: monomer
+
+aggregation:
+  analysis_modes: [monomer]
+  compute_diversity: false
+  compute_mmseqs_diversity: false
+  compute_residue_type_distribution: true
+
+# =============================================================================
+# Evaluation overrides
+# =============================================================================
+metric:
+  # Binder refolding is RF3-dependent for ligand targets, so keep it off here.
+  compute_binder_metrics: false
+  binder_folding_method: rf3_latest
+  sequence_types: [self, mpnn]
+  num_redesign_seqs: 2
+  interface_cutoff: 8.0
+  inverse_folding_model: ligand_mpnn
+  compute_esm_metrics: false
+
+  # Keep monomer-style checks on the extracted binder chain.
+  compute_monomer_metrics: true
+  monomer_folding_models: [esmfold]
+  compute_designability: true
+  designability_modes: [ca]
+  compute_codesignability: true
+  codesignability_modes: [ca, all_atom]
+  compute_co_sequence_recovery: false
+  compute_ss: true
+  compute_novelty_pdb: false
+  compute_novelty_afdb: false
+  compute_novelty_afdb_rep_v4: false
+  compute_novelty_afdb_rep_v4_geniefilters_maxlen512: false
+  keep_folding_outputs: false
+
+# =============================================================================
+# Generation overrides
+# =============================================================================
+generation:
+  task_name: 39_7V11_LIGAND
+
+  search:
+    algorithm: single-pass
+
+  # No RF3 available: disable reward-driven ranking during generation.
+  reward_model: null
+
+  # Filtering is kept for pipeline completeness, but set permissively so we do
+  # not accidentally throw away samples when all rewards are zero.
+  filter:
+    filter_samples_limit: 1000000
+    delete_non_top_n_samples: false
+    dedup_sequence: true
+    reward_threshold: null
+
+# =============================================================================
+# Hydra
+# =============================================================================
+hydra:
+  searchpath:
+    - file://${oc.env:REPO_ROOT}/configs
+  run:
+    dir: ./logs/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
