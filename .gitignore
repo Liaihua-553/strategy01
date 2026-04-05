@@ -102,3 +102,16 @@ tests/test_eval_generated/
 .vscode-server/
 .claude.json*
 params
+*~
+*.tmp
+*.temp
+*.pyc
+*.pyo
+*.pyd
+nohup.out
+debug.log
+*.bin
+*.safetensors
+*.onnx
+*.h5
+*.joblib
