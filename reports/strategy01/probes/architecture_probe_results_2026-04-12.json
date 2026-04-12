@@ -1,0 +1,280 @@
+{
+  "probe_date": "2026-04-12",
+  "baseline_commit": "2db8e1df838354db079ce8e0e4b88aaebd31f35f",
+  "latent_dim_inferred_from_checkpoint": 8,
+  "p0_static": {
+    "baseline_model_class": "LocalLatentsTransformer",
+    "multistate_model_class": "LocalLatentsTransformerMultistate",
+    "single_state_target_feature_dim": 505,
+    "token_dim": 768,
+    "pair_repr_dim": 256,
+    "cross_state_heads": 8
+  },
+  "baseline_forward_shapes": {
+    "bb_ca": {
+      "v": [
+        1,
+        32,
+        3
+      ]
+    },
+    "local_latents": {
+      "v": [
+        1,
+        32,
+        8
+      ]
+    }
+  },
+  "p1_synthetic_forward_shapes": {
+    "seq_logits_shared": [
+      1,
+      32,
+      20
+    ],
+    "bb_ca_states": [
+      1,
+      2,
+      32,
+      3
+    ],
+    "local_latents_states": [
+      1,
+      2,
+      32,
+      8
+    ],
+    "arch_debug": {
+      "ensemble_target_memory": [
+        1,
+        40,
+        768
+      ],
+      "ensemble_target_mask": [
+        1,
+        40
+      ],
+      "state_summary_tokens": [
+        1,
+        2,
+        768
+      ],
+      "state_target_tokens": [
+        1,
+        2,
+        40,
+        768
+      ],
+      "state_target_mask": [
+        1,
+        2,
+        40
+      ],
+      "target_state_weights": [
+        1,
+        2
+      ],
+      "target_state_roles": [
+        1,
+        2
+      ],
+      "cross_state_attention_mean": [
+        1,
+        40,
+        2
+      ]
+    }
+  },
+  "p1_real_forward_shapes": {
+    "seq_logits_shared": [
+      1,
+      32,
+      20
+    ],
+    "bb_ca_states": [
+      1,
+      2,
+      32,
+      3
+    ],
+    "local_latents_states": [
+      1,
+      2,
+      32,
+      8
+    ],
+    "arch_debug": {
+      "ensemble_target_memory": [
+        1,
+        438,
+        768
+      ],
+      "ensemble_target_mask": [
+        1,
+        438
+      ],
+      "state_summary_tokens": [
+        1,
+        2,
+        768
+      ],
+      "state_target_tokens": [
+        1,
+        2,
+        438,
+        768
+      ],
+      "state_target_mask": [
+        1,
+        2,
+        438
+      ],
+      "target_state_weights": [
+        1,
+        2
+      ],
+      "target_state_roles": [
+        1,
+        2
+      ],
+      "cross_state_attention_mean": [
+        1,
+        438,
+        2
+      ]
+    }
+  },
+  "p2_checkpoint_loading": {
+    "shape_compatible_key_count": 455,
+    "shape_compatible_sample": [
+      "cond_factory.linear_out.weight",
+      "transition_c_1.swish_linear.0.weight",
+      "transition_c_1.linear_out.weight",
+      "transition_c_2.swish_linear.0.weight",
+      "transition_c_2.linear_out.weight",
+      "pair_repr_builder.init_repr_factory.ln_out.weight",
+      "pair_repr_builder.init_repr_factory.ln_out.bias",
+      "pair_repr_builder.cond_factory.ln_out.weight",
+      "pair_repr_builder.cond_factory.ln_out.bias",
+      "pair_repr_builder.cond_factory.linear_out.weight",
+      "pair_repr_builder.adaln.norm_cond.weight",
+      "pair_repr_builder.adaln.norm_cond.bias",
+      "pair_repr_builder.adaln.to_gamma.0.weight",
+      "pair_repr_builder.adaln.to_gamma.0.bias",
+      "pair_repr_builder.adaln.to_beta.weight",
+      "transformer_layers.0.mhba.adaln.norm_cond.weight",
+      "transformer_layers.0.mhba.adaln.norm_cond.bias",
+      "transformer_layers.0.mhba.adaln.to_gamma.0.weight",
+      "transformer_layers.0.mhba.adaln.to_gamma.0.bias",
+      "transformer_layers.0.mhba.adaln.to_beta.weight"
+    ],
+    "shape_mismatched_sample": [
+      "init_repr_factory.linear_out.weight",
+      "pair_repr_builder.init_repr_factory.linear_out.weight"
+    ],
+    "missing_key_count": 564,
+    "unexpected_key_count": 0,
+    "missing_key_sample": [
+      "init_repr_factory.linear_out.weight",
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias"
+    ],
+    "unexpected_key_sample": [],
+    "loaded_real_forward_shapes": {
+      "seq_logits_shared": [
+        1,
+        32,
+        20
+      ],
+      "bb_ca_states": [
+        1,
+        2,
+        32,
+        3
+      ],
+      "local_latents_states": [
+        1,
+        2,
+        32,
+        8
+      ],
+      "arch_debug": {
+        "ensemble_target_memory": [
+          1,
+          438,
+          768
+        ],
+        "ensemble_target_mask": [
+          1,
+          438
+        ],
+        "state_summary_tokens": [
+          1,
+          2,
+          768
+        ],
+        "state_target_tokens": [
+          1,
+          2,
+          438,
+          768
+        ],
+        "state_target_mask": [
+          1,
+          2,
+          438
+        ],
+        "target_state_weights": [
+          1,
+          2
+        ],
+        "target_state_roles": [
+          1,
+          2
+        ],
+        "cross_state_attention_mean": [
+          1,
+          438,
+          2
+        ]
+      }
+    }
+  },
+  "p3_backward": {
+    "loss": 0.43263593316078186,
+    "gradient_norms": {
+      "ensemble_target_encoder.target_feature_projection.1.weight": 15.912692070007324,
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight": 0.22960135340690613,
+      "shared_seq_head.1.weight": 7.1072001457214355,
+      "ca_linear.1.weight": 1.2308292388916016,
+      "local_latents_linear.1.weight": 1.6259734630584717
+    }
+  }
+}
