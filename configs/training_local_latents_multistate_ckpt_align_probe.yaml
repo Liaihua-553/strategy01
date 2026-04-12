@@ -1,0 +1,19 @@
+seed: 7
+strategy_repo_root: /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase
+baseline_repo_root: /data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline
+nn_config_path: /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/nn/local_latents_score_nn_160M_multistate.yaml
+baseline_ckpt_path: /data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/ckpts/complexa.ckpt
+
+probe:
+  batch_size: 1
+  binder_len: 32
+  synthetic_nstates: 2
+  synthetic_target_len: 40
+  real_target_name: 38_TNFalpha_multistate_probe
+  real_input_spec: A12-157,B12-157,C12-157
+  real_state_paths:
+    - /data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb
+    - /data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb
+  real_state_weights: [0.5, 0.5]
+  real_state_roles: [1, 2]
+  report_json_path: /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/checkpoint_alignment_probe_results_2026-04-13.json

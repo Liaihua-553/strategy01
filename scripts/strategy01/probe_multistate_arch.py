@@ -1,4 +1,6 @@
+import argparse
 import json
+from copy import deepcopy
 from pathlib import Path
 
 import torch
@@ -14,9 +16,17 @@ def infer_latent_dim_from_ckpt(ckpt_path: str) -> int:
     return int(ckpt["state_dict"]["nn.local_latents_linear.1.weight"].shape[0])
 
 
+def load_checkpoint_artifacts(ckpt_path: str) -> tuple[dict, dict, int]:
+    ckpt = torch.load(ckpt_path, map_location="cpu")
+    latent_dim = int(ckpt["state_dict"]["nn.local_latents_linear.1.weight"].shape[0])
+    nn_cfg = deepcopy(ckpt["hyper_parameters"]["cfg_exp"]["nn"])
+    return ckpt, nn_cfg, latent_dim
+
+
 def make_binder_stub_batch(batch_size: int, binder_len: int, latent_dim: int, device: torch.device) -> dict[str, torch.Tensor]:
     bb_ca = torch.randn(batch_size, binder_len, 3, device=device) * 0.05
     local_latents = torch.randn(batch_size, binder_len, latent_dim, device=device) * 0.05
+    residue_pdb_idx = torch.arange(1, binder_len + 1, dtype=torch.float32, device=device).unsqueeze(0).expand(batch_size, -1)
     batch = {
         "mask": torch.ones(batch_size, binder_len, dtype=torch.bool, device=device),
         "x_t": {"bb_ca": bb_ca.clone(), "local_latents": local_latents.clone()},
@@ -27,6 +37,9 @@ def make_binder_stub_batch(batch_size: int, binder_len: int, latent_dim: int, de
         },
         "use_ca_coors_nm_feature": False,
         "use_residue_type_feature": False,
+        "hotspot_mask": torch.zeros(batch_size, binder_len, dtype=torch.bool, device=device),
+        "residue_pdb_idx": residue_pdb_idx,
+        "chains": torch.zeros(batch_size, binder_len, dtype=torch.long, device=device),
     }
     return batch
 
@@ -105,6 +118,20 @@ def tensor_shape(value):
     return value
 
 
+def to_jsonable(value):
+    if OmegaConf.is_config(value):
+        return to_jsonable(OmegaConf.to_container(value, resolve=True))
+    if isinstance(value, torch.Tensor):
+        return value.detach().cpu().tolist()
+    if isinstance(value, dict):
+        return {key: to_jsonable(val) for key, val in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [to_jsonable(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
+
+
 def summarize_forward(output: dict) -> dict:
     summary = {}
     for key, value in output.items():
@@ -127,32 +154,77 @@ def strip_nn_prefix(state_dict: dict[str, torch.Tensor]) -> dict[str, torch.Tens
     return stripped
 
 
-def count_shape_compatible_keys(model: torch.nn.Module, nn_state: dict[str, torch.Tensor]) -> tuple[int, list[str], list[str]]:
+def count_shape_compatible_keys(model: torch.nn.Module, nn_state: dict[str, torch.Tensor]) -> tuple[int, list[str], list[str], list[str]]:
     model_state = model.state_dict()
     matched = []
     mismatched = []
+    ckpt_only = []
     for key, value in nn_state.items():
         if key in model_state and tuple(model_state[key].shape) == tuple(value.shape):
             matched.append(key)
         elif key in model_state:
             mismatched.append(key)
-    return len(matched), matched, mismatched
+        else:
+            ckpt_only.append(key)
+    return len(matched), matched, mismatched, ckpt_only
+
+
+def classify_checkpoint_alignment(
+    baseline_model: torch.nn.Module,
+    multistate_model: torch.nn.Module,
+    nn_state: dict[str, torch.Tensor],
+) -> dict:
+    baseline_state = baseline_model.state_dict()
+    multistate_state = multistate_model.state_dict()
+
+    matched_count, matched_keys, mismatched_keys, ckpt_only_keys = count_shape_compatible_keys(multistate_model, nn_state)
+    model_only_keys = [key for key in multistate_state if key not in nn_state]
+
+    baseline_reusable_mismatches = [key for key in mismatched_keys if key in baseline_state]
+    multistate_new_mismatches = [key for key in mismatched_keys if key not in baseline_state]
+    baseline_retired_keys = [key for key in ckpt_only_keys if key in baseline_state]
+    unexpected_ckpt_only_keys = [key for key in ckpt_only_keys if key not in baseline_state]
+    multistate_new_keys = [key for key in model_only_keys if key not in baseline_state]
+    unexpected_model_only_keys = [key for key in model_only_keys if key in baseline_state]
+
+    return {
+        "shape_compatible_key_count": matched_count,
+        "shape_compatible_keys": matched_keys,
+        "shape_mismatched_keys": mismatched_keys,
+        "baseline_reusable_mismatch_keys": baseline_reusable_mismatches,
+        "multistate_new_mismatch_keys": multistate_new_mismatches,
+        "baseline_retired_keys": baseline_retired_keys,
+        "unexpected_ckpt_only_keys": unexpected_ckpt_only_keys,
+        "multistate_new_keys": multistate_new_keys,
+        "unexpected_model_only_keys": unexpected_model_only_keys,
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Probe multistate architecture and checkpoint alignment.")
+    parser.add_argument(
+        "--config",
+        default="/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_ckpt_align_probe.yaml",
+        help="Path to the probe config yaml.",
+    )
+    return parser.parse_args()
 
 
 def main():
-    cfg = OmegaConf.load("/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_probe.yaml")
+    args = parse_args()
+    cfg = OmegaConf.load(args.config)
     torch.manual_seed(int(cfg.seed))
     device = torch.device("cpu")
 
-    latent_dim = infer_latent_dim_from_ckpt(cfg.baseline_ckpt_path)
+    ckpt, checkpoint_nn_cfg, latent_dim = load_checkpoint_artifacts(cfg.baseline_ckpt_path)
     multistate_nn_cfg = OmegaConf.to_container(OmegaConf.load(cfg.nn_config_path), resolve=True)
-    baseline_nn_cfg = OmegaConf.to_container(
-        OmegaConf.load(f"{cfg.baseline_repo_root}/configs/nn/local_latents_score_nn_160M.yaml"),
-        resolve=True,
-    )
+    baseline_nn_cfg = deepcopy(checkpoint_nn_cfg)
+    aligned_multistate_nn_cfg = deepcopy(multistate_nn_cfg)
+    aligned_multistate_nn_cfg["feats_seq"] = deepcopy(checkpoint_nn_cfg["feats_seq"])
+    aligned_multistate_nn_cfg["feats_pair_repr"] = deepcopy(checkpoint_nn_cfg["feats_pair_repr"])
 
     baseline_model = LocalLatentsTransformer(**baseline_nn_cfg, latent_dim=latent_dim).to(device)
-    multistate_model = LocalLatentsTransformerMultistate(**multistate_nn_cfg, latent_dim=latent_dim).to(device)
+    multistate_model = LocalLatentsTransformerMultistate(**aligned_multistate_nn_cfg, latent_dim=latent_dim).to(device)
     baseline_model.eval()
     multistate_model.eval()
 
@@ -179,10 +251,10 @@ def main():
         p1_synthetic_out = multistate_model(synthetic_batch)
         p1_real_out = multistate_model(real_batch)
 
-    ckpt = torch.load(cfg.baseline_ckpt_path, map_location="cpu")
     nn_state = strip_nn_prefix(ckpt["state_dict"])
-    shape_match_count, matched_keys, mismatched_keys = count_shape_compatible_keys(multistate_model, nn_state)
-    shape_compatible_state = {key: nn_state[key] for key in matched_keys}
+    baseline_alignment = classify_checkpoint_alignment(baseline_model, baseline_model, nn_state)
+    alignment = classify_checkpoint_alignment(baseline_model, multistate_model, nn_state)
+    shape_compatible_state = {key: nn_state[key] for key in alignment["shape_compatible_keys"]}
     incompatible = multistate_model.load_state_dict(shape_compatible_state, strict=False)
 
     with torch.no_grad():
@@ -211,7 +283,7 @@ def main():
         grad_norms[name] = None if grad is None else float(grad.norm().item())
 
     results = {
-        "probe_date": "2026-04-12",
+        "probe_date": "2026-04-13",
         "baseline_commit": "2db8e1df838354db079ce8e0e4b88aaebd31f35f",
         "latent_dim_inferred_from_checkpoint": latent_dim,
         "p0_static": {
@@ -221,14 +293,37 @@ def main():
             "token_dim": int(multistate_model.token_dim),
             "pair_repr_dim": int(multistate_model.pair_repr_dim),
             "cross_state_heads": int(multistate_model.ensemble_target_encoder.cross_state_fusion.nheads),
+            "binder_seq_input_dim": int(multistate_model.init_repr_factory.linear_out.weight.shape[1]),
+            "binder_pair_input_dim": int(multistate_model.pair_repr_builder.init_repr_factory.linear_out.weight.shape[1]),
+            "aligned_feats_seq": aligned_multistate_nn_cfg["feats_seq"],
+            "aligned_feats_pair_repr": aligned_multistate_nn_cfg["feats_pair_repr"],
         },
         "baseline_forward_shapes": summarize_forward(baseline_out),
         "p1_synthetic_forward_shapes": summarize_forward(p1_synthetic_out),
         "p1_real_forward_shapes": summarize_forward(p1_real_out),
+        "baseline_control_checkpoint_alignment": {
+            "shape_compatible_key_count": baseline_alignment["shape_compatible_key_count"],
+            "baseline_reusable_mismatch_count": len(baseline_alignment["baseline_reusable_mismatch_keys"]),
+            "baseline_retired_key_count": len(baseline_alignment["baseline_retired_keys"]),
+            "unexpected_ckpt_only_count": len(baseline_alignment["unexpected_ckpt_only_keys"]),
+            "unexpected_model_only_count": len(baseline_alignment["unexpected_model_only_keys"]),
+        },
         "p2_checkpoint_loading": {
-            "shape_compatible_key_count": shape_match_count,
-            "shape_compatible_sample": matched_keys[:20],
-            "shape_mismatched_sample": mismatched_keys[:20],
+            "shape_compatible_key_count": alignment["shape_compatible_key_count"],
+            "shape_compatible_sample": alignment["shape_compatible_keys"][:20],
+            "shape_mismatched_sample": alignment["shape_mismatched_keys"][:20],
+            "baseline_reusable_mismatch_count": len(alignment["baseline_reusable_mismatch_keys"]),
+            "baseline_reusable_mismatch_sample": alignment["baseline_reusable_mismatch_keys"][:20],
+            "multistate_new_mismatch_count": len(alignment["multistate_new_mismatch_keys"]),
+            "multistate_new_mismatch_sample": alignment["multistate_new_mismatch_keys"][:20],
+            "baseline_retired_key_count": len(alignment["baseline_retired_keys"]),
+            "baseline_retired_key_sample": alignment["baseline_retired_keys"][:20],
+            "unexpected_ckpt_only_count": len(alignment["unexpected_ckpt_only_keys"]),
+            "unexpected_ckpt_only_sample": alignment["unexpected_ckpt_only_keys"][:20],
+            "multistate_new_key_count": len(alignment["multistate_new_keys"]),
+            "multistate_new_key_sample": alignment["multistate_new_keys"][:40],
+            "unexpected_model_only_count": len(alignment["unexpected_model_only_keys"]),
+            "unexpected_model_only_sample": alignment["unexpected_model_only_keys"][:20],
             "missing_key_count": len(incompatible.missing_keys),
             "unexpected_key_count": len(incompatible.unexpected_keys),
             "missing_key_sample": incompatible.missing_keys[:30],
@@ -240,6 +335,16 @@ def main():
             "gradient_norms": grad_norms,
         },
     }
+
+    assert results["p0_static"]["binder_seq_input_dim"] == 302, "binder seq input dim did not recover to checkpoint-aligned 302"
+    assert results["p0_static"]["binder_pair_input_dim"] == 219, "binder pair input dim did not recover to checkpoint-aligned 219"
+    assert results["baseline_control_checkpoint_alignment"]["baseline_reusable_mismatch_count"] == 0, "baseline control no longer matches checkpoint"
+    assert results["baseline_control_checkpoint_alignment"]["baseline_retired_key_count"] == 0, "baseline control unexpectedly retired checkpoint keys"
+    assert results["p2_checkpoint_loading"]["baseline_reusable_mismatch_count"] == 0, "baseline-reusable parameters still have shape mismatches"
+    assert results["p2_checkpoint_loading"]["unexpected_ckpt_only_count"] == 0, "unexpected checkpoint-only keys remain after alignment"
+    assert results["p2_checkpoint_loading"]["unexpected_model_only_count"] == 0, "unexpected model-only keys overlap with baseline state"
+
+    results = to_jsonable(results)
 
     report_path = Path(cfg.probe.report_json_path)
     report_path.parent.mkdir(parents=True, exist_ok=True)

@@ -11,14 +11,22 @@ parallel_mha_transition: False
 attention_type: naive
 strict_feats: False
 
-feats_seq: ["xt_bb_ca", "xt_local_latents", "x_sc_bb_ca", "x_sc_local_latents", "optional_ca_coors_nm_seq_feat", "optional_res_type_seq_feat"]
+# ORIGINAL 2026-04-12:
+# feats_seq: ["xt_bb_ca", "xt_local_latents", "x_sc_bb_ca", "x_sc_local_latents", "optional_ca_coors_nm_seq_feat", "optional_res_type_seq_feat"]
+# MODIFIED 2026-04-13: restore binder-side checkpoint-aligned sequence features so the
+# baseline input projection can be fully reused by the multistate architecture.
+feats_seq: ["xt_bb_ca", "xt_local_latents", "x_sc_bb_ca", "x_sc_local_latents", "optional_ca_coors_nm_seq_feat", "optional_res_type_seq_feat", "hotspot_mask_seq", "res_seq_pdb_idx"]
 feats_cond_seq: ["time_emb_bb_ca", "time_emb_local_latents"]
 
 dim_cond: 256
 idx_emb_dim: 256
 t_emb_dim: 256
 
-feats_pair_repr: ["rel_seq_sep", "xt_bb_ca_pair_dists", "x_sc_bb_ca_pair_dists", "optional_ca_pair_dist"]
+# ORIGINAL 2026-04-12:
+# feats_pair_repr: ["rel_seq_sep", "xt_bb_ca_pair_dists", "x_sc_bb_ca_pair_dists", "optional_ca_pair_dist"]
+# MODIFIED 2026-04-13: restore binder-side checkpoint-aligned pair features for
+# chain-aware and hotspot-aware projection compatibility.
+feats_pair_repr: ["rel_seq_sep", "xt_bb_ca_pair_dists", "x_sc_bb_ca_pair_dists", "optional_ca_pair_dist", "chain_idx_pair", "hotspot_mask_pair"]
 feats_pair_cond: ["time_emb_bb_ca", "time_emb_local_latents"]
 
 xt_pair_dist_dim: 30
