@@ -5,6 +5,10 @@ import torch
 from jaxtyping import Bool, Float
 from torch import Tensor
 
+from proteinfoundation.flow_matching.multistate_loss import (
+    compute_multistate_loss,
+    corrupt_multistate_batch,
+)
 from proteinfoundation.flow_matching.rdn_flow_matcher import RDNFlowMatcher
 
 FLOW_MATCHER_FACTORY = {
@@ -222,6 +226,14 @@ class ProductSpaceFlowMatcher(L.LightningModule):
             for data_mode in t_share_modes[1:]:
                 t[data_mode] = shared_t
         return t
+
+    def corrupt_multistate_batch(self, batch: dict) -> dict:
+        """Add Strategy01 multistate noisy supervision tensors to a batch."""
+        return corrupt_multistate_batch(self, batch)
+
+    def compute_multistate_loss(self, batch: dict, nn_out: dict) -> dict[str, Float[Tensor, "*"]]:
+        """Compute Strategy01 multistate robust loss without changing the legacy loss path."""
+        return compute_multistate_loss(self, batch, nn_out)
 
     def compute_loss(self, batch: dict, nn_out: dict[str, dict[str, Tensor]]) -> dict[str, Float[Tensor, "*"]]:
         """

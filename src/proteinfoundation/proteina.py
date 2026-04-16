@@ -34,6 +34,7 @@ else:
         LocalLatentsTransformer,
     )
 
+from proteinfoundation.nn.local_latents_transformer_multistate import LocalLatentsTransformerMultistate
 from proteinfoundation.nn.protein_transformer import ProteinTransformerAF3
 from proteinfoundation.partial_autoencoder.autoencoder import AutoEncoder
 from proteinfoundation.rewards.reward_utils import compute_reward_from_samples, initialize_reward_model
@@ -88,6 +89,8 @@ class Proteina(L.LightningModule):
         #     self.nn = ProteinTransformerAF3Int(**cfg_exp.nn)
         elif cfg_exp.nn.name == "local_latents_transformer":
             self.nn = LocalLatentsTransformer(**cfg_exp.nn, latent_dim=self.latent_dim)
+        elif cfg_exp.nn.name == "local_latents_transformer_multistate":
+            self.nn = LocalLatentsTransformerMultistate(**cfg_exp.nn, latent_dim=self.latent_dim)
         # elif cfg_exp.nn.name == "local_latents_transformer_int":
         #     self.nn = LocalLatentsTransformerInt(
         #         **cfg_exp.nn, latent_dim=self.latent_dim
@@ -222,30 +225,41 @@ class Proteina(L.LightningModule):
         val_step = batch_idx == -1  # validation step is indicated with batch_idx -1
         log_prefix = "validation_loss" if val_step else "train"
 
-        batch = add_clean_samples(
-            batch,
-            self.cfg_exp.product_flowmatcher,
-            getattr(self, "autoencoder", None),
-        )
+        multistate_cfg = self.cfg_exp.loss.get("multistate", {}) if hasattr(self.cfg_exp.loss, "get") else {}
+        use_multistate_loss = bool(multistate_cfg.get("enabled", False))
 
-        # Corrupt the batch
-        batch = self.fm.corrupt_batch(batch)  # adds x_1, t, x_0, x_t, mask
-        bs, n = batch["mask"].shape
+        if not use_multistate_loss:
+            batch = add_clean_samples(
+                batch,
+                self.cfg_exp.product_flowmatcher,
+                getattr(self, "autoencoder", None),
+            )
 
-        # Handle conditioning variables (safe config getters; missing keys default to disabled)
-        batch, n_recycle = handle_batch_conditioning(
-            batch,
-            bs,
-            self.cfg_exp.training,
-            self.call_nn,
-            self.fm,
-        )
+            # Corrupt the batch
+            batch = self.fm.corrupt_batch(batch)  # adds x_1, t, x_0, x_t, mask
+            bs, n = batch["mask"].shape
 
-        nn_out = self.call_nn(batch, n_recycle=n_recycle)
-        losses = self.fm.compute_loss(
-            batch=batch,
-            nn_out=nn_out,
-        )  # Dict[str, Tensor w.batch shape [*]]
+            # Handle conditioning variables (safe config getters; missing keys default to disabled)
+            batch, n_recycle = handle_batch_conditioning(
+                batch,
+                bs,
+                self.cfg_exp.training,
+                self.call_nn,
+                self.fm,
+            )
+
+            nn_out = self.call_nn(batch, n_recycle=n_recycle)
+            losses = self.fm.compute_loss(
+                batch=batch,
+                nn_out=nn_out,
+            )  # Dict[str, Tensor w.batch shape [*]]
+        else:
+            if int(self.cfg_exp.training.get("n_recycle", 0)) != 0 or bool(self.cfg_exp.training.get("self_cond", False)):
+                raise ValueError("Strategy01 multistate loss requires n_recycle=0 and self_cond=False for this stage")
+            batch = self.fm.corrupt_multistate_batch(batch)
+            bs, n = batch["mask"].shape
+            nn_out = self.call_nn(batch, n_recycle=0)
+            losses = self.fm.compute_multistate_loss(batch=batch, nn_out=nn_out)
 
         self.log_losses(bs=bs, losses=losses, log_prefix=log_prefix, batch=batch)
         train_loss = sum([torch.mean(losses[k]) for k in losses if "_justlog" not in k])

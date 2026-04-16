@@ -1,0 +1,11 @@
+{
+  "multistate_total": 2.704409141074393e-08,
+  "multistate_seq_justlog": 0.0,
+  "multistate_struct_justlog": 2.704409141074393e-08,
+  "multistate_mean_justlog": 2.989479952475449e-08,
+  "multistate_cvar_justlog": 3.0241729120916716e-08,
+  "multistate_var_justlog": 3.4978143872780843e-19,
+  "multistate_state_0_justlog": 2.9200938556073197e-08,
+  "multistate_state_1_justlog": 2.9891026542827603e-08,
+  "multistate_state_2_justlog": 3.059243169900583e-08
+}

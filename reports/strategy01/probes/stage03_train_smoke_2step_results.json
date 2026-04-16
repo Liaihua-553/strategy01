@@ -1,0 +1,1307 @@
+{
+  "run_name": "stage03_train_smoke_2step",
+  "device": "cuda",
+  "seed": 42,
+  "checkpoint_copy_info": {
+    "stage_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss",
+    "actions": [
+      {
+        "action": "exists",
+        "src": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/ckpts/complexa.ckpt",
+        "dst": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_init_readonly_copy.ckpt"
+      },
+      {
+        "action": "exists",
+        "src": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/ckpts/complexa_ae.ckpt",
+        "dst": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt"
+      }
+    ]
+  },
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 562,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "unexpected_keys_count": 0,
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_loss_probe.yaml",
+    "nn_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/nn/local_latents_score_nn_160M_multistate.yaml"
+  },
+  "dataset_manifest": {
+    "num_samples": 32,
+    "binder_len": 24,
+    "target_len": 48,
+    "latent_dim": 8,
+    "state_roles": [
+      "required_bind",
+      "required_bind",
+      "required_bind"
+    ],
+    "state_weights": [
+      0.3333333333333333,
+      0.3333333333333333,
+      0.3333333333333333
+    ],
+    "targets": [
+      "1tnf",
+      "3di3",
+      "5o45"
+    ],
+    "note": "Stage03 engineering debug pseudo dataset; binder complex supervision is synthetic and used only for plumbing/overfit validation.",
+    "provenance": [
+      {
+        "sample_id": "stage03_000_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_001_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_002_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_003_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_004_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_005_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_006_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_007_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_008_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_009_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_010_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_011_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_012_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_013_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_014_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_015_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_016_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_017_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_018_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_019_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_020_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_021_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_022_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_023_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_024_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_025_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_026_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_027_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_028_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_029_5o45",
+        "target_name": "5o45",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/5o45_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 116,
+            "used_residue_count": 48
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_030_1tnf",
+        "target_name": "1tnf",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 438,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/1tnf_cropped_fixed.pdb",
+            "status": "fallback_from_previous_state",
+            "reason": "empty_or_unreadable_pdb"
+          }
+        ]
+      },
+      {
+        "sample_id": "stage03_031_3di3",
+        "target_name": "3di3",
+        "states": [
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_repacked.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          },
+          {
+            "path": "/data/kfliao/general_model/strategy_repos/proteina-complexa-benchmark-baseline/assets/target_data/alpha_proteo_targets/3di3_cropped_fixed.pdb",
+            "status": "loaded",
+            "source_residue_count": 193,
+            "used_residue_count": 48
+          }
+        ]
+      }
+    ]
+  },
+  "errors_fixed_during_stage": [],
+  "loss_unit_probe": {
+    "status": "passed",
+    "total": 19.65079116821289,
+    "losses": {
+      "multistate_total": 19.65079116821289,
+      "multistate_seq_justlog": 3.113211154937744,
+      "multistate_struct_justlog": 18.094186782836914,
+      "multistate_mean_justlog": 19.515718460083008,
+      "multistate_cvar_justlog": 20.323196411132812,
+      "multistate_var_justlog": 2.070500612258911,
+      "multistate_state_0_justlog": 19.635604858398438,
+      "multistate_state_1_justlog": 19.50373649597168,
+      "multistate_state_2_justlog": 19.407814025878906
+    },
+    "output_shapes": {
+      "seq_logits_shared": [
+        2,
+        24,
+        20
+      ],
+      "bb_ca_states": [
+        2,
+        3,
+        24,
+        3
+      ],
+      "local_latents_states": [
+        2,
+        3,
+        24,
+        8
+      ]
+    },
+    "nan_detected": false
+  },
+  "worst_state_probe": {
+    "status": "passed",
+    "mean_delta": 1.2499998807907104,
+    "robust_delta": 1.7005555629730225,
+    "robust_more_sensitive_than_mean": true,
+    "good": {
+      "mean": [
+        1.0,
+        0.9000000357627869
+      ],
+      "cvar": [
+        1.0,
+        0.949999988079071
+      ],
+      "var": [
+        0.0,
+        0.006666665896773338
+      ],
+      "robust": [
+        0.8999999761581421,
+        0.830666720867157
+      ]
+    },
+    "bad": {
+      "mean": [
+        2.3333332538604736,
+        2.066666603088379
+      ],
+      "cvar": [
+        3.0,
+        2.700000047683716
+      ],
+      "var": [
+        3.555555582046509,
+        2.9622223377227783
+      ],
+      "robust": [
+        2.722222328186035,
+        2.409555435180664
+      ]
+    }
+  },
+  "gradient_route_probe": {
+    "status": "passed",
+    "trainable_info": {
+      "phase": "overfit",
+      "trainable_params": 223696114,
+      "total_params": 337393394,
+      "trainable_fraction": 0.6630127263250447,
+      "prefixes": [
+        "ensemble_target_encoder",
+        "target2binder_cross_attention_layer",
+        "state_condition_projector",
+        "shared_seq_head",
+        "state_token_norm",
+        "local_latents_linear",
+        "ca_linear",
+        "transformer_layers.10",
+        "transformer_layers.11",
+        "transformer_layers.12",
+        "transformer_layers.13"
+      ]
+    },
+    "loss": 22.295080184936523,
+    "loss_missing_state": 22.35515594482422,
+    "grad_norms": {
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight": 0.0002979552373290062,
+      "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.weight": 0.14472569525241852,
+      "shared_seq_head.1.weight": 2.010716438293457,
+      "ca_linear.1.weight": 27.71846580505371,
+      "local_latents_linear.1.weight": 29.086688995361328,
+      "state_condition_projector.1.weight": 12.301167488098145
+    },
+    "all_required_grad_nonzero": true,
+    "missing_state_losses": {
+      "multistate_total": 22.35515594482422,
+      "multistate_seq_justlog": 3.104897975921631,
+      "multistate_struct_justlog": 20.80270767211914,
+      "multistate_mean_justlog": 22.559982299804688,
+      "multistate_cvar_justlog": 22.559982299804688,
+      "multistate_var_justlog": 4.987248420715332,
+      "multistate_state_0_justlog": 20.559581756591797,
+      "multistate_state_1_justlog": 24.560379028320312,
+      "multistate_state_2_justlog": 0.0
+    }
+  },
+  "stage_a": {
+    "phase": "stage_a",
+    "steps": 2,
+    "batch_size": 2,
+    "initial_eval_total": 24.150115966796875,
+    "final_eval_total": 14.104988098144531,
+    "best_eval_total": 14.104988098144531,
+    "drop_fraction": 0.41594532641015175,
+    "final_losses": {
+      "multistate_total": 14.104988098144531,
+      "multistate_seq_justlog": 3.1768321990966797,
+      "multistate_struct_justlog": 12.516572952270508,
+      "multistate_mean_justlog": 13.695985794067383,
+      "multistate_cvar_justlog": 14.0873384475708,
+      "multistate_var_justlog": 0.3364444971084595,
+      "multistate_state_0_justlog": 13.60820198059082,
+      "multistate_state_1_justlog": 14.14776611328125,
+      "multistate_state_2_justlog": 13.331989288330078
+    },
+    "history": [
+      {
+        "step": 1,
+        "train_total": 21.976900100708008,
+        "eval_total": 21.581207275390625,
+        "eval_losses": {
+          "multistate_total": 21.581207275390625,
+          "multistate_seq_justlog": 3.1472134590148926,
+          "multistate_struct_justlog": 20.007598876953125,
+          "multistate_mean_justlog": 21.856901168823242,
+          "multistate_cvar_justlog": 22.432270050048828,
+          "multistate_var_justlog": 1.0624048709869385,
+          "multistate_state_0_justlog": 21.271526336669922,
+          "multistate_state_1_justlog": 21.683565139770508,
+          "multistate_state_2_justlog": 22.61560821533203
+        },
+        "elapsed_sec": 0.4448084831237793,
+        "cuda_max_mem_gb": 3.940458297729492
+      },
+      {
+        "step": 2,
+        "train_total": 17.088890075683594,
+        "eval_total": 14.104988098144531,
+        "eval_losses": {
+          "multistate_total": 14.104988098144531,
+          "multistate_seq_justlog": 3.1768321990966797,
+          "multistate_struct_justlog": 12.516572952270508,
+          "multistate_mean_justlog": 13.695985794067383,
+          "multistate_cvar_justlog": 14.0873384475708,
+          "multistate_var_justlog": 0.3364444971084595,
+          "multistate_state_0_justlog": 13.60820198059082,
+          "multistate_state_1_justlog": 14.14776611328125,
+          "multistate_state_2_justlog": 13.331989288330078
+        },
+        "elapsed_sec": 0.6638829708099365,
+        "cuda_max_mem_gb": 3.940462112426758
+      }
+    ],
+    "elapsed_sec": 5.2186970710754395,
+    "step_time_sec": 2.6093485355377197,
+    "cuda_max_mem_gb": 3.940462112426758,
+    "trainable_info": {
+      "phase": "stage_a",
+      "trainable_params": 178793458,
+      "total_params": 337393394,
+      "trainable_fraction": 0.5299257815344185,
+      "prefixes": [
+        "ensemble_target_encoder",
+        "target2binder_cross_attention_layer",
+        "state_condition_projector",
+        "shared_seq_head",
+        "state_token_norm"
+      ]
+    },
+    "require_drop": null,
+    "passed_drop_gate": null
+  },
+  "overfit_1_sample": {
+    "phase": "overfit1",
+    "steps": 2,
+    "batch_size": 1,
+    "initial_eval_total": 14.318190574645996,
+    "final_eval_total": 14.088197708129883,
+    "best_eval_total": 14.088197708129883,
+    "drop_fraction": 0.01606298402839911,
+    "final_losses": {
+      "multistate_total": 14.088197708129883,
+      "multistate_seq_justlog": 3.053373336791992,
+      "multistate_struct_justlog": 12.561511039733887,
+      "multistate_mean_justlog": 13.88187026977539,
+      "multistate_cvar_justlog": 14.029111862182617,
+      "multistate_var_justlog": 0.08931129425764084,
+      "multistate_state_0_justlog": 14.291650772094727,
+      "multistate_state_1_justlog": 13.587387084960938,
+      "multistate_state_2_justlog": 13.766572952270508
+    },
+    "history": [
+      {
+        "step": 1,
+        "train_total": 14.51805591583252,
+        "eval_total": 14.407893180847168,
+        "eval_losses": {
+          "multistate_total": 14.407893180847168,
+          "multistate_seq_justlog": 3.019914388656616,
+          "multistate_struct_justlog": 12.89793586730957,
+          "multistate_mean_justlog": 14.294139862060547,
+          "multistate_cvar_justlog": 14.372666358947754,
+          "multistate_var_justlog": 0.0179873276501894,
+          "multistate_state_0_justlog": 14.280569076538086,
+          "multistate_state_1_justlog": 14.13708782196045,
+          "multistate_state_2_justlog": 14.464763641357422
+        },
+        "elapsed_sec": 0.2982022762298584,
+        "cuda_max_mem_gb": 4.107034206390381
+      },
+      {
+        "step": 2,
+        "train_total": 14.305648803710938,
+        "eval_total": 14.088197708129883,
+        "eval_losses": {
+          "multistate_total": 14.088197708129883,
+          "multistate_seq_justlog": 3.053373336791992,
+          "multistate_struct_justlog": 12.561511039733887,
+          "multistate_mean_justlog": 13.88187026977539,
+          "multistate_cvar_justlog": 14.029111862182617,
+          "multistate_var_justlog": 0.08931129425764084,
+          "multistate_state_0_justlog": 14.291650772094727,
+          "multistate_state_1_justlog": 13.587387084960938,
+          "multistate_state_2_justlog": 13.766572952270508
+        },
+        "elapsed_sec": 0.5267057418823242,
+        "cuda_max_mem_gb": 4.441588878631592
+      }
+    ],
+    "elapsed_sec": 5.260618209838867,
+    "step_time_sec": 2.6303091049194336,
+    "cuda_max_mem_gb": 4.441588878631592,
+    "trainable_info": {
+      "phase": "overfit",
+      "trainable_params": 223696114,
+      "total_params": 337393394,
+      "trainable_fraction": 0.6630127263250447,
+      "prefixes": [
+        "ensemble_target_encoder",
+        "target2binder_cross_attention_layer",
+        "state_condition_projector",
+        "shared_seq_head",
+        "state_token_norm",
+        "local_latents_linear",
+        "ca_linear",
+        "transformer_layers.10",
+        "transformer_layers.11",
+        "transformer_layers.12",
+        "transformer_layers.13"
+      ]
+    },
+    "require_drop": 0.6,
+    "passed_drop_gate": false
+  },
+  "overfit_4_sample": {
+    "phase": "overfit4",
+    "steps": 2,
+    "batch_size": 2,
+    "initial_eval_total": 13.503615379333496,
+    "final_eval_total": 13.126699447631836,
+    "best_eval_total": 13.126699447631836,
+    "drop_fraction": 0.02791222358706308,
+    "final_losses": {
+      "multistate_total": 13.126699447631836,
+      "multistate_seq_justlog": 3.0326318740844727,
+      "multistate_struct_justlog": 11.610383987426758,
+      "multistate_mean_justlog": 12.537860870361328,
+      "multistate_cvar_justlog": 13.116741180419922,
+      "multistate_var_justlog": 0.9475696682929993,
+      "multistate_state_0_justlog": 12.812612533569336,
+      "multistate_state_1_justlog": 13.021280288696289,
+      "multistate_state_2_justlog": 11.779687881469727
+    },
+    "history": [
+      {
+        "step": 1,
+        "train_total": 12.883633613586426,
+        "eval_total": 17.621810913085938,
+        "eval_losses": {
+          "multistate_total": 17.621810913085938,
+          "multistate_seq_justlog": 3.0882318019866943,
+          "multistate_struct_justlog": 16.077695846557617,
+          "multistate_mean_justlog": 17.34424591064453,
+          "multistate_cvar_justlog": 18.131492614746094,
+          "multistate_var_justlog": 1.52976655960083,
+          "multistate_state_0_justlog": 17.221878051757812,
+          "multistate_state_1_justlog": 18.161733627319336,
+          "multistate_state_2_justlog": 16.649127960205078
+        },
+        "elapsed_sec": 0.41780614852905273,
+        "cuda_max_mem_gb": 4.441588878631592
+      },
+      {
+        "step": 2,
+        "train_total": 15.409032821655273,
+        "eval_total": 13.126699447631836,
+        "eval_losses": {
+          "multistate_total": 13.126699447631836,
+          "multistate_seq_justlog": 3.0326318740844727,
+          "multistate_struct_justlog": 11.610383987426758,
+          "multistate_mean_justlog": 12.537860870361328,
+          "multistate_cvar_justlog": 13.116741180419922,
+          "multistate_var_justlog": 0.9475696682929993,
+          "multistate_state_0_justlog": 12.812612533569336,
+          "multistate_state_1_justlog": 13.021280288696289,
+          "multistate_state_2_justlog": 11.779687881469727
+        },
+        "elapsed_sec": 0.6549625396728516,
+        "cuda_max_mem_gb": 4.442288398742676
+      }
+    ],
+    "elapsed_sec": 5.151364326477051,
+    "step_time_sec": 2.5756821632385254,
+    "cuda_max_mem_gb": 4.442288398742676,
+    "trainable_info": {
+      "phase": "overfit",
+      "trainable_params": 223696114,
+      "total_params": 337393394,
+      "trainable_fraction": 0.6630127263250447,
+      "prefixes": [
+        "ensemble_target_encoder",
+        "target2binder_cross_attention_layer",
+        "state_condition_projector",
+        "shared_seq_head",
+        "state_token_norm",
+        "local_latents_linear",
+        "ca_linear",
+        "transformer_layers.10",
+        "transformer_layers.11",
+        "transformer_layers.12",
+        "transformer_layers.13"
+      ]
+    },
+    "require_drop": null,
+    "passed_drop_gate": null
+  },
+  "debug32": {
+    "phase": "debug32",
+    "steps": 2,
+    "batch_size": 2,
+    "initial_eval_total": 13.126699447631836,
+    "final_eval_total": 14.108268737792969,
+    "best_eval_total": 13.126699447631836,
+    "drop_fraction": -0.07477654943476411,
+    "final_losses": {
+      "multistate_total": 14.108268737792969,
+      "multistate_seq_justlog": 3.0078530311584473,
+      "multistate_struct_justlog": 12.60434341430664,
+      "multistate_mean_justlog": 13.817526817321777,
+      "multistate_cvar_justlog": 14.111119270324707,
+      "multistate_var_justlog": 0.5113186240196228,
+      "multistate_state_0_justlog": 14.231976509094238,
+      "multistate_state_1_justlog": 13.88794994354248,
+      "multistate_state_2_justlog": 13.33265209197998
+    },
+    "history": [
+      {
+        "step": 1,
+        "train_total": 12.278995513916016,
+        "eval_total": 15.178512573242188,
+        "eval_losses": {
+          "multistate_total": 15.178512573242188,
+          "multistate_seq_justlog": 3.06838059425354,
+          "multistate_struct_justlog": 13.64432144165039,
+          "multistate_mean_justlog": 14.64070987701416,
+          "multistate_cvar_justlog": 15.400976181030273,
+          "multistate_var_justlog": 1.6357661485671997,
+          "multistate_state_0_justlog": 15.680755615234375,
+          "multistate_state_1_justlog": 14.43915843963623,
+          "multistate_state_2_justlog": 13.802213668823242
+        },
+        "elapsed_sec": 0.45395803451538086,
+        "cuda_max_mem_gb": 4.442288398742676
+      },
+      {
+        "step": 2,
+        "train_total": 14.77888011932373,
+        "eval_total": 14.108268737792969,
+        "eval_losses": {
+          "multistate_total": 14.108268737792969,
+          "multistate_seq_justlog": 3.0078530311584473,
+          "multistate_struct_justlog": 12.60434341430664,
+          "multistate_mean_justlog": 13.817526817321777,
+          "multistate_cvar_justlog": 14.111119270324707,
+          "multistate_var_justlog": 0.5113186240196228,
+          "multistate_state_0_justlog": 14.231976509094238,
+          "multistate_state_1_justlog": 13.88794994354248,
+          "multistate_state_2_justlog": 13.33265209197998
+        },
+        "elapsed_sec": 0.7124779224395752,
+        "cuda_max_mem_gb": 4.442288398742676
+      }
+    ],
+    "elapsed_sec": 5.063938617706299,
+    "step_time_sec": 2.5319693088531494,
+    "cuda_max_mem_gb": 4.442288398742676,
+    "trainable_info": {
+      "phase": "debug32",
+      "trainable_params": 223696114,
+      "total_params": 337393394,
+      "trainable_fraction": 0.6630127263250447,
+      "prefixes": [
+        "ensemble_target_encoder",
+        "target2binder_cross_attention_layer",
+        "state_condition_projector",
+        "shared_seq_head",
+        "state_token_norm",
+        "local_latents_linear",
+        "ca_linear",
+        "transformer_layers.10",
+        "transformer_layers.11",
+        "transformer_layers.12",
+        "transformer_layers.13"
+      ]
+    },
+    "require_drop": null,
+    "passed_drop_gate": null
+  },
+  "total_elapsed_sec": 21.45681071281433
+}
