@@ -122,6 +122,13 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, self.token_dim),
         )
         self.state_token_norm = nn.LayerNorm(self.token_dim)
+        # MODIFIED 2026-04-19: Stage04 adds a light quality-proxy head.
+        # It learns offline complex-confidence labels such as iPAE/pLDDT/ipTM
+        # proxies without calling an external predictor during backpropagation.
+        self.interface_quality_head = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, 5, bias=False),
+        )
 
     def forward(self, input: dict) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
         mask = input["mask"]
@@ -160,10 +167,16 @@ class LocalLatentsTransformerMultistate(nn.Module):
         local_latents_states = local_latents_states * state_present_mask
         bb_ca_states = bb_ca_states * state_present_mask
 
+        state_binder_summary = (state_tokens * mask[:, None, :, None]).sum(dim=2) / mask.float().sum(dim=1).clamp_min(1.0)[:, None, None]
+        interface_quality_logits = self.interface_quality_head(
+            state_binder_summary + target_bundle["state_summary_tokens"]
+        ) * target_bundle["state_present_mask"][:, :, None]
+
         return {
             "seq_logits_shared": shared_seq_logits,
             "bb_ca_states": bb_ca_states,
             "local_latents_states": local_latents_states,
+            "interface_quality_logits": interface_quality_logits,
             "arch_debug": {
                 "ensemble_target_memory": target_bundle["ensemble_target_memory"],
                 "ensemble_target_mask": target_bundle["ensemble_target_mask"],

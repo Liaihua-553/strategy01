@@ -1,0 +1,378 @@
+{
+  "run_name": "stage04_cpu_smoke",
+  "device": "cpu",
+  "manifest_summary": {
+    "stage": "stage04_real_complex_multistate_debug",
+    "note": "Experimental-complex-derived debug set from cached multichain PDBs. Geometry-proxy confidence labels are used because AF2/Boltz weights are not configured in the current environment.",
+    "num_samples": 16,
+    "train_count": 12,
+    "val_count": 4,
+    "target_len": 48,
+    "binder_len": 24,
+    "kmax": 5
+  },
+  "train_count": 12,
+  "val_count": 4,
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 565,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "probes": {
+    "loss_unit": {
+      "status": "passed",
+      "total": 62.316741943359375,
+      "losses": {
+        "multistate_total": 62.316741943359375,
+        "multistate_seq_justlog": 3.170159339904785,
+        "multistate_struct_justlog": 60.71607208251953,
+        "multistate_fm_mean_justlog": 66.53300476074219,
+        "multistate_contact_justlog": 1.637238621711731,
+        "multistate_distance_justlog": 5.928777694702148,
+        "multistate_clash_justlog": 1.3872635722204412e-24,
+        "multistate_quality_proxy_justlog": 0.1790846437215805,
+        "multistate_anchor_persistence_justlog": 0.31180936098098755,
+        "multistate_self_geometry_justlog": 9.2691243569476e-10,
+        "multistate_mean_justlog": 67.4569091796875,
+        "multistate_cvar_justlog": 67.4676742553711,
+        "multistate_var_justlog": 0.000116814422653988,
+        "multistate_state_0_justlog": 67.4676742553711,
+        "multistate_state_0_fm_justlog": 66.54364776611328,
+        "multistate_state_0_contact_justlog": 1.6374567747116089,
+        "multistate_state_0_distance_justlog": 5.929551124572754,
+        "multistate_state_0_clash_justlog": 1.3673832913327402e-24,
+        "multistate_state_1_justlog": 67.4461441040039,
+        "multistate_state_1_fm_justlog": 66.5223617553711,
+        "multistate_state_1_contact_justlog": 1.6370205879211426,
+        "multistate_state_1_distance_justlog": 5.928005218505859,
+        "multistate_state_1_clash_justlog": 1.4071437545005291e-24
+      },
+      "output_shapes": {
+        "seq_logits_shared": [
+          2,
+          24,
+          20
+        ],
+        "bb_ca_states": [
+          2,
+          2,
+          24,
+          3
+        ],
+        "local_latents_states": [
+          2,
+          2,
+          24,
+          8
+        ],
+        "interface_quality_logits": [
+          2,
+          2,
+          5
+        ]
+      },
+      "batch_shapes": {
+        "x_target_states": [
+          2,
+          2,
+          48,
+          37,
+          3
+        ],
+        "interface_contact_labels": [
+          2,
+          2,
+          48,
+          24
+        ],
+        "interface_quality_labels": [
+          2,
+          2,
+          5
+        ]
+      },
+      "nan_detected": false
+    },
+    "synthetic_interface": {
+      "status": "passed",
+      "good_contact_loss": 1.2707633972167969,
+      "bad_contact_loss": 50.486732482910156,
+      "good_distance_loss": 4.629763603210449,
+      "bad_distance_loss": 4.882199764251709,
+      "bad_distance_increases": true
+    },
+    "grad_route": {
+      "status": "passed",
+      "loss": 65.32823944091797,
+      "trainable_info": {
+        "phase": "overfit",
+        "trainable_params": 337398770,
+        "total_params": 337398770,
+        "prefixes": [
+          "ALL_PARAMETERS_FOR_STAGE04_OVERFIT"
+        ]
+      },
+      "grad_norms": {
+        "ensemble_target_encoder.cross_state_fusion.q_proj.weight": 7.284377352334559e-05,
+        "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.weight": 0.09135926514863968,
+        "shared_seq_head.1.weight": 2.593545436859131,
+        "ca_linear.1.weight": 174.5633544921875,
+        "local_latents_linear.1.weight": 15.319917678833008,
+        "state_condition_projector.1.weight": 45.667171478271484,
+        "interface_quality_head.1.weight": 0.04293408244848251
+      },
+      "all_required_grad_nonzero": true
+    }
+  },
+  "training": {
+    "overfit1": {
+      "phase": "overfit1",
+      "steps": 1,
+      "batch_size": 1,
+      "initial_eval_total": 46.834476470947266,
+      "final_eval_total": 31.57961082458496,
+      "drop_fraction": 0.3257187182571652,
+      "final_losses": {
+        "multistate_total": 31.57961082458496,
+        "multistate_seq_justlog": 3.1304731369018555,
+        "multistate_struct_justlog": 29.997760772705078,
+        "multistate_fm_mean_justlog": 32.89073944091797,
+        "multistate_contact_justlog": 0.7785031795501709,
+        "multistate_distance_justlog": 2.8071210384368896,
+        "multistate_clash_justlog": 0.001768341171555221,
+        "multistate_quality_proxy_justlog": 0.17443488538265228,
+        "multistate_anchor_persistence_justlog": 0.3322557508945465,
+        "multistate_self_geometry_justlog": 4.702667144584893e-09,
+        "multistate_mean_justlog": 33.33073043823242,
+        "multistate_cvar_justlog": 33.330963134765625,
+        "multistate_var_justlog": 5.4147676564753056e-08,
+        "multistate_state_0_justlog": 33.33049774169922,
+        "multistate_state_0_fm_justlog": 32.89048385620117,
+        "multistate_state_0_contact_justlog": 0.7785075306892395,
+        "multistate_state_0_distance_justlog": 2.807380199432373,
+        "multistate_state_0_clash_justlog": 0.0017460185335949063,
+        "multistate_state_1_justlog": 33.330963134765625,
+        "multistate_state_1_fm_justlog": 32.89099884033203,
+        "multistate_state_1_contact_justlog": 0.7784988880157471,
+        "multistate_state_1_distance_justlog": 2.8068618774414062,
+        "multistate_state_1_clash_justlog": 0.0017906638095155358
+      },
+      "history": [
+        {
+          "step": 1,
+          "train_total": 63.92231369018555,
+          "eval_total": 31.57961082458496,
+          "eval_losses": {
+            "multistate_total": 31.57961082458496,
+            "multistate_seq_justlog": 3.1304731369018555,
+            "multistate_struct_justlog": 29.997760772705078,
+            "multistate_fm_mean_justlog": 32.89073944091797,
+            "multistate_contact_justlog": 0.7785031795501709,
+            "multistate_distance_justlog": 2.8071210384368896,
+            "multistate_clash_justlog": 0.001768341171555221,
+            "multistate_quality_proxy_justlog": 0.17443488538265228,
+            "multistate_anchor_persistence_justlog": 0.3322557508945465,
+            "multistate_self_geometry_justlog": 4.702667144584893e-09,
+            "multistate_mean_justlog": 33.33073043823242,
+            "multistate_cvar_justlog": 33.330963134765625,
+            "multistate_var_justlog": 5.4147676564753056e-08,
+            "multistate_state_0_justlog": 33.33049774169922,
+            "multistate_state_0_fm_justlog": 32.89048385620117,
+            "multistate_state_0_contact_justlog": 0.7785075306892395,
+            "multistate_state_0_distance_justlog": 2.807380199432373,
+            "multistate_state_0_clash_justlog": 0.0017460185335949063,
+            "multistate_state_1_justlog": 33.330963134765625,
+            "multistate_state_1_fm_justlog": 32.89099884033203,
+            "multistate_state_1_contact_justlog": 0.7784988880157471,
+            "multistate_state_1_distance_justlog": 2.8068618774414062,
+            "multistate_state_1_clash_justlog": 0.0017906638095155358
+          },
+          "elapsed_sec": 2.6728694438934326,
+          "cuda_max_mem_gb": 0.0
+        }
+      ],
+      "elapsed_sec": 7.371419906616211,
+      "step_time_sec": 7.371422290802002,
+      "cuda_max_mem_gb": 0.0,
+      "trainable_info": {
+        "phase": "overfit",
+        "trainable_params": 337398770,
+        "total_params": 337398770,
+        "prefixes": [
+          "ALL_PARAMETERS_FOR_STAGE04_OVERFIT"
+        ]
+      }
+    },
+    "mini": {
+      "phase": "mini",
+      "steps": 1,
+      "batch_size": 1,
+      "initial_eval_total": 31.57961082458496,
+      "final_eval_total": 18.709047317504883,
+      "drop_fraction": 0.4075592817964764,
+      "final_losses": {
+        "multistate_total": 18.709047317504883,
+        "multistate_seq_justlog": 3.088740587234497,
+        "multistate_struct_justlog": 17.150630950927734,
+        "multistate_fm_mean_justlog": 18.893556594848633,
+        "multistate_contact_justlog": 0.2920949459075928,
+        "multistate_distance_justlog": 0.9982138872146606,
+        "multistate_clash_justlog": 0.004421324469149113,
+        "multistate_quality_proxy_justlog": 0.20460274815559387,
+        "multistate_anchor_persistence_justlog": 0.2809206247329712,
+        "multistate_self_geometry_justlog": 1.505747526664436e-08,
+        "multistate_mean_justlog": 19.056110382080078,
+        "multistate_cvar_justlog": 19.05640411376953,
+        "multistate_var_justlog": 8.684037311468273e-08,
+        "multistate_state_0_justlog": 19.05640411376953,
+        "multistate_state_0_fm_justlog": 18.893810272216797,
+        "multistate_state_0_contact_justlog": 0.29215240478515625,
+        "multistate_state_0_distance_justlog": 0.9985159635543823,
+        "multistate_state_0_clash_justlog": 0.004414433613419533,
+        "multistate_state_1_justlog": 19.055814743041992,
+        "multistate_state_1_fm_justlog": 18.89330291748047,
+        "multistate_state_1_contact_justlog": 0.2920375168323517,
+        "multistate_state_1_distance_justlog": 0.9979117512702942,
+        "multistate_state_1_clash_justlog": 0.004428215324878693
+      },
+      "history": [
+        {
+          "step": 1,
+          "train_total": 21.241437911987305,
+          "eval_total": 18.709047317504883,
+          "eval_losses": {
+            "multistate_total": 18.709047317504883,
+            "multistate_seq_justlog": 3.088740587234497,
+            "multistate_struct_justlog": 17.150630950927734,
+            "multistate_fm_mean_justlog": 18.893556594848633,
+            "multistate_contact_justlog": 0.2920949459075928,
+            "multistate_distance_justlog": 0.9982138872146606,
+            "multistate_clash_justlog": 0.004421324469149113,
+            "multistate_quality_proxy_justlog": 0.20460274815559387,
+            "multistate_anchor_persistence_justlog": 0.2809206247329712,
+            "multistate_self_geometry_justlog": 1.505747526664436e-08,
+            "multistate_mean_justlog": 19.056110382080078,
+            "multistate_cvar_justlog": 19.05640411376953,
+            "multistate_var_justlog": 8.684037311468273e-08,
+            "multistate_state_0_justlog": 19.05640411376953,
+            "multistate_state_0_fm_justlog": 18.893810272216797,
+            "multistate_state_0_contact_justlog": 0.29215240478515625,
+            "multistate_state_0_distance_justlog": 0.9985159635543823,
+            "multistate_state_0_clash_justlog": 0.004414433613419533,
+            "multistate_state_1_justlog": 19.055814743041992,
+            "multistate_state_1_fm_justlog": 18.89330291748047,
+            "multistate_state_1_contact_justlog": 0.2920375168323517,
+            "multistate_state_1_distance_justlog": 0.9979117512702942,
+            "multistate_state_1_clash_justlog": 0.004428215324878693
+          },
+          "elapsed_sec": 1.3754262924194336,
+          "cuda_max_mem_gb": 0.0
+        }
+      ],
+      "elapsed_sec": 5.74591851234436,
+      "step_time_sec": 5.745919942855835,
+      "cuda_max_mem_gb": 0.0,
+      "trainable_info": {
+        "phase": "mini",
+        "trainable_params": 223701490,
+        "total_params": 337398770,
+        "prefixes": [
+          "ensemble_target_encoder",
+          "target2binder_cross_attention_layer",
+          "state_condition_projector",
+          "shared_seq_head",
+          "state_token_norm",
+          "interface_quality_head",
+          "local_latents_linear",
+          "ca_linear",
+          "transformer_layers.10",
+          "transformer_layers.11",
+          "transformer_layers.12",
+          "transformer_layers.13"
+        ]
+      }
+    }
+  },
+  "validation": {
+    "total": 25.510570526123047,
+    "losses": {
+      "multistate_total": 25.510570526123047,
+      "multistate_seq_justlog": 3.0583133697509766,
+      "multistate_struct_justlog": 23.97501564025879,
+      "multistate_fm_mean_justlog": 26.435474395751953,
+      "multistate_contact_justlog": 0.19895529747009277,
+      "multistate_distance_justlog": 1.5864267349243164,
+      "multistate_clash_justlog": 0.0006313659832812846,
+      "multistate_quality_proxy_justlog": 0.20041394233703613,
+      "multistate_anchor_persistence_justlog": 0.12793324887752533,
+      "multistate_self_geometry_justlog": 8.136608720121785e-09,
+      "multistate_mean_justlog": 26.637943267822266,
+      "multistate_cvar_justlog": 26.63986587524414,
+      "multistate_var_justlog": 4.398424152896041e-06,
+      "multistate_state_0_justlog": 26.638931274414062,
+      "multistate_state_0_fm_justlog": 26.436443328857422,
+      "multistate_state_0_contact_justlog": 0.19896118342876434,
+      "multistate_state_0_distance_justlog": 1.5865964889526367,
+      "multistate_state_0_clash_justlog": 0.0006284395349211991,
+      "multistate_state_1_justlog": 26.636960983276367,
+      "multistate_state_1_fm_justlog": 26.434505462646484,
+      "multistate_state_1_contact_justlog": 0.19894938170909882,
+      "multistate_state_1_distance_justlog": 1.586256980895996,
+      "multistate_state_1_clash_justlog": 0.0006342923152260482
+    }
+  }
+}

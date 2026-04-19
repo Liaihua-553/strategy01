@@ -1,0 +1,78 @@
+run_name: strategy01_stage04_real_complex_interface_loss_probe
+hardware:
+  accelerator: gpu
+  ngpus_per_node_: 1
+  nnodes_: 1
+
+defaults:
+  - nn: local_latents_score_nn_160M_multistate
+  - _self_
+
+pretrain_ckpt_path: /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_init_readonly_copy.ckpt
+autoencoder_ckpt_path: /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt
+
+product_flowmatcher:
+  bb_ca:
+    zero_com_noise: False
+    guidance_enabled: true
+    dim: 3
+  local_latents:
+    zero_com_noise: False
+    guidance_enabled: true
+    dim: 8
+
+loss:
+  t_distribution:
+    bb_ca:
+      name: mix_unif_beta
+      p1: 1.9
+      p2: 1.0
+      p3: 0.02
+    local_latents:
+      name: mix_unif_beta
+      p1: 1.0
+      p2: 1.5
+      p3: 0.02
+    shared_groups:
+      - [bb_ca, local_latents]
+  multistate:
+    enabled: true
+    lambda_bb: 1.0
+    lambda_lat: 1.0
+    lambda_seq: 0.5
+    lambda_struct: 1.0
+    alpha_mean: 0.45
+    beta_cvar: 0.45
+    gamma_var: 0.10
+    cvar_topk: auto
+    use_interface_loss: true
+    require_interface_labels: true
+    lambda_contact: 0.20
+    lambda_distance: 0.10
+    lambda_clash: 0.05
+    lambda_anchor_persistence: 0.05
+    lambda_self_geometry: 0.05
+    lambda_quality_proxy: 0.02
+    contact_cutoff_nm: 0.80
+    contact_temperature_nm: 0.08
+    clash_min_nm: 0.28
+    clash_temperature_nm: 0.04
+    anchor_persistence_threshold: 0.50
+    use_self_geometry_loss: true
+
+force_precision_f32: False
+training:
+  n_recycle: 0
+  self_cond: False
+  fold_cond: False
+  target_cond: False
+  target_dropout_rate: 0.0
+  motif_dropout_rate: 0.0
+  p_folding_n_inv_folding_iters: 0.0
+
+opt:
+  lr: 0.0002
+  accumulate_grad_batches: 1
+  weight_decay: 0.01
+
+seed: 42
