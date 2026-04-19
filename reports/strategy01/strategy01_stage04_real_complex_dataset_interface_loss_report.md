@@ -442,3 +442,110 @@ srun --immediate=1 -p new --gres=gpu:1 --time=02:00:00 \
 - AE deterministic latent extractor：需要单独接入 AE feature preprocessing。
 
 本阶段的科学意义是把 Strategy01 的多状态目标从“只拟合 state-wise backbone/local latent”推进到“共享 binder 序列 + 多状态复合物界面几何 + 质量代理”的监督形式。它仍然不是最终 benchmark 结果，但已经把下一步真实 predictor 数据生产和 1 卡微调的接口、loss、报告路径打通。
+
+## 10. 2026-04-19 补充执行：GPU 完整跑通与 Boltz 部署 smoke
+
+这一节是对前文“GPU 未完成 / predictor 未完成”的更新。此前 `srun --immediate` 拿不到卡，但用户允许改用 `sbatch` 申请 1 张 GPU 后，本阶段 Stage04 训练闭环已经在 GPU 上完整跑通。
+
+### 10.1 单卡 GPU Stage04 训练结果
+
+执行方式：
+
+```bash
+sbatch -p new --gres=gpu:1 --time=08:00:00   --job-name=strategy01_stage04_gpu   --wrap='cd /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase && /home/kfliao/data/anaconda3/envs/proteina-complexa/bin/python scripts/strategy01/stage04_real_complex_loss_debug.py --device cuda --run-name stage04_gpu_sbatch_real_complex_300_500 --overfit1-steps 300 --mini-steps 500 --eval-every 100 --mini-batch-size 1'
+```
+
+结果文件：`reports/strategy01/probes/stage04_gpu_sbatch_real_complex_300_500_results.json`。
+
+实测环境与资源：
+
+- SLURM job id: `1896053`
+- partition: `new`
+- node: `gu02`
+- GPU: `1` 张
+- device: `cuda`
+- train/val 样本数：`12` / `4`
+- CUDA 峰值显存：`6.305 GB`
+
+训练结果：
+
+| 阶段 | steps | 初始 eval total | 最终 eval total | 下降比例 | 总耗时 | step time |
+|---|---:|---:|---:|---:|---:|---:|
+| 1-sample overfit | 300 | 53.0058 | 9.9035 | 81.32% | 56.88s | 0.1896s |
+| 8-16 sample mini fine-tune | 500 | 9.9035 | 2.0736 | 79.06% | 77.69s | 0.1554s |
+
+验证集：
+
+- validation total loss: `11.6577`
+- 梯度路由：`all_required_grad_nonzero = True`
+
+结论：Stage04 的 interface-aware multistate loss 不只是 CPU probe 可运行，已经在 1 张 A100 GPU 上完成 300-step overfit + 500-step mini fine-tune + validation forward。单卡显存占用约 6.3 GB，当前 debug 尺寸下速度约 0.15-0.19 秒/step。这个耗时说明：对于当前裁剪长度和 batch=1 的 Stage04 debug 数据，1 张 40G A100 完全足够；真正耗时瓶颈会在外部 complex predictor 数据生产，而不是 Strategy01 loss 微调本身。
+
+### 10.2 Boltz 官方代码同步与独立环境安装
+
+本阶段按用户建议尝试“本地下载 Boltz 开源代码，再同步到远程”。
+
+来源：官方 GitHub `https://github.com/jwohlwend/boltz`，本次同步 revision `cb04aec`。官方 README/pyproject 显示当前版本为 `2.2.1`，推荐 fresh Python 环境，常规安装命令为 `pip install boltz[cuda] -U` 或源码 `pip install -e .[cuda]`。
+
+实际落地路径：
+
+- 本地源码：`C:/LKF/third_party/boltz`
+- 远程源码：`/data/kfliao/general_model/third_party/boltz_cb04aec`
+- 远程软链接：`/data/kfliao/general_model/third_party/boltz_current`
+- 远程独立 venv：`/data/kfliao/general_model/envs/boltz_cb04aec`
+- 远程 cache：`/data/kfliao/general_model/boltz_cache`
+
+安装过程与修正：
+
+1. 直接 `pip install -e boltz_current[cuda]` 失败，因为 pip 解析到 `pandas 3.0.2` 源码构建，远程系统 GCC 为 `4.8.5`，而新 NumPy 构建要求 `GCC >= 9.3`。
+2. 修正为先安装二进制 wheel：`numpy==1.26.4 pandas==2.2.2 scipy==1.13.1 scikit-learn==1.6.1 rdkit==2024.3.2`。
+3. `fairscale==0.4.13` 没有二进制 wheel，但源码 wheel 构建成功。
+4. `[cuda]` extra 失败，根因是当前 pip 源/平台无法解析 `cuequivariance_ops_cu12>=0.5.0`。
+5. 改装基础版 `pip install -e boltz_current` 成功，`boltz --help` 和 `boltz predict --help` 均可运行。
+
+因此当前状态是：Boltz 源码、基础依赖和 CLI 已可用；cuEquivariance 加速 extra 未完成，不影响命令入口，但可能影响 GPU 加速效率。
+
+### 10.3 Boltz predictor smoke 尝试与阻塞原因
+
+最小输入：`reports/strategy01/probes/boltz_smoke_inputs/stage04_tiny_ppi.yaml`，包含两条短 protein chain，并设置 `msa: empty` 以避免 MSA server。
+
+提交命令：
+
+```bash
+sbatch -p new --gres=gpu:1 --time=02:00:00   --job-name=stage04_boltz_smoke   --wrap='cd /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase && /data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz predict reports/strategy01/probes/boltz_smoke_inputs/stage04_tiny_ppi.yaml --out_dir reports/strategy01/probes/boltz_smoke_outputs --cache /data/kfliao/general_model/boltz_cache --devices 1 --accelerator gpu --model boltz2 --recycling_steps 1 --sampling_steps 5 --diffusion_samples 1 --num_workers 0 --preprocessing-threads 1 --output_format pdb --no_kernels --override'
+```
+
+结果：job id `1896054` 在 `gu02` 启动，但在真正预测前失败。日志显示 Boltz 尝试下载官方 `mols.tar`：
+
+```text
+Downloading the CCD data to /data/kfliao/general_model/boltz_cache/mols.tar.
+urllib.error.URLError: <urlopen error [Errno 110] Connection timed out>
+```
+
+随后按用户建议尝试本地下载官方缓存文件再同步，首先下载 `https://huggingface.co/boltz-community/boltz-2/resolve/main/mols.tar`。本地直连 HuggingFace 超时；启用本机代理 `127.0.0.1:7890` 后 15 分钟仍未完成，`mols.tar` 仍为 0 bytes。因此本阶段没有伪装完成 Boltz predictor 生成复合物。
+
+结论：Boltz predictor smoke 的当前阻塞是官方模型/CCD cache 获取问题，不是 Strategy01 adapter 或 loss 代码问题。若后续手动通过浏览器、huggingface-cli、镜像源或已有缓存获得以下文件并放入 `/data/kfliao/general_model/boltz_cache`，即可直接重跑同一个 smoke：
+
+- `mols.tar`
+- `boltz2_conf.ckpt`
+- `boltz2_aff.ckpt`
+
+### 10.4 对本阶段完成判定的更新
+
+更新后已完成：
+
+- Stage04 interface-aware loss 代码。
+- Stage04 debug dataset builder。
+- 16 条真实多链复合物 derived debug set。
+- CPU smoke / CPU short fine-tune。
+- 1 张 A100 GPU 上的完整 300-step overfit + 500-step mini fine-tune + validation。
+- Boltz 官方源码本地下载并同步远程。
+- Boltz 独立 venv 基础安装与 CLI smoke。
+- Boltz predictor smoke 的真实失败日志和根因定位。
+
+仍未完成：
+
+- Boltz/AF2/Protenix 真正生成 predicted complex。当前阻塞是外部 predictor 权重/cache 获取，不是 Stage04 loss/training 链路。
+- AE deterministic local latent extractor。仍需单独接入 `complexa_ae` 的 atom37/torsion preprocessing。
+
+对“本阶段未完成计划”的解释：训练闭环已经补齐；外部 predictor 数据生产还缺官方缓存文件。下一步最有效动作不是继续改 Strategy01 代码，而是先解决 Boltz 或 AF2 的权重/cache 可用性，然后复用已写好的 Stage04 adapter、metrics extractor 和 tensorize schema 生成真正 predictor-derived dataset。

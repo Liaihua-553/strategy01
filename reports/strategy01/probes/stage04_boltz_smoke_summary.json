@@ -1,0 +1,50 @@
+{
+  "stage": "Stage04 GPU and Boltz supplement",
+  "strategy_repo": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase",
+  "gpu_job": {
+    "scheduler": "sbatch",
+    "job_id": "1896053",
+    "partition": "new",
+    "gres": "gpu:1",
+    "node": "gu02",
+    "result_json": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage04_gpu_sbatch_real_complex_300_500_results.json",
+    "device": "cuda",
+    "train_count": 12,
+    "val_count": 4,
+    "overfit1": {
+      "steps": 300,
+      "initial_eval_total": 53.00584411621094,
+      "final_eval_total": 9.903459548950195,
+      "drop_fraction": 0.8131628745079943,
+      "elapsed_sec": 56.87597298622131,
+      "step_time_sec": 0.1895865813891093,
+      "cuda_max_mem_gb": 6.304754257202148
+    },
+    "mini": {
+      "steps": 500,
+      "initial_eval_total": 9.903459548950195,
+      "final_eval_total": 2.0735981464385986,
+      "drop_fraction": 0.7906188099028073,
+      "elapsed_sec": 77.69424247741699,
+      "step_time_sec": 0.15538848781585693,
+      "cuda_max_mem_gb": 6.304754257202148
+    },
+    "validation_total": 11.657719612121582,
+    "grad_route_all_required_grad_nonzero": true
+  },
+  "boltz": {
+    "official_repo": "https://github.com/jwohlwend/boltz",
+    "local_source": "C:/LKF/third_party/boltz",
+    "remote_source": "/data/kfliao/general_model/third_party/boltz_cb04aec",
+    "remote_current_symlink": "/data/kfliao/general_model/third_party/boltz_current",
+    "remote_env": "/data/kfliao/general_model/envs/boltz_cb04aec",
+    "version_from_pyproject": "2.2.1",
+    "cli_status": "boltz --help passed",
+    "cuda_extra_status": "failed: cuequivariance_ops_cu12>=0.5.0 unavailable from current pip index/platform",
+    "predictor_smoke_job_id": "1896054",
+    "predictor_smoke_status": "failed before prediction: remote urllib timed out downloading Boltz2 mols.tar cache",
+    "local_cache_download_status": "failed: local HuggingFace download also timed out, including proxy attempt; mols.tar partial file remained 0 bytes locally",
+    "cache_dir": "/data/kfliao/general_model/boltz_cache",
+    "input_yaml": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/boltz_smoke_inputs/stage04_tiny_ppi.yaml"
+  }
+}
