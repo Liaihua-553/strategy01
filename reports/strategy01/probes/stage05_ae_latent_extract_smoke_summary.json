@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "dataset": "data/strategy01/stage05_predictor_multistate_smoke_template/stage05_predictor_pilot_samples.pt",
+  "output": "data/strategy01/stage05_predictor_multistate_smoke_template/stage05_predictor_pilot_samples_ae_latents.pt",
+  "ae_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+  "device": "cpu",
+  "num_samples_total": 1,
+  "processed_states": 2,
+  "elapsed_sec": 0.36960315704345703
+}

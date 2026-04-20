@@ -116,3 +116,6 @@ debug.log
 *.h5
 *.joblib
 reports/strategy01/probes/boltz_smoke_outputs_cached/
+data/strategy01/stage05_predictor_multistate/
+reports/strategy01/probes/stage05_boltz_outputs/
+ckpts/stage05_predictor_pilot/
