@@ -1,0 +1,81 @@
+{
+  "stage": "Strategy01 Stage04 Boltz-2 cached GPU smoke",
+  "timestamp": "2026-04-20",
+  "status": "success",
+  "boltz_source": {
+    "repo": "https://github.com/jwohlwend/boltz",
+    "version": "2.2.1",
+    "remote_source": "/data/kfliao/general_model/third_party/boltz_cb04aec",
+    "remote_env": "/data/kfliao/general_model/envs/boltz_cb04aec",
+    "cuda_extra_status": "not installed: cuequivariance_ops_cu12>=0.5.0 unavailable; predict used --no_kernels"
+  },
+  "cache": {
+    "path": "/data/kfliao/general_model/boltz_cache",
+    "mirror": "https://hf-mirror.com/boltz-community/boltz-2/resolve/main/",
+    "download_script": "/data/kfliao/general_model/third_party/download_boltz2_cache_remote.sh",
+    "mols_tar_bytes": 1855662080,
+    "boltz2_conf_ckpt_bytes": 2286561469,
+    "boltz2_aff_ckpt_bytes": 2062139170,
+    "mols_dir_exists": true
+  },
+  "slurm": {
+    "job_id": 1897550,
+    "partition": "new",
+    "gres": "gpu:1",
+    "node": "gu02",
+    "script": "scripts/strategy01/stage04_boltz2_smoke_cached.sbatch",
+    "stdout": "logs/stage04_boltz2_smoke_cached_1897550.out",
+    "stderr": "logs/stage04_boltz2_smoke_cached_1897550.err",
+    "sacct_note": "sacct returned no record in this environment; log timestamps show GPU prediction completed successfully."
+  },
+  "input": "reports/strategy01/probes/boltz_smoke_inputs/stage04_tiny_ppi.yaml",
+  "output_dir": "reports/strategy01/probes/boltz_smoke_outputs_cached/boltz_results_stage04_tiny_ppi/predictions/stage04_tiny_ppi",
+  "outputs": {
+    "pdb": "stage04_tiny_ppi_model_0.pdb",
+    "confidence_json": "confidence_stage04_tiny_ppi_model_0.json",
+    "pae_npz": "pae_stage04_tiny_ppi_model_0.npz",
+    "plddt_npz": "plddt_stage04_tiny_ppi_model_0.npz",
+    "pde_npz": "pde_stage04_tiny_ppi_model_0.npz"
+  },
+  "confidence": {
+    "confidence_score": 0.4778810441493988,
+    "ptm": 0.14588366448879242,
+    "iptm": 0.027503905817866325,
+    "ligand_iptm": 0.0,
+    "protein_iptm": 0.027503905817866325,
+    "complex_plddt": 0.59047532081604,
+    "complex_iplddt": 0.59047532081604,
+    "complex_pde": 4.136843681335449,
+    "complex_ipde": 11.716509819030762,
+    "chains_ptm": {
+      "0": 0.1986551135778427,
+      "1": 0.3653731644153595
+    },
+    "pair_chains_iptm": {
+      "0": {
+        "0": 0.1986551135778427,
+        "1": 0.02707572653889656
+      },
+      "1": {
+        "0": 0.027503905817866325,
+        "1": 0.3653731644153595
+      }
+    }
+  },
+  "interpretation": {
+    "schema_validation": "Boltz-2 produced PDB + confidence + PAE + pLDDT + PDE files; this is sufficient for Stage04 predictor adapter parsing.",
+    "biological_quality": "The tiny smoke input has no MSA and arbitrary short chains, so low ipTM is expected and not used as a biological success criterion."
+  },
+  "resolved_errors": [
+    {
+      "error": "HuggingFace/model-gateway download timeout for mols.tar and checkpoints",
+      "root_cause": "remote network could reach hf-mirror but not huggingface.co/model-gateway redirects reliably",
+      "fix": "download mols.tar, boltz2_conf.ckpt, boltz2_aff.ckpt from hf-mirror into /data/kfliao/general_model/boltz_cache and extract mols.tar"
+    },
+    {
+      "error": "sbatch rejected uploaded script: DOS line breaks",
+      "root_cause": "PowerShell Set-Content produced CRLF for a Linux batch script",
+      "fix": "converted remote script with perl -pi -e 's/\\r$//' before sbatch"
+    }
+  ]
+}

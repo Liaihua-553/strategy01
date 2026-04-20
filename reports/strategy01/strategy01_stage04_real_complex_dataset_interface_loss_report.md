@@ -549,3 +549,104 @@ urllib.error.URLError: <urlopen error [Errno 110] Connection timed out>
 - AE deterministic local latent extractor。仍需单独接入 `complexa_ae` 的 atom37/torsion preprocessing。
 
 对“本阶段未完成计划”的解释：训练闭环已经补齐；外部 predictor 数据生产还缺官方缓存文件。下一步最有效动作不是继续改 Strategy01 代码，而是先解决 Boltz 或 AF2 的权重/cache 可用性，然后复用已写好的 Stage04 adapter、metrics extractor 和 tensorize schema 生成真正 predictor-derived dataset。
+
+## 11. 2026-04-20 Boltz-2 cache 修复与 predictor smoke 成功记录
+
+本节是对第 10.3 和 10.4 的补充更新：此前 Boltz predictor smoke 的阻塞已经解决。旧记录中“Boltz/AF2/Protenix 真正生成 predicted complex 未完成”的结论，被本节的 cached Boltz-2 GPU smoke 结果取代。
+
+### 11.1 失败根因与修复方式
+
+此前失败不是 Strategy01 数据接口或 loss 的问题，而是 Boltz-2 首次运行需要下载三类大文件，远程访问官方 HuggingFace / `model-gateway.boltz.bio` 会超时。实际可用的路径是 `hf-mirror.com`。
+
+已在远程完成 cache：
+
+- cache 目录：`/data/kfliao/general_model/boltz_cache`
+- 下载脚本：`/data/kfliao/general_model/third_party/download_boltz2_cache_remote.sh`
+- `mols.tar`：`1855662080` bytes
+- `boltz2_conf.ckpt`：`2286561469` bytes
+- `boltz2_aff.ckpt`：`2062139170` bytes
+- `mols/`：已从 `mols.tar` 解压完成
+
+这一步的科学/工程意义是：Stage04 的 predicted-complex 数据构造不应依赖每个 SLURM job 临时联网下载权重。把 Boltz-2 cache 固定在远程共享路径后，后续每个 `target_state_k + shared_binder_sequence` 预测都可以复用同一套权重和 CCD 数据，减少失败点，也更利于复现实验。
+
+### 11.2 Boltz-2 环境状态
+
+Boltz 代码已经放在独立路径，不污染 `proteina-complexa` 环境：
+
+- 源码路径：`/data/kfliao/general_model/third_party/boltz_cb04aec`
+- 当前版本：`boltz 2.2.1`
+- 独立虚拟环境：`/data/kfliao/general_model/envs/boltz_cb04aec`
+- 命令入口：`/data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz`
+
+`boltz --help` 和 `boltz predict --help` 已通过。`[cuda]` extra 仍未安装成功，原因是当前 pip 源/平台无法解析 `cuequivariance_ops_cu12>=0.5.0`。本次 smoke 使用 `--no_kernels` 跑通，因此当前状态是“Boltz-2 可用但没有 cuEquivariance 加速内核”。这对 Stage04 小规模 predictor smoke 足够；后续若要大规模生成 predicted complex，可以再单独优化 cuEquivariance wheel。
+
+### 11.3 单卡 GPU smoke 命令与结果
+
+本次使用 `sbatch` 申请 1 张 A100，不再使用 `srun --immediate`。实际作业：
+
+- job id：`1897550`
+- 分区：`new`
+- GPU：`--gres=gpu:1`
+- 节点：`gu02`
+- sbatch 脚本：`scripts/strategy01/stage04_boltz2_smoke_cached.sbatch`
+- stdout：`logs/stage04_boltz2_smoke_cached_1897550.out`
+- stderr：`logs/stage04_boltz2_smoke_cached_1897550.err`
+- 输入 YAML：`reports/strategy01/probes/boltz_smoke_inputs/stage04_tiny_ppi.yaml`
+- 输出目录：`reports/strategy01/probes/boltz_smoke_outputs_cached/boltz_results_stage04_tiny_ppi/predictions/stage04_tiny_ppi`
+
+实际输出显示：
+
+```text
+Running structure prediction for 1 input.
+Predicting DataLoader 0: 100%|██████████| 1/1 [00:04<00:00,  0.22it/s]
+Number of failed examples: 0
+```
+
+生成文件包括：
+
+- `stage04_tiny_ppi_model_0.pdb`
+- `confidence_stage04_tiny_ppi_model_0.json`
+- `pae_stage04_tiny_ppi_model_0.npz`
+- `plddt_stage04_tiny_ppi_model_0.npz`
+- `pde_stage04_tiny_ppi_model_0.npz`
+
+这说明 Boltz-2 已经能够在远程 1 张 A100 上完成 protein-protein complex 预测，并产出 Stage04 需要解析的结构与置信度字段。
+
+### 11.4 confidence 字段实测
+
+本次 tiny smoke 的 confidence JSON 关键字段如下：
+
+| 字段 | 数值 |
+|---|---:|
+| `confidence_score` | `0.4778810441493988` |
+| `ptm` | `0.14588366448879242` |
+| `iptm` | `0.027503905817866325` |
+| `protein_iptm` | `0.027503905817866325` |
+| `complex_plddt` | `0.59047532081604` |
+| `complex_iplddt` | `0.59047532081604` |
+| `complex_pde` | `4.136843681335449` |
+| `complex_ipde` | `11.716509819030762` |
+
+注意：这个输入是任意短链 + `msa: empty` 的 smoke，不是生物学优化样本，所以 `iptm` 低是预期现象。它只能证明 predictor 部署和输出 schema 正确，不能作为 binder 质量判断。
+
+### 11.5 本次新增错误与修正日志
+
+错误 1：Boltz 官方 cache 下载失败。
+
+- 表现：运行 `boltz predict` 时尝试下载 `mols.tar`，最终 `urllib.error.URLError: <urlopen error [Errno 110] Connection timed out>`。
+- 根因：远程服务器访问 HuggingFace / Boltz gateway 不稳定，但可以访问 `hf-mirror.com`。
+- 修正：用远程脚本从 `hf-mirror.com/boltz-community/boltz-2/resolve/main/` 下载 `mols.tar`、`boltz2_conf.ckpt`、`boltz2_aff.ckpt`，并解压 `mols.tar`。
+- 修后验证：Boltz-2 GPU smoke 成功生成 PDB、confidence、PAE、pLDDT、PDE。
+
+错误 2：`sbatch` 拒绝 Windows CRLF 脚本。
+
+- 表现：`sbatch: error: Batch script contains DOS line breaks (\r\n)`。
+- 根因：本地 PowerShell 写出的 `.sbatch` 脚本带 CRLF 换行。
+- 修正：远程执行 `perl -pi -e 's/\r$//' scripts/strategy01/stage04_boltz2_smoke_cached.sbatch` 后重新提交。
+- 修后验证：job `1897550` 成功启动并跑完。
+
+### 11.6 对 Stage04 完成判定的更新
+
+现在 Stage04 里原先缺失的外部 predictor smoke 已补齐：Boltz-2 已在远程 1 张 A100 上真实跑通，且输出了 Stage04 dataset builder 需要的核心文件。下一步如果继续扩展，不应再停留在部署层，而是把 Boltz adapter 从 dry-run schema 升级为读取上述输出的真实解析器，并开始批量构造 `target_state_k + shared_binder_sequence -> predicted complex_k` 的小规模验证集。
+
+本次 summary JSON 已写入：`reports/strategy01/probes/stage04_boltz2_cached_smoke_summary.json`。
