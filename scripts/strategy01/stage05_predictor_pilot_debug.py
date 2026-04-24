@@ -46,6 +46,9 @@ def main() -> None:
     parser.add_argument("--run-name", default="stage05_predictor_pilot")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--overfit1-steps", type=int, default=300)
+    parser.add_argument("--overfit4-steps", type=int, default=600)
+    parser.add_argument("--overfit4-samples", type=int, default=4)
+    parser.add_argument("--overfit4-batch-size", type=int, default=2)
     parser.add_argument("--mini-steps", type=int, default=500)
     parser.add_argument("--eval-every", type=int, default=100)
     parser.add_argument("--mini-batch-size", type=int, default=1)
@@ -75,6 +78,19 @@ def main() -> None:
     results["probes"]["synthetic_interface"] = s4.synthetic_interface_probe(model, fm, train_samples, device)
     results["probes"]["grad_route"] = s4.grad_route_probe(model, fm, train_samples, device)
     results["training"]["overfit1"] = s4.train_loop(model, fm, train_samples[:1], device, "overfit1", args.overfit1_steps, 1, args.eval_every, 2e-4, run_dir, fixed_seed=999)
+    results["training"]["overfit4"] = s4.train_loop(
+        model,
+        fm,
+        train_samples[: min(args.overfit4_samples, len(train_samples))],
+        device,
+        "overfit4",
+        args.overfit4_steps,
+        args.overfit4_batch_size,
+        args.eval_every,
+        1e-4,
+        run_dir,
+        fixed_seed=1234,
+    )
     results["training"]["mini"] = s4.train_loop(model, fm, train_samples[: min(16, len(train_samples))], device, "mini", args.mini_steps, args.mini_batch_size, args.eval_every, 1e-4, run_dir, fixed_seed=None)
     if val_samples:
         model.eval()

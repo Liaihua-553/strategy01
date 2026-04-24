@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "exact_count": 24,
+  "hybrid_built_count": 0,
+  "train_count": 8,
+  "val_count": 4,
+  "attrition": {
+    "base_seed_count": 8,
+    "accepted_bases": 2,
+    "rejected_bases": 6,
+    "accepted_variants": 16,
+    "hybrid_built": 0,
+    "failures": [
+      {
+        "sample_id": "1hls_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1hv2_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1i5h_W_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1ibx_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1jgn_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1jh4_A_B",
+        "status": "state0:anchor"
+      }
+    ]
+  },
+  "base_seed_count": 8,
+  "boltz_environment": {
+    "boltz_cli": "/data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz",
+    "cache_dir": "/data/kfliao/general_model/boltz_cache",
+    "boltz2_conf_ckpt": "FOUND",
+    "boltz2_aff_ckpt": "FOUND",
+    "mols_tar_or_dir": "FOUND",
+    "model": "boltz2",
+    "no_kernels": "True"
+  }
+}

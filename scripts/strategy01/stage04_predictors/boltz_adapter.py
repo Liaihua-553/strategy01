@@ -36,6 +36,7 @@ class BoltzRunConfig:
     devices: int = 1
     use_no_kernels: bool = True
     use_potentials: bool = False
+    use_msa_server: bool = False
     write_full_pae: bool = True
     write_full_pde: bool = True
     override: bool = True
@@ -162,6 +163,8 @@ class BoltzAdapter:
             cmd.append("--no_kernels")
         if cfg.use_potentials:
             cmd.append("--use_potentials")
+        if cfg.use_msa_server:
+            cmd.append("--use_msa_server")
         if cfg.write_full_pae:
             cmd.append("--write_full_pae")
         if cfg.write_full_pde:
@@ -292,6 +295,7 @@ class BoltzAdapter:
         template_threshold: float = 2.0,
         template_id: str | None = None,
         msa: str = "empty",
+        contact_constraints: list[tuple[int, int]] | None = None,
         timeout_sec: int | None = None,
         target_len: int | None = None,
         binder_len: int | None = None,
@@ -311,6 +315,7 @@ class BoltzAdapter:
             template_threshold=template_threshold,
             template_id=template_id,
             msa=msa,
+            contact_constraints=contact_constraints,
         )
         cmd = self.build_command(yaml_path, out_dir)
         log_path = out_dir / "logs" / f"{input_stem}.log"

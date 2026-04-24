@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "exact_count": 16,
+  "hybrid_built_count": 0,
+  "train_count": 1,
+  "val_count": 0,
+  "attrition": {
+    "base_seed_count": 1,
+    "accepted_bases": 1,
+    "rejected_bases": 0,
+    "accepted_variants": 2,
+    "hybrid_built": 0,
+    "failures": []
+  },
+  "base_seed_count": 1,
+  "boltz_environment": {
+    "boltz_cli": "/data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz",
+    "cache_dir": "/data/kfliao/general_model/boltz_cache",
+    "boltz2_conf_ckpt": "FOUND",
+    "boltz2_aff_ckpt": "FOUND",
+    "mols_tar_or_dir": "FOUND",
+    "model": "boltz2",
+    "no_kernels": "True"
+  }
+}

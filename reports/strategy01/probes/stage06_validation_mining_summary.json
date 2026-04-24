@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "n_entries_scanned": 320,
+  "n_exact": 24,
+  "n_hybrid_seed": 0,
+  "n_exact_families": 22,
+  "n_motion_small": 9,
+  "n_motion_medium": 8,
+  "n_motion_large": 7,
+  "errors": []
+}

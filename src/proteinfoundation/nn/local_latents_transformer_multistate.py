@@ -167,12 +167,20 @@ class LocalLatentsTransformerMultistate(nn.Module):
         local_latents_states = local_latents_states * state_present_mask
         bb_ca_states = bb_ca_states * state_present_mask
 
+        state_weights = target_bundle["target_state_weights"].float() * target_bundle["state_present_mask"].float()
+        state_weights = state_weights / state_weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
+        state_weight_view = state_weights[:, :, None, None]
+        shared_local_latents = (local_latents_states * state_weight_view).sum(dim=1) * mask[..., None]
+        shared_bb_ca = (bb_ca_states * state_weight_view).sum(dim=1) * mask[..., None]
+
         state_binder_summary = (state_tokens * mask[:, None, :, None]).sum(dim=2) / mask.float().sum(dim=1).clamp_min(1.0)[:, None, None]
         interface_quality_logits = self.interface_quality_head(
             state_binder_summary + target_bundle["state_summary_tokens"]
         ) * target_bundle["state_present_mask"][:, :, None]
 
         return {
+            "bb_ca": {self.output_param["bb_ca"]: shared_bb_ca},
+            "local_latents": {self.output_param["local_latents"]: shared_local_latents},
             "seq_logits_shared": shared_seq_logits,
             "bb_ca_states": bb_ca_states,
             "local_latents_states": local_latents_states,
@@ -185,6 +193,7 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "state_target_mask": target_bundle["state_target_mask"],
                 "target_state_weights": target_bundle["target_state_weights"],
                 "target_state_roles": target_bundle["target_state_roles"],
+                "sampling_state_weights": state_weights,
                 "cross_state_attention_mean": target_bundle["cross_state_attention_mean"],
             },
         }
