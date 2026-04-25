@@ -10,8 +10,13 @@
 set -euo pipefail
 cd /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase
 PY=/home/kfliao/data/anaconda3/envs/proteina-complexa/bin/python
+WORK_DIR=/tmp/kfliao_strategy01_stage07_${SLURM_JOB_ID:-manual}
+rm -rf "$WORK_DIR"
+mkdir -p "$WORK_DIR"
+trap 'echo "Keeping scratch work dir for debugging: $WORK_DIR"' EXIT
 $PY scripts/strategy01/stage06_build_boltz_production_dataset.py \
   --out-dir data/strategy01/stage07_production \
+  --work-dir "$WORK_DIR" \
   --summary reports/strategy01/probes/stage07_data_production_summary.json \
   --max-entries 4000 \
   --max-base-seeds 512 \

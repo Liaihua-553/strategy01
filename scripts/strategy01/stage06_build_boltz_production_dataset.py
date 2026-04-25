@@ -236,9 +236,14 @@ def variant_state_subsets(nstates: int) -> list[list[int]]:
     return [[0]]
 
 
+def _work_dir(args: argparse.Namespace) -> Path:
+    return args.work_dir if getattr(args, "work_dir", None) is not None else args.out_dir
+
+
 def mine_extra_seed_pool(args: argparse.Namespace, excluded_groups: set[str], target_count: int) -> list[dict[str, Any]]:
-    out_dir = args.out_dir / "T_prod_seed_states"
-    cache_dir = args.out_dir / "cache"
+    work_dir = _work_dir(args)
+    out_dir = work_dir / "T_prod_seed_states"
+    cache_dir = work_dir / "cache"
     entries = query_rcsb_nmr_entries(args.max_entries)
     seeds: list[dict[str, Any]] = []
     seen_pairs: set[tuple[str, str]] = set()
@@ -378,7 +383,7 @@ def build_dataset(args: argparse.Namespace) -> dict[str, Any]:
 
     def build_from_seed(seed: dict[str, Any], source_tier: str) -> list[dict[str, Any]]:
         active_state_indices, predicted_paths, per_state_metrics, status = run_boltz_passes(
-            seed, args.out_dir / "boltz_outputs", adapters, args.max_constraints, args.timeout_sec, args.min_states
+            seed, _work_dir(args) / "boltz_outputs", adapters, args.max_constraints, args.timeout_sec, args.min_states
         )
         if status not in {"passed", "partial_pass"}:
             attrition["failures"].append({"sample_id": seed["sample_id"], "status": status})
@@ -432,6 +437,8 @@ def build_dataset(args: argparse.Namespace) -> dict[str, Any]:
         "val_count": len(val_samples),
         "attrition": attrition,
         "base_seed_count": len(base_seeds),
+        "work_dir": str(_work_dir(args)),
+        "out_dir": str(args.out_dir),
         "boltz_environment": adapters["scout"].environment_status(),
     }
     args.out_dir.mkdir(parents=True, exist_ok=True)
@@ -452,6 +459,7 @@ def main() -> None:
     parser.add_argument("--hybrid-seed-manifest", type=Path, default=DEFAULT_HYBRID_SEEDS)
     parser.add_argument("--seed-manifest", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--work-dir", type=Path, default=None)
     parser.add_argument("--summary", type=Path, default=REPO_ROOT / "reports" / "strategy01" / "probes" / "stage06_production_summary.json")
     parser.add_argument("--max-entries", type=int, default=800)
     parser.add_argument("--max-base-seeds", type=int, default=96)
