@@ -151,6 +151,96 @@ def _sequence_loss(nn_out: dict, batch: dict) -> Tensor:
     return (ce * mask.float()).sum(dim=1) / mask.float().sum(dim=1).clamp_min(1.0)
 
 
+def _binder_anchor_weights(batch: dict, state_mask: Tensor, dtype: torch.dtype) -> Tensor:
+    """Return per-state/per-binder residue weights emphasizing persistent interface anchors."""
+    device = state_mask.device
+    anchors = torch.zeros_like(state_mask, dtype=dtype)
+    contact_labels = batch.get("interface_contact_labels")
+    if contact_labels is not None:
+        labels = contact_labels.to(device=device, dtype=dtype)
+        anchors = labels.max(dim=2).values
+        label_mask = batch.get("interface_label_mask")
+        if label_mask is not None:
+            anchors = anchors * label_mask.to(device=device).bool().any(dim=2).float()
+    return torch.where(state_mask.bool(), 1.0 + anchors, torch.zeros_like(anchors, dtype=dtype))
+
+
+def _state_sequence_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
+    """Stage07 sequence-consensus losses.
+
+    Each state branch predicts its own sequence preference.  We supervise those
+    preferences against the same shared binder sequence and softly align them
+    with the exported shared sequence, with extra weight on interface anchors.
+    """
+    shared_logits = nn_out.get("seq_logits_shared")
+    state_logits = nn_out.get("state_seq_logits")
+    if shared_logits is None or state_logits is None:
+        device = batch["binder_seq_shared"].device
+        b, k = state_present.shape
+        zeros_sample = torch.zeros(b, device=device, dtype=torch.float32)
+        zeros_state = torch.zeros(b, k, device=device, dtype=torch.float32)
+        return {
+            "state_seq_state": zeros_state,
+            "state_seq_sample": zeros_sample,
+            "seq_consensus_sample": zeros_sample,
+            "anchor_disagreement_sample": zeros_sample,
+        }
+
+    device = state_logits.device
+    dtype = state_logits.dtype
+    b, k, n = state_logits.shape[:3]
+    target = batch["binder_seq_shared"].to(device=device).long()
+    target_states = target[:, None, :].expand(b, k, n)
+    binder_mask = batch.get("binder_seq_mask", batch["mask"]).to(device=device).bool()
+    valid_mask = state_mask.to(device=device).bool() & binder_mask[:, None, :]
+    anchor_weights = _binder_anchor_weights(batch, valid_mask, dtype)
+
+    ce = F.cross_entropy(
+        state_logits.reshape(-1, state_logits.shape[-1]).float(),
+        target_states.reshape(-1),
+        reduction="none",
+    ).reshape(b, k, n).to(dtype)
+    state_seq_state = (ce * anchor_weights).sum(dim=-1) / anchor_weights.sum(dim=-1).clamp_min(1.0)
+    state_seq_state = torch.where(state_present.to(device).bool(), state_seq_state, torch.zeros_like(state_seq_state))
+
+    shared_logp = F.log_softmax(shared_logits.float(), dim=-1)
+    shared_prob = shared_logp.exp()
+    state_logp = F.log_softmax(state_logits.float(), dim=-1)
+    state_prob = state_logp.exp()
+    # Symmetric, stop-gradient KL keeps the consensus stable while still
+    # sending gradients to both the shared head and state sequence heads.
+    kl_state_to_shared = F.kl_div(state_logp, shared_prob[:, None].detach(), reduction="none").sum(dim=-1)
+    kl_shared_to_state = F.kl_div(shared_logp[:, None].expand_as(state_logp), state_prob.detach(), reduction="none").sum(dim=-1)
+    consensus_raw = 0.5 * (kl_state_to_shared + kl_shared_to_state).to(dtype)
+    seq_consensus_state = (consensus_raw * anchor_weights).sum(dim=-1) / anchor_weights.sum(dim=-1).clamp_min(1.0)
+    seq_consensus_state = torch.where(state_present.to(device).bool(), seq_consensus_state, torch.zeros_like(seq_consensus_state))
+
+    persistent = (anchor_weights > 1.0) & valid_mask
+    valid_state = state_present.to(device).bool()
+    denom = valid_state.float().sum(dim=1).clamp_min(1.0)
+    mean_prob = (state_prob.to(dtype) * valid_state[:, :, None, None].float()).sum(dim=1) / denom[:, None, None]
+    disagreement = ((state_prob.to(dtype) - mean_prob[:, None]) ** 2).sum(dim=-1)
+    disagreement = disagreement * persistent.float()
+    anchor_disagreement_sample = disagreement.sum(dim=(1, 2)) / persistent.float().sum(dim=(1, 2)).clamp_min(1.0)
+
+    weights = _normalize_state_weights(batch, b, k, device, dtype)
+    cvar_topk = _cfg_get(cfg, "state_seq_cvar_topk", _cfg_get(cfg, "cvar_topk", 2))
+    if str(cvar_topk).lower() in {"auto", "none"}:
+        cvar_topk = None
+    else:
+        cvar_topk = int(cvar_topk)
+    state_seq_mean = torch.sum(state_seq_state * weights, dim=1)
+    state_seq_cvar = _masked_topk_mean(state_seq_state, state_present.to(device).bool(), cvar_topk)
+    state_seq_sample = 0.5 * state_seq_mean + 0.5 * state_seq_cvar
+    seq_consensus_sample = torch.sum(seq_consensus_state * weights, dim=1)
+    return {
+        "state_seq_state": state_seq_state,
+        "state_seq_sample": state_seq_sample,
+        "seq_consensus_sample": seq_consensus_sample,
+        "anchor_disagreement_sample": anchor_disagreement_sample,
+    }
+
+
 def _interface_enabled(cfg: Any) -> bool:
     if bool(_cfg_get(cfg, "use_interface_loss", False)):
         return True
@@ -182,7 +272,13 @@ def _target_ca_and_mask(batch: dict, device: torch.device) -> tuple[Tensor, Tens
 def _pairwise_target_binder_dist(target_ca: Tensor, binder_ca: Tensor) -> Tensor:
     b, k, nt = target_ca.shape[:3]
     nb = binder_ca.shape[2]
-    d = torch.cdist(target_ca.reshape(b * k, nt, 3), binder_ca.reshape(b * k, nb, 3))
+    target_flat = target_ca.reshape(b * k, nt, 3)
+    binder_flat = binder_ca.reshape(b * k, nb, 3)
+    diff = target_flat[:, :, None, :] - binder_flat[:, None, :, :]
+    # Avoid cdist/zero-distance gradient singularities during aggressive
+    # overfit probes.  The epsilon is tiny in nm-scale coordinates but keeps
+    # d/dx sqrt(x) finite at exact overlaps.
+    d = torch.sqrt(torch.sum(diff * diff, dim=-1).clamp_min(1e-8))
     return d.reshape(b, k, nt, nb)
 
 
@@ -195,6 +291,10 @@ def _compute_interface_losses(cfg: Any, batch: dict, nn_out: dict, state_present
     b, k, nb = pred_bb.shape[:3]
     target_ca, target_ca_mask = _target_ca_and_mask(batch, device)
     dists = _pairwise_target_binder_dist(target_ca.to(dtype=dtype), pred_bb)
+    # Stage07 robustness: short overfit runs can briefly produce non-finite
+    # coordinates.  Convert them before BCE/contact objectives so CUDA kernels
+    # fail at the real source only if the model remains unstable after clipping.
+    dists = torch.nan_to_num(dists, nan=1.0e6, posinf=1.0e6, neginf=0.0)
     pair_mask = target_ca_mask[:, :, :, None] & state_mask[:, :, None, :].to(device).bool()
     label_mask = batch.get("interface_label_mask")
     if label_mask is not None:
@@ -255,9 +355,11 @@ def _compute_interface_losses(cfg: Any, batch: dict, nn_out: dict, state_present
         persistent = (labels * valid_state[:, :, None, None].float()).sum(dim=1) / state_denom[:, None, None]
         persistent = (persistent >= float(_cfg_get(cfg, "anchor_persistence_threshold", 0.5))).float()
         pred_prob = torch.sigmoid((contact_cutoff - dists) / max(contact_temperature, 1e-6))
+        pred_prob = torch.nan_to_num(pred_prob, nan=0.0, posinf=1.0, neginf=0.0).clamp(1e-6, 1 - 1e-6)
         pred_mean = (pred_prob * valid_state[:, :, None, None].float()).sum(dim=1) / state_denom[:, None, None]
         anchor_mask = pair_mask.any(dim=1)
-        anchor_raw = F.binary_cross_entropy(pred_mean.float().clamp(1e-6, 1 - 1e-6), persistent.float(), reduction="none").to(dtype)
+        pred_mean = torch.nan_to_num(pred_mean, nan=0.0, posinf=1.0, neginf=0.0).clamp(1e-6, 1 - 1e-6)
+        anchor_raw = F.binary_cross_entropy(pred_mean.float(), persistent.float(), reduction="none").to(dtype)
         l_anchor = (anchor_raw * anchor_mask.float()).sum(dim=(-2, -1)) / anchor_mask.float().sum(dim=(-2, -1)).clamp_min(1.0)
 
     l_self = torch.zeros(b, device=device, dtype=dtype)
@@ -344,6 +446,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_cvar = _masked_topk_mean(l_state, state_present, cvar_topk)
     l_var = _weighted_variance(l_state, weights)
     l_seq = _sequence_loss(nn_out, batch)
+    sequence_consensus = _state_sequence_losses(cfg, nn_out, batch, state_present, state_mask)
     alpha = float(_cfg_get(cfg, "alpha_mean", 0.5))
     beta = float(_cfg_get(cfg, "beta_cvar", 0.4))
     gamma = float(_cfg_get(cfg, "gamma_var", 0.1))
@@ -355,10 +458,16 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         + lambda_struct * l_struct
         + float(_cfg_get(cfg, "lambda_anchor_persistence", 0.0)) * l_anchor
         + float(_cfg_get(cfg, "lambda_self_geometry", 0.0)) * l_self
+        + float(_cfg_get(cfg, "lambda_state_seq", 0.15)) * sequence_consensus["state_seq_sample"]
+        + float(_cfg_get(cfg, "lambda_seq_consensus", 0.05)) * sequence_consensus["seq_consensus_sample"]
+        + float(_cfg_get(cfg, "lambda_anchor_disagreement", 0.03)) * sequence_consensus["anchor_disagreement_sample"]
     )
     losses = {
         "multistate_total": l_total,
         "multistate_seq_justlog": l_seq,
+        "multistate_state_seq_justlog": sequence_consensus["state_seq_sample"],
+        "multistate_seq_consensus_justlog": sequence_consensus["seq_consensus_sample"],
+        "multistate_anchor_disagreement_justlog": sequence_consensus["anchor_disagreement_sample"],
         "multistate_struct_justlog": l_struct,
         "multistate_fm_mean_justlog": torch.sum(l_fm_state * weights, dim=1),
         "multistate_contact_justlog": torch.sum(l_contact_state * weights, dim=1),
@@ -377,4 +486,5 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         losses[f"multistate_state_{state_idx}_contact_justlog"] = l_contact_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_distance_justlog"] = l_distance_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_clash_justlog"] = l_clash_state[:, state_idx]
+        losses[f"multistate_state_{state_idx}_seq_justlog"] = sequence_consensus["state_seq_state"][:, state_idx]
     return losses

@@ -193,6 +193,8 @@ def set_trainable(model: torch.nn.Module, phase: str) -> dict[str, Any]:
         "target2binder_cross_attention_layer",
         "state_condition_projector",
         "shared_seq_head",
+        "state_seq_head",
+        "shared_seq_consensus_gate",
         "state_token_norm",
         "interface_quality_head",
     ]
@@ -200,6 +202,13 @@ def set_trainable(model: torch.nn.Module, phase: str) -> dict[str, Any]:
         for p in model.parameters():
             p.requires_grad = True
         prefixes = ["ALL_PARAMETERS_FOR_STAGE04_OVERFIT"]
+    elif phase == "seq_consensus":
+        prefixes = [
+            "shared_seq_head",
+            "state_seq_condition_projector",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+        ]
     elif phase == "mini":
         prefixes += ["local_latents_linear", "ca_linear"]
         prefixes += [f"transformer_layers.{i}" for i in range(10, 14)]
@@ -269,6 +278,9 @@ def grad_route_probe(model, fm, samples, device):
         "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
         "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.weight",
         "shared_seq_head.1.weight",
+        "state_seq_head.1.weight",
+        "state_seq_condition_projector.1.weight",
+        "shared_seq_consensus_gate.1.weight",
         "ca_linear.1.weight",
         "local_latents_linear.1.weight",
         "state_condition_projector.1.weight",
@@ -288,9 +300,9 @@ def grad_route_probe(model, fm, samples, device):
     }
 
 
-def train_loop(model, fm, samples, device, phase, steps, batch_size, eval_every, lr, run_dir, fixed_seed=None):
+def train_loop(model, fm, samples, device, phase, steps, batch_size, eval_every, lr, run_dir, fixed_seed=None, trainable_phase=None):
     model.train()
-    trainable = set_trainable(model, "overfit" if phase == "overfit1" else "mini")
+    trainable = set_trainable(model, trainable_phase or ("overfit" if phase == "overfit1" else "mini"))
     opt = make_optimizer(model, lr)
     fixed_eval = collate_samples(samples[: min(batch_size, len(samples))], device)
     with torch.no_grad():
@@ -306,6 +318,14 @@ def train_loop(model, fm, samples, device, phase, steps, batch_size, eval_every,
         if not torch.isfinite(total):
             raise FloatingPointError(f"non-finite loss at step {step}: {total}")
         total.backward()
+        bad_grad_names = []
+        for name, p in model.named_parameters():
+            if p.requires_grad and p.grad is not None and not torch.isfinite(p.grad).all().item():
+                bad_grad_names.append(name)
+                if len(bad_grad_names) >= 10:
+                    break
+        if bad_grad_names:
+            raise FloatingPointError(f"non-finite gradients at step {step}: {bad_grad_names}")
         torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 1.0)
         opt.step()
         if step == 1 or step % eval_every == 0 or step == steps:

@@ -1,0 +1,255 @@
+{
+  "run_name": "stage07_cpu_probe",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/stage06_predictor_pilot_samples_ae_latents.pt",
+  "device": "cpu",
+  "train_count": 1,
+  "val_count": 0,
+  "manifest_summary": {
+    "status": "passed",
+    "exact_count": 16,
+    "hybrid_built_count": 0,
+    "train_count": 1,
+    "val_count": 0,
+    "attrition": {
+      "base_seed_count": 1,
+      "accepted_bases": 1,
+      "rejected_bases": 0,
+      "accepted_variants": 2,
+      "hybrid_built": 0,
+      "failures": []
+    },
+    "base_seed_count": 1,
+    "boltz_environment": {
+      "boltz_cli": "/data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz",
+      "cache_dir": "/data/kfliao/general_model/boltz_cache",
+      "boltz2_conf_ckpt": "FOUND",
+      "boltz2_aff_ckpt": "FOUND",
+      "mols_tar_or_dir": "FOUND",
+      "model": "boltz2",
+      "no_kernels": "True"
+    }
+  },
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 572,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "probes": {
+    "loss_unit": {
+      "status": "passed",
+      "total": 38.082855224609375,
+      "losses": {
+        "multistate_total": 38.082855224609375,
+        "multistate_seq_justlog": 3.2435081005096436,
+        "multistate_state_seq_justlog": 3.0598011016845703,
+        "multistate_seq_consensus_justlog": 0.13340076804161072,
+        "multistate_anchor_disagreement_justlog": 3.46204203083289e-08,
+        "multistate_struct_justlog": 35.96812438964844,
+        "multistate_fm_mean_justlog": 32.959476470947266,
+        "multistate_contact_justlog": 0.44965869188308716,
+        "multistate_distance_justlog": 1.820756196975708,
+        "multistate_clash_justlog": 0.005553080700337887,
+        "multistate_quality_proxy_justlog": 0.07225899398326874,
+        "multistate_anchor_persistence_justlog": 0.5467079281806946,
+        "multistate_self_geometry_justlog": 2.0622884733256797e-08,
+        "multistate_mean_justlog": 33.23320770263672,
+        "multistate_cvar_justlog": 39.08536148071289,
+        "multistate_var_justlog": 34.247703552246094,
+        "multistate_state_0_justlog": 39.08536148071289,
+        "multistate_state_0_fm_justlog": 38.797725677490234,
+        "multistate_state_0_contact_justlog": 0.3567659258842468,
+        "multistate_state_0_distance_justlog": 2.1430745124816895,
+        "multistate_state_0_clash_justlog": 0.004557234700769186,
+        "multistate_state_0_seq_justlog": 3.0419816970825195,
+        "multistate_state_1_justlog": 27.381053924560547,
+        "multistate_state_1_fm_justlog": 27.12122917175293,
+        "multistate_state_1_contact_justlog": 0.5425514578819275,
+        "multistate_state_1_distance_justlog": 1.4984378814697266,
+        "multistate_state_1_clash_justlog": 0.006548927165567875,
+        "multistate_state_1_seq_justlog": 3.0657410621643066
+      },
+      "output_shapes": {
+        "seq_logits_shared": [
+          1,
+          14,
+          20
+        ],
+        "seq_logits_base_shared": [
+          1,
+          14,
+          20
+        ],
+        "state_seq_logits": [
+          1,
+          2,
+          14,
+          20
+        ],
+        "bb_ca_states": [
+          1,
+          2,
+          14,
+          3
+        ],
+        "local_latents_states": [
+          1,
+          2,
+          14,
+          8
+        ],
+        "interface_quality_logits": [
+          1,
+          2,
+          5
+        ]
+      },
+      "batch_shapes": {
+        "x_target_states": [
+          1,
+          2,
+          58,
+          37,
+          3
+        ],
+        "interface_contact_labels": [
+          1,
+          2,
+          58,
+          14
+        ],
+        "interface_quality_labels": [
+          1,
+          2,
+          5
+        ]
+      },
+      "nan_detected": false
+    },
+    "sequence_consensus": {
+      "status": "passed",
+      "missing_outputs": [],
+      "shapes": {
+        "seq_logits_shared": [
+          1,
+          14,
+          20
+        ],
+        "state_seq_logits": [
+          1,
+          2,
+          14,
+          20
+        ],
+        "seq_logits_base_shared": [
+          1,
+          14,
+          20
+        ]
+      },
+      "grad_norms": {
+        "shared_seq_head.1.weight": 5.3541107177734375,
+        "state_seq_head.1.weight": 4.18707275390625,
+        "shared_seq_consensus_gate.1.weight": 0.6727374792098999,
+        "state_condition_projector.1.weight": 22.64665985107422
+      },
+      "loss_subset": {
+        "multistate_seq_justlog": 3.4743072986602783,
+        "multistate_state_seq_justlog": 3.156095504760742,
+        "multistate_seq_consensus_justlog": 0.12475347518920898,
+        "multistate_anchor_disagreement_justlog": 3.055619757219574e-08,
+        "multistate_state_0_seq_justlog": 3.156431198120117,
+        "multistate_state_1_seq_justlog": 3.155087947845459
+      }
+    },
+    "grad_route": {
+      "status": "passed",
+      "loss": 59.96674728393555,
+      "trainable_info": {
+        "phase": "overfit",
+        "trainable_params": 337417971,
+        "total_params": 337417971,
+        "prefixes": [
+          "ALL_PARAMETERS_FOR_STAGE04_OVERFIT"
+        ]
+      },
+      "grad_norms": {
+        "ensemble_target_encoder.cross_state_fusion.q_proj.weight": 0.0005141095607541502,
+        "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.weight": 0.08146824687719345,
+        "shared_seq_head.1.weight": 5.772507190704346,
+        "state_seq_head.1.weight": 4.62366247177124,
+        "shared_seq_consensus_gate.1.weight": 0.8078575730323792,
+        "ca_linear.1.weight": 39.77729415893555,
+        "local_latents_linear.1.weight": 40.80281066894531,
+        "state_condition_projector.1.weight": 25.19130516052246,
+        "interface_quality_head.1.weight": 0.04550312086939812
+      },
+      "all_required_grad_nonzero": true
+    }
+  },
+  "training": {},
+  "batch_selection": {
+    "selected_batch_size": 4,
+    "attempts": [
+      {
+        "batch_size": 4,
+        "ok": true,
+        "error": null,
+        "cuda_max_mem_gb": 0.0
+      }
+    ]
+  }
+}

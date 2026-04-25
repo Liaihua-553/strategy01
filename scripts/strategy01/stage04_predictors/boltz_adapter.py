@@ -11,6 +11,7 @@ import json
 import os
 import shutil
 import subprocess
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -85,7 +86,7 @@ class BoltzAdapter:
         force_template: bool = False,
         template_threshold: float = 2.0,
         template_id: str | None = None,
-        msa: str = "empty",
+        msa: str | dict[str, str | Path] = "empty",
         contact_constraints: list[tuple[int, int]] | None = None,
     ) -> None:
         """Write a minimal Boltz YAML for target chain A + binder chain B.
@@ -98,13 +99,20 @@ class BoltzAdapter:
         binder_sequence = self._safe_sequence(binder_sequence)
         yaml_path.parent.mkdir(parents=True, exist_ok=True)
         lines: list[str] = ["version: 1", "sequences:"]
+        def msa_for_chain(chain_id: str) -> str:
+            if isinstance(msa, dict):
+                value = msa.get(chain_id, "empty")
+            else:
+                value = msa
+            return str(value)
+
         for chain_id, seq in [("A", target_sequence), ("B", binder_sequence)]:
             lines.extend(
                 [
                     "  - protein:",
                     f"      id: {chain_id}",
                     f"      sequence: {seq}",
-                    f"      msa: {msa}",
+                    f"      msa: {msa_for_chain(chain_id)}",
                 ]
             )
         if target_template_pdb is not None:
@@ -128,6 +136,27 @@ class BoltzAdapter:
                     ]
                 )
         yaml_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    @staticmethod
+    def sequence_hash(sequence: str) -> str:
+        clean = BoltzAdapter._safe_sequence(sequence)
+        return hashlib.sha256(clean.encode("utf-8")).hexdigest()[:20]
+
+    @staticmethod
+    def cache_msa_csv(msa_csv: Path, sequence: str, cache_dir: Path, chain_label: str) -> Path:
+        """Copy a Boltz-generated per-chain MSA CSV into a reusable sequence-hash cache."""
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        key = BoltzAdapter.sequence_hash(sequence)
+        out = cache_dir / f"{chain_label}_{key}.csv"
+        if not out.exists():
+            shutil.copy2(msa_csv, out)
+        return out
+
+    @staticmethod
+    def cached_msa_csv(sequence: str, cache_dir: Path, chain_label: str) -> Path | None:
+        key = BoltzAdapter.sequence_hash(sequence)
+        candidate = cache_dir / f"{chain_label}_{key}.csv"
+        return candidate if candidate.exists() else None
 
     def build_command(self, yaml_path: Path, out_dir: Path) -> list[str]:
         cfg = self.config

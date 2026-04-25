@@ -1,0 +1,265 @@
+{
+  "boltz_outputs": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs",
+  "log_count_scanned": 18,
+  "server_enabled_logs": 9,
+  "error_logs": 18,
+  "msa_cache_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache",
+  "msa_csv_indexed": 18,
+  "logs_sample": [
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_anchor_state00_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_anchor_state01_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_anchor_state02_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 2,
+      "line_count": 137,
+      "max_logged_seconds": 7.33,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_scout_state00_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_scout_state01_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_scout_state02_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_second_state00_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_second_state01_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/logs/1a0n_B_A_second_state02_boltz.log",
+      "server_enabled": true,
+      "colabfold_hits": 1,
+      "line_count": 113,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1ai0_L_K/logs/1ai0_L_K_anchor_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 62,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1ai0_L_K/logs/1ai0_L_K_scout_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 62,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1ai0_L_K/logs/1ai0_L_K_second_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 62,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1f96_A_C/logs/1f96_A_C_anchor_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 111,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1f96_A_C/logs/1f96_A_C_scout_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 111,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1f96_A_C/logs/1f96_A_C_second_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 111,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1fmh_A_B/logs/1fmh_A_B_anchor_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 188,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1fmh_A_B/logs/1fmh_A_B_scout_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 186,
+      "max_logged_seconds": null,
+      "has_error": true
+    },
+    {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1fmh_A_B/logs/1fmh_A_B_second_state00_boltz.log",
+      "server_enabled": false,
+      "colabfold_hits": 0,
+      "line_count": 188,
+      "max_logged_seconds": null,
+      "has_error": true
+    }
+  ],
+  "msa_sample": [
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state00_boltz/msa/1a0n_B_A_scout_state00_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state00_boltz/msa/1a0n_B_A_scout_state00_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state00_boltz/msa/1a0n_B_A_second_state00_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state00_boltz/msa/1a0n_B_A_second_state00_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state00_boltz/msa/1a0n_B_A_anchor_state00_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state00_boltz/msa/1a0n_B_A_anchor_state00_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state01_boltz/msa/1a0n_B_A_scout_state01_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state01_boltz/msa/1a0n_B_A_scout_state01_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state01_boltz/msa/1a0n_B_A_second_state01_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state01_boltz/msa/1a0n_B_A_second_state01_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state01_boltz/msa/1a0n_B_A_anchor_state01_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state01_boltz/msa/1a0n_B_A_anchor_state01_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state02_boltz/msa/1a0n_B_A_scout_state02_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_scout_state02_boltz/msa/1a0n_B_A_scout_state02_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state02_boltz/msa/1a0n_B_A_second_state02_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_second_state02_boltz/msa/1a0n_B_A_second_state02_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state02_boltz/msa/1a0n_B_A_anchor_state02_boltz_0.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_a37ff808be95bc58b59d.csv",
+      "sequence_hash": "a37ff808be95bc58b59d",
+      "sequence_len": 58
+    },
+    {
+      "source": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_production/boltz_outputs/1a0n_B_A/boltz_results_1a0n_B_A_anchor_state02_boltz/msa/1a0n_B_A_anchor_state02_boltz_1.csv",
+      "cache": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_cache/chain_9894d49d38a8b0b12804.csv",
+      "sequence_hash": "9894d49d38a8b0b12804",
+      "sequence_len": 14
+    }
+  ],
+  "local_msa_fallback_note": "If server_enabled_logs is low or runtime is dominated by MSA, run colabfold_search/MMseqs2 on CPU nodes and pass cached CSV/A3M paths into Boltz YAML per chain."
+}
