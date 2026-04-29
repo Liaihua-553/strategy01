@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "dataset": "data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples_materialized.pt",
+  "output": "data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples_materialized_ae_latents.pt",
+  "ae_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+  "device": "cuda",
+  "num_samples_total": 138,
+  "processed_states": 304,
+  "elapsed_sec": 14.834571123123169
+}

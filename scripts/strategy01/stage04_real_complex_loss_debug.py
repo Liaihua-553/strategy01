@@ -209,6 +209,58 @@ def set_trainable(model: torch.nn.Module, phase: str) -> dict[str, Any]:
             "state_seq_head",
             "shared_seq_consensus_gate",
         ]
+    elif phase == "mini_no_encoder":
+        # Stage07 stability mode: keep the newly added ensemble target encoder
+        # frozen because K=2 padded-state batches currently produce non-finite
+        # encoder gradients, while still allowing binder-side state-specific
+        # structure heads and target-to-binder integration to learn.
+        prefixes = [
+            "target2binder_cross_attention_layer",
+            "state_condition_projector",
+            "state_seq_condition_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_token_norm",
+            "interface_quality_head",
+            "local_latents_linear",
+            "ca_linear",
+        ]
+        prefixes += [f"transformer_layers.{i}" for i in range(10, 14)]
+    elif phase == "mini_heads_only":
+        # More conservative Stage07 stability mode: freeze both ensemble target
+        # encoder and target-to-binder cross-attention, which currently show
+        # non-finite gradients on variable-K padded batches. This still tests
+        # whether shared/state sequence heads and state-specific structure heads
+        # can learn from real predictor-derived multi-state supervision.
+        prefixes = [
+            "state_condition_projector",
+            "state_seq_condition_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_token_norm",
+            "interface_quality_head",
+            "local_latents_linear",
+            "ca_linear",
+        ]
+        prefixes += [f"transformer_layers.{i}" for i in range(10, 14)]
+    elif phase == "output_heads_only":
+        # Most stable Stage07 pilot mode: freeze all old attention/trunk blocks
+        # and train only newly added state conditioning plus output heads. This
+        # isolates the new multi-state output/loss contract from legacy trunk
+        # numerical issues on variable-K batches.
+        prefixes = [
+            "state_condition_projector",
+            "state_seq_condition_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_token_norm",
+            "interface_quality_head",
+            "local_latents_linear",
+            "ca_linear",
+        ]
     elif phase == "mini":
         prefixes += ["local_latents_linear", "ca_linear"]
         prefixes += [f"transformer_layers.{i}" for i in range(10, 14)]

@@ -1,0 +1,214 @@
+{
+  "input": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_filtered.json",
+  "output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_ranked.json",
+  "top_output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_ranked_top60.json",
+  "n_input": 152,
+  "top_n": 60,
+  "top_motion_bins": {
+    "large": 8,
+    "medium": 25,
+    "small": 27
+  },
+  "top_examples": [
+    {
+      "rank": 1,
+      "sample_id": "6es6_A_B",
+      "score": 10.956383765816108,
+      "motion": 5.375265614108964,
+      "target_len": 45,
+      "binder_len": 50,
+      "contact_persistence_ratio": 1.0,
+      "pair_persistent_contacts": 222.0
+    },
+    {
+      "rank": 2,
+      "sample_id": "2n1t_B_A",
+      "score": 10.287045271391229,
+      "motion": 3.6527357156429106,
+      "target_len": 72,
+      "binder_len": 69,
+      "contact_persistence_ratio": 0.83,
+      "pair_persistent_contacts": 83.0
+    },
+    {
+      "rank": 3,
+      "sample_id": "1z00_B_A",
+      "score": 10.232766244453481,
+      "motion": 3.869684489415002,
+      "target_len": 84,
+      "binder_len": 84,
+      "contact_persistence_ratio": 0.8787878787878788,
+      "pair_persistent_contacts": 87.0
+    },
+    {
+      "rank": 4,
+      "sample_id": "5mhd_B_A",
+      "score": 10.172074640505288,
+      "motion": 3.3879514554544796,
+      "target_len": 31,
+      "binder_len": 22,
+      "contact_persistence_ratio": 0.927536231884058,
+      "pair_persistent_contacts": 64.0
+    },
+    {
+      "rank": 5,
+      "sample_id": "6ivu_B_A",
+      "score": 10.048482535285354,
+      "motion": 4.569033638509406,
+      "target_len": 118,
+      "binder_len": 53,
+      "contact_persistence_ratio": 0.9259259259259259,
+      "pair_persistent_contacts": 50.0
+    },
+    {
+      "rank": 6,
+      "sample_id": "2ncz_A_B",
+      "score": 9.983497780877817,
+      "motion": 3.0509673915163997,
+      "target_len": 83,
+      "binder_len": 12,
+      "contact_persistence_ratio": 0.9615384615384616,
+      "pair_persistent_contacts": 50.0
+    },
+    {
+      "rank": 7,
+      "sample_id": "8her_B_A",
+      "score": 9.926038419328107,
+      "motion": 2.021322938495169,
+      "target_len": 166,
+      "binder_len": 10,
+      "contact_persistence_ratio": 0.92,
+      "pair_persistent_contacts": 92.0
+    },
+    {
+      "rank": 8,
+      "sample_id": "2mnj_B_A",
+      "score": 9.904208144498583,
+      "motion": 3.51570257591178,
+      "target_len": 88,
+      "binder_len": 23,
+      "contact_persistence_ratio": 0.8805970149253731,
+      "pair_persistent_contacts": 59.0
+    },
+    {
+      "rank": 9,
+      "sample_id": "2n3k_A_B",
+      "score": 9.878109224359928,
+      "motion": 3.1028085582850724,
+      "target_len": 79,
+      "binder_len": 17,
+      "contact_persistence_ratio": 0.9361702127659575,
+      "pair_persistent_contacts": 44.0
+    },
+    {
+      "rank": 10,
+      "sample_id": "1u2u_A_B",
+      "score": 9.877045255938505,
+      "motion": 3.8174383994156775,
+      "target_len": 30,
+      "binder_len": 30,
+      "contact_persistence_ratio": 0.8356164383561644,
+      "pair_persistent_contacts": 61.0
+    },
+    {
+      "rank": 11,
+      "sample_id": "1zl8_B_A",
+      "score": 9.842033966553089,
+      "motion": 3.3311809606493306,
+      "target_len": 54,
+      "binder_len": 53,
+      "contact_persistence_ratio": 0.8333333333333334,
+      "pair_persistent_contacts": 55.0
+    },
+    {
+      "rank": 12,
+      "sample_id": "2g3q_B_A",
+      "score": 9.7749433713464,
+      "motion": 2.2278673009239838,
+      "target_len": 76,
+      "binder_len": 43,
+      "contact_persistence_ratio": 0.9397590361445783,
+      "pair_persistent_contacts": 78.0
+    },
+    {
+      "rank": 13,
+      "sample_id": "2jm6_B_A",
+      "score": 9.738321037473236,
+      "motion": 3.221734331837165,
+      "target_len": 162,
+      "binder_len": 27,
+      "contact_persistence_ratio": 0.8055555555555556,
+      "pair_persistent_contacts": 58.0
+    },
+    {
+      "rank": 14,
+      "sample_id": "8u9o_B_A",
+      "score": 9.702258725181194,
+      "motion": 1.2111378174688567,
+      "target_len": 155,
+      "binder_len": 12,
+      "contact_persistence_ratio": 0.8876404494382022,
+      "pair_persistent_contacts": 79.0
+    },
+    {
+      "rank": 15,
+      "sample_id": "8hep_B_A",
+      "score": 9.689663566813548,
+      "motion": 2.4081068690510983,
+      "target_len": 166,
+      "binder_len": 10,
+      "contact_persistence_ratio": 0.8640776699029126,
+      "pair_persistent_contacts": 89.0
+    },
+    {
+      "rank": 16,
+      "sample_id": "6g04_A_B",
+      "score": 9.680250733516665,
+      "motion": 7.6385713860978495,
+      "target_len": 156,
+      "binder_len": 26,
+      "contact_persistence_ratio": 0.9714285714285714,
+      "pair_persistent_contacts": 68.0
+    },
+    {
+      "rank": 17,
+      "sample_id": "2lkm_B_A",
+      "score": 9.67604459938328,
+      "motion": 1.862611448202964,
+      "target_len": 172,
+      "binder_len": 42,
+      "contact_persistence_ratio": 0.8333333333333334,
+      "pair_persistent_contacts": 70.0
+    },
+    {
+      "rank": 18,
+      "sample_id": "6gd5_A_B",
+      "score": 9.628348926701083,
+      "motion": 3.709798053572539,
+      "target_len": 117,
+      "binder_len": 21,
+      "contact_persistence_ratio": 0.8260869565217391,
+      "pair_persistent_contacts": 57.0
+    },
+    {
+      "rank": 19,
+      "sample_id": "8fg1_A_B",
+      "score": 9.612886781609463,
+      "motion": 2.643083307497205,
+      "target_len": 243,
+      "binder_len": 29,
+      "contact_persistence_ratio": 0.85,
+      "pair_persistent_contacts": 102.0
+    },
+    {
+      "rank": 20,
+      "sample_id": "2k9u_A_B",
+      "score": 9.597653202082146,
+      "motion": 2.5068495830290196,
+      "target_len": 119,
+      "binder_len": 24,
+      "contact_persistence_ratio": 0.8727272727272727,
+      "pair_persistent_contacts": 48.0
+    }
+  ]
+}

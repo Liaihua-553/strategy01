@@ -212,6 +212,14 @@ class BoltzAdapter:
         return matches[0] if matches else None
 
     @staticmethod
+    def generated_msa_csvs(out_dir: Path, input_stem: str) -> dict[str, Path | None]:
+        msa_dir = out_dir / f"boltz_results_{input_stem}" / "msa"
+        return {
+            "A": BoltzAdapter._first_glob(msa_dir, f"{input_stem}_0.csv"),
+            "B": BoltzAdapter._first_glob(msa_dir, f"{input_stem}_1.csv"),
+        }
+
+    @staticmethod
     def _load_npz_array(path: Path | None, preferred_key: str | None = None) -> np.ndarray | None:
         if path is None or not path.exists():
             return None

@@ -403,15 +403,29 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         if out_key not in nn_out:
             raise KeyError(f"Multistate loss requires nn_out['{out_key}']")
         pred = nn_out[out_key]
-        flat_nn_out = {flow_matcher.cfg_exp.nn.output_parameterization[data_mode]: pred.reshape(b * k, n, pred.shape[-1])}
-        flat_loss = flow_matcher.base_flow_matchers[data_mode].compute_fm_loss(
-            x_0=batch["x_0_states"][data_mode].reshape(b * k, n, -1),
-            x_1=batch["x_1_states"][data_mode].reshape(b * k, n, -1),
-            x_t=batch["x_t_states"][data_mode].reshape(b * k, n, -1),
-            mask=state_mask.reshape(b * k, n),
-            t=batch["t_states"][data_mode].reshape(b * k),
-            nn_out=flat_nn_out,
-        )
+        flat_pred = pred.reshape(b * k, n, pred.shape[-1])
+        flat_x0 = batch["x_0_states"][data_mode].reshape(b * k, n, -1)
+        flat_x1 = batch["x_1_states"][data_mode].reshape(b * k, n, -1)
+        flat_xt = batch["x_t_states"][data_mode].reshape(b * k, n, -1)
+        flat_mask = state_mask.reshape(b * k, n)
+        flat_t = batch["t_states"][data_mode].reshape(b * k)
+        flat_present = state_present.reshape(b * k)
+        flat_loss = pred.new_zeros(b * k)
+        if flat_present.any():
+            # Do not call the base flow loss on padded/missing states. Their
+            # masks are all-false and some base losses normalize by mask count,
+            # which can create NaN gradients even if the missing-state scalar is
+            # later hidden by torch.where.
+            flat_nn_out = {flow_matcher.cfg_exp.nn.output_parameterization[data_mode]: flat_pred[flat_present]}
+            flat_loss_valid = flow_matcher.base_flow_matchers[data_mode].compute_fm_loss(
+                x_0=flat_x0[flat_present],
+                x_1=flat_x1[flat_present],
+                x_t=flat_xt[flat_present],
+                mask=flat_mask[flat_present],
+                t=flat_t[flat_present],
+                nn_out=flat_nn_out,
+            )
+            flat_loss = flat_loss.scatter(0, flat_present.nonzero(as_tuple=False).flatten(), flat_loss_valid)
         state_losses.append(mode_weights[data_mode] * _state_loss_from_flat(flat_loss, b, k, state_present))
     l_fm_state = torch.stack(state_losses, dim=0).sum(dim=0)
 

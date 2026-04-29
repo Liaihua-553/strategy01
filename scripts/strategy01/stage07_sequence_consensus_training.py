@@ -180,10 +180,10 @@ def main() -> None:
             args.overfit4_steps,
             min(selected_batch, 4),
             args.eval_every,
-            1e-6,
+            5e-5,
             run_dir,
             fixed_seed=1234,
-            trainable_phase="seq_consensus",
+            trainable_phase="mini",
         )
         if not args.no_reset_between_phases:
             model, fm, _ = s4.build_model(device)
@@ -197,10 +197,10 @@ def main() -> None:
             args.mini_steps,
             selected_batch,
             args.eval_every,
-            1e-6,
+            5e-5,
             run_dir,
             fixed_seed=None,
-            trainable_phase="seq_consensus",
+            trainable_phase="mini",
         )
         results["training_elapsed_sec"] = time.time() - start
         if val_samples:

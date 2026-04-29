@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "updated_at": "2026-04-29T14:26:35+0800",
+  "elapsed_sec": 12.236199855804443,
+  "outputs": {
+    "all": {
+      "input": "data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples.pt",
+      "output": "data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples_materialized.pt",
+      "dest_root": "data/strategy01/stage07_production_v23_wave1/materialized_predictions",
+      "num_samples": 138,
+      "copied_unique_sources": 602,
+      "missing_unique_sources": 0,
+      "missing_examples": [],
+      "dry_run": false
+    },
+    "train": {
+      "input": "data/strategy01/stage07_production_v23_wave1/T_prod_train.pt",
+      "output": "data/strategy01/stage07_production_v23_wave1/T_prod_train_materialized.pt",
+      "dest_root": "data/strategy01/stage07_production_v23_wave1/materialized_predictions",
+      "num_samples": 110,
+      "copied_unique_sources": 484,
+      "missing_unique_sources": 0,
+      "missing_examples": [],
+      "dry_run": false
+    },
+    "val": {
+      "input": "data/strategy01/stage07_production_v23_wave1/T_prod_val.pt",
+      "output": "data/strategy01/stage07_production_v23_wave1/T_prod_val_materialized.pt",
+      "dest_root": "data/strategy01/stage07_production_v23_wave1/materialized_predictions",
+      "num_samples": 28,
+      "copied_unique_sources": 118,
+      "missing_unique_sources": 0,
+      "missing_examples": [],
+      "dry_run": false
+    }
+  }
+}

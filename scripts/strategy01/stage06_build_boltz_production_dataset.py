@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """Build Stage06 predictor-derived multistate train/val datasets with Boltz2.
 
 The script consumes real experimental multistate target+binder seeds, predicts
@@ -284,7 +284,7 @@ def mine_extra_seed_pool(args: argparse.Namespace, excluded_groups: set[str], ta
     return seeds
 
 
-def run_boltz_passes(sample: dict[str, Any], out_root: Path, adapters: dict[str, BoltzAdapter], max_constraints: int, timeout_sec: int, min_states_required: int) -> tuple[list[int], list[str], list[dict[str, Any]], str]:
+def run_boltz_passes(sample: dict[str, Any], out_root: Path, adapters: dict[str, BoltzAdapter], max_constraints: int, timeout_sec: int, min_states_required: int, msa_cache_dir: Path | None = None, pass_strategy: str = "scout_first") -> tuple[list[int], list[str], list[dict[str, Any]], str]:
     active_state_indices: list[int] = []
     predicted_paths: list[str] = []
     per_state_metrics: list[dict[str, Any]] = []
@@ -297,32 +297,77 @@ def run_boltz_passes(sample: dict[str, Any], out_root: Path, adapters: dict[str,
         target_seq = target_chain.seq_str
         template_path = out_root / sample["sample_id"] / "templates" / f"state{state_idx:02d}_target_A.pdb"
         write_chain_pdb(template_path, target_chain, chain_id="A")
-        passes = [
-            ("scout", adapters["scout"], None),
-            ("second", adapters["second"], None),
-        ]
-        if constraints[state_idx]:
-            passes.append(("anchor", adapters["anchor"], constraints[state_idx]))
+        if pass_strategy == "anchor_first":
+            if constraints[state_idx]:
+                passes = [
+                    ("anchor", adapters["anchor"], constraints[state_idx]),
+                    ("second", adapters["second"], None),
+                ]
+            else:
+                passes = [
+                    ("second", adapters["second"], None),
+                    ("scout", adapters["scout"], None),
+                ]
+        elif pass_strategy == "second_first":
+            passes = [
+                ("second", adapters["second"], None),
+            ]
+            if constraints[state_idx]:
+                passes.append(("anchor", adapters["anchor"], constraints[state_idx]))
+            passes.append(("scout", adapters["scout"], None))
+        elif pass_strategy == "anchor_soft_first":
+            if constraints[state_idx]:
+                passes = [
+                    ("anchor_soft", adapters["anchor_soft"], constraints[state_idx]),
+                    ("second", adapters["second"], None),
+                    ("scout", adapters["scout"], None),
+                ]
+            else:
+                passes = [
+                    ("second", adapters["second"], None),
+                    ("scout", adapters["scout"], None),
+                ]
+        else:
+            passes = [
+                ("scout", adapters["scout"], None),
+                ("second", adapters["second"], None),
+            ]
+            if constraints[state_idx]:
+                passes.append(("anchor", adapters["anchor"], constraints[state_idx]))
         success = False
         for pass_name, adapter, pass_constraints in passes:
+            input_sample_id = f"{sample['sample_id']}_{pass_name}"
+            input_stem = f"{input_sample_id}_state{state_idx:02d}_boltz"
+            msa_spec: str | dict[str, str] = ""
+            if msa_cache_dir is not None:
+                msa_cache_dir.mkdir(parents=True, exist_ok=True)
+                msa_spec = {
+                    "A": str(BoltzAdapter.cached_msa_csv(target_seq, msa_cache_dir, "A") or ""),
+                    "B": str(BoltzAdapter.cached_msa_csv(sample["shared_binder_sequence"], msa_cache_dir, "B") or ""),
+                }
             try:
                 result = adapter.predict(
                     target_pdb=template_path,
                     binder_sequence=sample["shared_binder_sequence"],
                     out_dir=out_root / sample["sample_id"],
-                    sample_id=f"{sample['sample_id']}_{pass_name}",
+                    sample_id=input_sample_id,
                     state_index=state_idx,
                     target_sequence=target_seq,
                     target_template_pdb=template_path,
                     use_template=True,
                     force_template=True,
                     template_threshold=2.0,
-                    msa="",
+                    msa=msa_spec,
                     contact_constraints=pass_constraints,
                     target_len=target_len,
                     binder_len=binder_len,
                     timeout_sec=timeout_sec if timeout_sec > 0 else None,
                 )
+                if msa_cache_dir is not None:
+                    for chain_label, seq in (("A", target_seq), ("B", sample["shared_binder_sequence"])):
+                        msa_csv = BoltzAdapter.generated_msa_csvs(out_root / sample["sample_id"], input_stem).get(chain_label)
+                        if msa_csv is not None and msa_csv.exists():
+                            BoltzAdapter.cache_msa_csv(msa_csv, seq, msa_cache_dir, chain_label)
             except Exception as exc:
                 last_failure = f"state{state_idx}:{pass_name}:{type(exc).__name__}"
                 continue
@@ -376,14 +421,53 @@ def build_dataset(args: argparse.Namespace) -> dict[str, Any]:
         "scout": BoltzAdapter(BoltzRunConfig(recycling_steps=1, sampling_steps=5, diffusion_samples=1, use_potentials=False, use_no_kernels=not args.enable_kernels, use_msa_server=True, num_workers=0)),
         "second": BoltzAdapter(BoltzRunConfig(recycling_steps=2, sampling_steps=10, diffusion_samples=1, use_potentials=False, use_no_kernels=not args.enable_kernels, use_msa_server=True, num_workers=0)),
         "anchor": BoltzAdapter(BoltzRunConfig(recycling_steps=2, sampling_steps=10, diffusion_samples=1, use_potentials=True, use_no_kernels=not args.enable_kernels, use_msa_server=True, num_workers=0)),
+        "anchor_soft": BoltzAdapter(BoltzRunConfig(recycling_steps=2, sampling_steps=10, diffusion_samples=1, use_potentials=False, use_no_kernels=not args.enable_kernels, use_msa_server=True, num_workers=0)),
     }
     accepted_samples: list[dict[str, Any]] = []
     hybrid_built: list[dict[str, Any]] = []
     attrition = {"base_seed_count": len(base_seeds), "accepted_bases": 0, "rejected_bases": 0, "accepted_variants": 0, "hybrid_built": 0, "failures": []}
+    started = time.time()
+    print(
+        f"[stage07_build] exact={len(exact)} hybrid_seeds={len(hybrid_seeds)} base_seeds={len(base_seeds)} target_train={args.train_count} target_val={args.val_count}",
+        flush=True,
+    )
+
+    live_summary_path = args.summary.with_name(args.summary.stem + "_live.json")
+
+    def write_live_summary(stage: str, seed_idx: int | None = None, sample_id: str | None = None, status: str | None = None) -> None:
+        live = {
+            "stage": stage,
+            "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            "seed_idx": seed_idx,
+            "sample_id": sample_id,
+            "status": status,
+            "elapsed_sec": round(time.time() - started, 3),
+            "base_seed_count": len(base_seeds),
+            "accepted_bases": attrition["accepted_bases"],
+            "rejected_bases": attrition["rejected_bases"],
+            "accepted_variants": attrition["accepted_variants"],
+            "hybrid_built": attrition["hybrid_built"],
+            "failure_count": len(attrition["failures"]),
+            "recent_failures": attrition["failures"][-8:],
+            "target_train": args.train_count,
+            "target_val": args.val_count,
+            "work_dir": str(_work_dir(args)),
+            "out_dir": str(args.out_dir),
+        }
+        live_summary_path.parent.mkdir(parents=True, exist_ok=True)
+        live_summary_path.write_text(json.dumps(live, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    write_live_summary("start")
 
     def build_from_seed(seed: dict[str, Any], source_tier: str) -> list[dict[str, Any]]:
         active_state_indices, predicted_paths, per_state_metrics, status = run_boltz_passes(
-            seed, _work_dir(args) / "boltz_outputs", adapters, args.max_constraints, args.timeout_sec, args.min_states
+            seed,
+            _work_dir(args) / "boltz_outputs",
+            adapters,
+            args.max_constraints,
+            args.timeout_sec,
+            args.min_states,
+            args.msa_cache_dir,
         )
         if status not in {"passed", "partial_pass"}:
             attrition["failures"].append({"sample_id": seed["sample_id"], "status": status})
@@ -406,25 +490,52 @@ def build_dataset(args: argparse.Namespace) -> dict[str, Any]:
 
     if len(exact) < args.target_exact_count:
         need_hybrid = min(args.target_hybrid_count, args.target_exact_count - len(exact))
+        print(f"[stage07_build] building_hybrid need={need_hybrid}", flush=True)
         for seed in hybrid_seeds[:need_hybrid]:
             variants = build_from_seed(seed, "hybrid_experimental_boltz")
             if not variants:
+                print(f"[stage07_build] hybrid_reject sample_id={seed['sample_id']}", flush=True)
                 continue
             hybrid_built.extend(variants[:1])
             attrition["hybrid_built"] += 1
+            print(
+                f"[stage07_build] hybrid_accept sample_id={seed['sample_id']} built={attrition['hybrid_built']} elapsed_sec={time.time() - started:.1f}",
+                flush=True,
+            )
+            write_live_summary("hybrid_accept", sample_id=seed["sample_id"], status="accepted")
 
-    for seed in base_seeds:
+    for seed_idx, seed in enumerate(base_seeds, start=1):
         if len(accepted_samples) >= args.train_count + args.val_count + 32:
             break
+        if seed_idx == 1 or seed_idx % 10 == 0:
+            print(
+                f"[stage07_build] progress seed_idx={seed_idx}/{len(base_seeds)} accepted_bases={attrition['accepted_bases']} rejected_bases={attrition['rejected_bases']} accepted_variants={attrition['accepted_variants']} elapsed_sec={time.time() - started:.1f}",
+                flush=True,
+            )
         variants = build_from_seed(seed, "train_boltz")
         if not variants:
             attrition["rejected_bases"] += 1
+            last_status = attrition['failures'][-1]['status'] if attrition['failures'] else 'unknown'
+            print(
+                f"[stage07_build] reject sample_id={seed['sample_id']} status={last_status} accepted_bases={attrition['accepted_bases']} rejected_bases={attrition['rejected_bases']} elapsed_sec={time.time() - started:.1f}",
+                flush=True,
+            )
+            write_live_summary("seed_reject", seed_idx=seed_idx, sample_id=seed["sample_id"], status=last_status)
             continue
         accepted_samples.extend(variants)
         attrition["accepted_bases"] += 1
         attrition["accepted_variants"] += len(variants)
+        print(
+            f"[stage07_build] accept sample_id={seed['sample_id']} variants={len(variants)} accepted_bases={attrition['accepted_bases']} accepted_variants={attrition['accepted_variants']} elapsed_sec={time.time() - started:.1f}",
+            flush=True,
+        )
+        write_live_summary("seed_accept", seed_idx=seed_idx, sample_id=seed["sample_id"], status="accepted")
 
     train_samples, val_samples = assign_splits(accepted_samples, args.train_count, args.val_count)
+    print(
+        f"[stage07_build] split_done train={len(train_samples)} val={len(val_samples)} hybrids={len(hybrid_built)} elapsed_sec={time.time() - started:.1f}",
+        flush=True,
+    )
     if not args.allow_short_dataset and (len(train_samples) < args.train_count or len(val_samples) < args.val_count):
         raise RuntimeError(f"Short dataset after Boltz screening: train={len(train_samples)} val={len(val_samples)} target={args.train_count}/{args.val_count}")
 
@@ -450,6 +561,7 @@ def build_dataset(args: argparse.Namespace) -> dict[str, Any]:
     (args.out_dir / "manifests" / "T_prod_val_manifest.json").write_text(json.dumps([{"sample_id": s["sample_id"], "family_split_key": s["family_split_key"], "quality_tier": s["quality_tier"]} for s in val_samples], indent=2, ensure_ascii=False), encoding="utf-8")
     (args.out_dir / "manifests" / "V_hybrid_manifest.json").write_text(json.dumps([{"sample_id": s["sample_id"], "family_split_key": s["family_split_key"], "quality_tier": s["quality_tier"]} for s in hybrid_built], indent=2, ensure_ascii=False), encoding="utf-8")
     args.summary.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    live_summary_path.write_text(json.dumps({**summary, "stage": "final", "updated_at": time.strftime("%Y-%m-%dT%H:%M:%S%z")}, indent=2, ensure_ascii=False), encoding="utf-8")
     return summary
 
 
@@ -460,6 +572,7 @@ def main() -> None:
     parser.add_argument("--seed-manifest", type=Path, default=None)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--work-dir", type=Path, default=None)
+    parser.add_argument("--msa-cache-dir", type=Path, default=REPO_ROOT / "data" / "strategy01" / "stage07_msa_cache")
     parser.add_argument("--summary", type=Path, default=REPO_ROOT / "reports" / "strategy01" / "probes" / "stage06_production_summary.json")
     parser.add_argument("--max-entries", type=int, default=800)
     parser.add_argument("--max-base-seeds", type=int, default=96)
@@ -479,7 +592,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--enable-kernels", action="store_true")
     parser.add_argument("--allow-short-dataset", action="store_true")
+    parser.add_argument("--pass-strategy", choices=["scout_first", "anchor_first", "second_first", "anchor_soft_first"], default="scout_first")
+    parser.add_argument("--disable-msa-cache", action="store_true", help="Do not feed cached MSA CSVs back into Boltz; still allow Boltz --use_msa_server.")
     args = parser.parse_args()
+    if args.disable_msa_cache:
+        args.msa_cache_dir = None
     args.summary.parent.mkdir(parents=True, exist_ok=True)
     summary = build_dataset(args)
     print(json.dumps(summary, indent=2, ensure_ascii=False))

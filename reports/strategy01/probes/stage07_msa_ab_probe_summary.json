@@ -1,0 +1,97 @@
+{
+  "status": "completed",
+  "sample_id": "1jmq_A_P",
+  "state_index": 0,
+  "reference_cloud_msa": {
+    "source": "salvaged_cloud_msa_boltz_output",
+    "sample_id": "1jmq_A_P",
+    "state_index": 0,
+    "input_stem": "1jmq_A_P_second_state00_boltz",
+    "metrics": {
+      "confidence_score": 0.5885705947875977,
+      "ptm": 0.7247788310050964,
+      "iptm": 0.5306124687194824,
+      "protein_iptm": 0.5306124687194824,
+      "complex_plddt_norm": 0.6030601263046265,
+      "complex_iplddt_norm": 0.5900006890296936,
+      "binder_plddt_norm": 0.5369288325309753,
+      "interchain_pae_A": 6.696705341339111,
+      "interchain_pde_A": 1.2641432285308838,
+      "pDockQ2_proxy": 0.24543326709076604,
+      "state_index": 0,
+      "pass_name": "second",
+      "input_stem": "1jmq_A_P_second_state00_boltz",
+      "contact_count": 12,
+      "severe_clash": false,
+      "sample_id": "1jmq_A_P",
+      "status": "parsed",
+      "bronze": true,
+      "silver": false,
+      "complex_path": "data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/prediction/1jmq_A_P_second_state00_boltz_model_0.pdb",
+      "confidence_path": "/tmp/kfliao_strategy01_stage07_1908299/boltz_outputs/1jmq_A_P/boltz_results_1jmq_A_P_second_state00_boltz/predictions/1jmq_A_P_second_state00_boltz/confidence_1jmq_A_P_second_state00_boltz_model_0.json",
+      "copied_prediction_dir": "data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/prediction",
+      "copied_yaml": "data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/inputs/1jmq_A_P_second_state00_boltz.yaml",
+      "copied_log": "data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/logs/1jmq_A_P_second_state00_boltz.log",
+      "copied_msa_dir": "data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/msa"
+    }
+  },
+  "cache_replay": {
+    "complex_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz/1jmq_A_P_cache_replay_state00_boltz_model_0.pdb",
+    "confidence_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz/confidence_1jmq_A_P_cache_replay_state00_boltz_model_0.json",
+    "metrics": {
+      "confidence_score": 0.6210283637046814,
+      "ptm": 0.3731139600276947,
+      "iptm": 0.16622422635555267,
+      "protein_iptm": 0.16622422635555267,
+      "complex_plddt_norm": 0.7347293496131897,
+      "complex_iplddt_norm": 0.7347293496131897,
+      "binder_plddt_norm": 0.6947231292724609,
+      "interchain_pae_A": 16.980615615844727,
+      "interchain_pde_A": 6.026836395263672,
+      "pDockQ2_proxy": 0.05523176965760945,
+      "pae_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz/pae_1jmq_A_P_cache_replay_state00_boltz_model_0.npz",
+      "plddt_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz/plddt_1jmq_A_P_cache_replay_state00_boltz_model_0.npz",
+      "pde_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz/pde_1jmq_A_P_cache_replay_state00_boltz_model_0.npz",
+      "prediction_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_msa_ab_probe/cache_replay/boltz_results_1jmq_A_P_cache_replay_state00_boltz/predictions/1jmq_A_P_cache_replay_state00_boltz"
+    },
+    "geometry": {
+      "contact_count": 0,
+      "min_distance_nm": 12.670507431030273,
+      "mean_contact_distance_nm": 12.670507431030273,
+      "severe_clash": false,
+      "iPAE_proxy": 31.0,
+      "interface_pLDDT_proxy": 60.0,
+      "ipTM_proxy": 0.0,
+      "pDockQ2_proxy": 0.0
+    },
+    "bronze_pass": false,
+    "silver_pass": false
+  },
+  "msa_csvs": {
+    "A": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/msa/1jmq_A_P_second_state00_boltz_0.csv",
+    "B": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_partial_1908299/accepted_boltz_evidence/1jmq_A_P/1jmq_A_P_second_state00_boltz/msa/1jmq_A_P_second_state00_boltz_1.csv"
+  },
+  "tool_status": {
+    "mmseqs": {
+      "cmd": [
+        "/home/kfliao/data/anaconda3/envs/proteina-complexa/bin/mmseqs",
+        "version"
+      ],
+      "returncode": 0,
+      "output": "18.8cc5c\n"
+    },
+    "hhblits": {
+      "cmd": [
+        "/share/HHsuite/3.0.1/bin/hhblits",
+        "-h"
+      ],
+      "returncode": 0,
+      "output": "ter pseudocounts (used if context file is not available):\n  -pc_prefilter_nocontxt_mode {0,..,3}   position dependence of pc admixture 'tau' (pc mode, default=2) \n               0: no pseudo counts:    tau = 0                                  \n               1: constant             tau = a                                  \n               2: diversity-dependent: tau = a/(1+((Neff[i]-1)/b)^c)            \n               (Neff[i]: number of effective seqs in local MSA around column i) \n  -pc_prefilter_nocontxt_a  [0,1]        overall pseudocount admixture (def=1.0)                        \n  -pc_prefilter_nocontxt_b  [1,inf[      Neff threshold value for mode 2 (def=1.5)                      \n  -pc_prefilter_nocontxt_c  [0,3]        extinction exponent c for mode 2 (def=1.0)                     \n\n Context-specific pseudo-counts:                                                  \n  -nocontxt      use substitution-matrix instead of context-specific pseudocounts \n  -contxt <file> context file for computing context-specific pseudocounts (default=/share/HHsuite/3.0.1/data/context_data.crf)\n  -csw  [0,inf]  weight of central position in cs pseudocount mode (def=1.6)\n  -csb  [0,1]    weight decay parameter for positions in cs pc mode (def=0.9)\n\nOther options:                                                                   \n -v <int>       verbose mode: 0:no screen output  1:only warings  2: verbose (def=2)\n -neffmax ]1,20] skip further search iterations when diversity Neff of query MSA \n                becomes larger than neffmax (default=10.0)\n -cpu <int>     number of CPUs to use (for shared memory SMPs) (default=2)      \n -scores <file> write scores for all pairwise comparisions to file               \n -atab   <file> write all alignments in tabular layout to file                   \n -maxres <int>  max number of HMM columns (def=20001)             \n -maxmem [1,inf[ limit memory for realignment (in GB) (def=3.0)          \n\nExample: hhblits -i query.fas -oa3m query.a3m -n 1  \n"
+    },
+    "hhsuite_db_dir": "/share/HHsuite/databases",
+    "hhsuite_db_dir_exists": true,
+    "local_msa_policy": "diagnostic_only_until_quality_matches_cloud_msa"
+  },
+  "elapsed_sec": 65.70552229881287,
+  "interpretation": "Use cloud MSA as quality baseline. Cached MSA replay is acceptable only if Bronze/Silver and worst-state metrics do not degrade materially. Local HHblits/MMseqs2 remains a future A/B branch, not the default production path."
+}

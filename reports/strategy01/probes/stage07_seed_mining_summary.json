@@ -1,0 +1,17 @@
+{
+  "entries_requested": 3000,
+  "entries_seen": 2258,
+  "accepted_seeds": 256,
+  "target_seeds": 256,
+  "output_manifest": "data/strategy01/stage07_seed_pool/T_prod_seed_manifest.json",
+  "out_dir": "data/strategy01/stage07_seed_pool",
+  "cache_dir": "/tmp/kfliao_strategy01_stage07_seed_cache_1908298",
+  "excluded_groups": 22,
+  "failures": {
+    "no_pair": 774,
+    "download:HTTPError": 10,
+    "excluded_group": 20,
+    "duplicate_pair": 5
+  },
+  "elapsed_sec": 2008.9535584449768
+}

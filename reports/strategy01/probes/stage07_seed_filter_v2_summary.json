@@ -1,0 +1,412 @@
+{
+  "input": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest.json",
+  "output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_filtered.json",
+  "strict_output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_strict_le8.json",
+  "extended_output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_extended_8to10.json",
+  "n_input": 256,
+  "n_kept_total": 152,
+  "n_kept_strict_le8": 139,
+  "n_kept_extended_8to10": 13,
+  "motion_bins_kept": {
+    "small": 59,
+    "medium": 52,
+    "large": 28,
+    "extra_large_review": 13
+  },
+  "rejected_counts": {
+    "motion_gt_10A": 61,
+    "keep_strict": 0,
+    "target_length_out_of_range": 5,
+    "weak_exact_interface": 10,
+    "family_leakage": 21,
+    "keep_extended_8_10A": 0,
+    "binder_length_out_of_range": 7
+  },
+  "excluded_leakage_keys": 119,
+  "thresholds": {
+    "input": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest.json",
+    "output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_filtered.json",
+    "strict_output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_strict_le8.json",
+    "extended_output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_seed_pool/T_prod_seed_manifest_v2_extended_8to10.json",
+    "summary": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage07_seed_filter_v2_summary.json",
+    "exclude_manifest": [
+      "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_validation_expand/V_exact_manifest.json",
+      "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_validation/V_exact_manifest.json"
+    ],
+    "min_motion": 1.0,
+    "default_max_motion": 8.0,
+    "extended_max_motion": 10.0,
+    "min_states": 2,
+    "min_target_len": 30,
+    "max_target_len": 260,
+    "min_binder_len": 6,
+    "max_binder_len": 100,
+    "min_contacts_each_state": 8,
+    "min_target_persistent_anchors": 3,
+    "min_binder_persistent_anchors": 2,
+    "min_pair_persistent_contacts": 1,
+    "extra_large_min_contact_persistence": 0.05
+  },
+  "examples": [
+    {
+      "sample_id": "2jma_A_B",
+      "motion": 1.2568761519299831,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          36,
+          37,
+          33
+        ],
+        "min_contact_count": 33,
+        "pair_persistent_contacts": 35,
+        "target_persistent_anchor_residues": 24,
+        "binder_persistent_anchor_residues": 7,
+        "contact_persistence_ratio": 0.8974358974358975
+      }
+    },
+    {
+      "sample_id": "2lxc_C_A",
+      "motion": 3.580984084509943,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          23,
+          22,
+          22
+        ],
+        "min_contact_count": 22,
+        "pair_persistent_contacts": 22,
+        "target_persistent_anchor_residues": 12,
+        "binder_persistent_anchor_residues": 8,
+        "contact_persistence_ratio": 0.8461538461538461
+      }
+    },
+    {
+      "sample_id": "6ivu_B_A",
+      "motion": 4.569033638509406,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          50,
+          48,
+          52
+        ],
+        "min_contact_count": 48,
+        "pair_persistent_contacts": 50,
+        "target_persistent_anchor_residues": 20,
+        "binder_persistent_anchor_residues": 18,
+        "contact_persistence_ratio": 0.9259259259259259
+      }
+    },
+    {
+      "sample_id": "2lcs_A_B",
+      "motion": 1.5511098866930784,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          28,
+          28,
+          27
+        ],
+        "min_contact_count": 27,
+        "pair_persistent_contacts": 27,
+        "target_persistent_anchor_residues": 13,
+        "binder_persistent_anchor_residues": 10,
+        "contact_persistence_ratio": 0.9310344827586207
+      }
+    },
+    {
+      "sample_id": "6kh9_B_A",
+      "motion": 6.41733533225954,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          20,
+          17,
+          55
+        ],
+        "min_contact_count": 17,
+        "pair_persistent_contacts": 16,
+        "target_persistent_anchor_residues": 13,
+        "binder_persistent_anchor_residues": 9,
+        "contact_persistence_ratio": 0.22857142857142856
+      }
+    },
+    {
+      "sample_id": "2lxm_A_B",
+      "motion": 1.204274411791476,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          23,
+          19,
+          15
+        ],
+        "min_contact_count": 15,
+        "pair_persistent_contacts": 14,
+        "target_persistent_anchor_residues": 12,
+        "binder_persistent_anchor_residues": 9,
+        "contact_persistence_ratio": 0.4375
+      }
+    },
+    {
+      "sample_id": "2l5g_A_B",
+      "motion": 4.1560143292899205,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          28,
+          28,
+          37
+        ],
+        "min_contact_count": 28,
+        "pair_persistent_contacts": 29,
+        "target_persistent_anchor_residues": 16,
+        "binder_persistent_anchor_residues": 18,
+        "contact_persistence_ratio": 0.725
+      }
+    },
+    {
+      "sample_id": "1q5l_A_B",
+      "motion": 3.0224726287105312,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          38,
+          50,
+          54
+        ],
+        "min_contact_count": 38,
+        "pair_persistent_contacts": 48,
+        "target_persistent_anchor_residues": 18,
+        "binder_persistent_anchor_residues": 6,
+        "contact_persistence_ratio": 0.7741935483870968
+      }
+    },
+    {
+      "sample_id": "6oqj_B_A",
+      "motion": 3.370118695124961,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          9,
+          14,
+          15
+        ],
+        "min_contact_count": 9,
+        "pair_persistent_contacts": 14,
+        "target_persistent_anchor_residues": 10,
+        "binder_persistent_anchor_residues": 5,
+        "contact_persistence_ratio": 0.875
+      }
+    },
+    {
+      "sample_id": "2a4j_A_B",
+      "motion": 5.42852402137385,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          39,
+          39,
+          29
+        ],
+        "min_contact_count": 29,
+        "pair_persistent_contacts": 33,
+        "target_persistent_anchor_residues": 18,
+        "binder_persistent_anchor_residues": 12,
+        "contact_persistence_ratio": 0.6875
+      }
+    },
+    {
+      "sample_id": "2jm6_B_A",
+      "motion": 3.221734331837165,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          56,
+          63,
+          54
+        ],
+        "min_contact_count": 54,
+        "pair_persistent_contacts": 58,
+        "target_persistent_anchor_residues": 25,
+        "binder_persistent_anchor_residues": 20,
+        "contact_persistence_ratio": 0.8055555555555556
+      }
+    },
+    {
+      "sample_id": "9c5e_A_B",
+      "motion": 7.630450200366552,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          52,
+          63,
+          57
+        ],
+        "min_contact_count": 52,
+        "pair_persistent_contacts": 50,
+        "target_persistent_anchor_residues": 27,
+        "binder_persistent_anchor_residues": 15,
+        "contact_persistence_ratio": 0.5555555555555556
+      }
+    },
+    {
+      "sample_id": "2n13_D_C",
+      "motion": 3.652472911890385,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          22,
+          19,
+          22
+        ],
+        "min_contact_count": 19,
+        "pair_persistent_contacts": 21,
+        "target_persistent_anchor_residues": 11,
+        "binder_persistent_anchor_residues": 12,
+        "contact_persistence_ratio": 0.7777777777777778
+      }
+    },
+    {
+      "sample_id": "2rmk_A_B",
+      "motion": 1.9751629640044894,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          24,
+          25,
+          20
+        ],
+        "min_contact_count": 20,
+        "pair_persistent_contacts": 21,
+        "target_persistent_anchor_residues": 9,
+        "binder_persistent_anchor_residues": 13,
+        "contact_persistence_ratio": 0.6363636363636364
+      }
+    },
+    {
+      "sample_id": "2l2l_A_B",
+      "motion": 8.776083346628878,
+      "decision": "keep_extended_8_10A",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          16,
+          14,
+          13
+        ],
+        "min_contact_count": 13,
+        "pair_persistent_contacts": 14,
+        "target_persistent_anchor_residues": 8,
+        "binder_persistent_anchor_residues": 9,
+        "contact_persistence_ratio": 0.8235294117647058
+      }
+    },
+    {
+      "sample_id": "2hug_A_B",
+      "motion": 1.5062203538612686,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          56,
+          55,
+          65
+        ],
+        "min_contact_count": 55,
+        "pair_persistent_contacts": 61,
+        "target_persistent_anchor_residues": 24,
+        "binder_persistent_anchor_residues": 11,
+        "contact_persistence_ratio": 0.7922077922077922
+      }
+    },
+    {
+      "sample_id": "1tba_B_A",
+      "motion": 1.1789986311367042,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          76,
+          67,
+          75
+        ],
+        "min_contact_count": 67,
+        "pair_persistent_contacts": 68,
+        "target_persistent_anchor_residues": 37,
+        "binder_persistent_anchor_residues": 24,
+        "contact_persistence_ratio": 0.6538461538461539
+      }
+    },
+    {
+      "sample_id": "2ktr_B_A",
+      "motion": 2.5422029379610467,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          9,
+          9,
+          9
+        ],
+        "min_contact_count": 9,
+        "pair_persistent_contacts": 9,
+        "target_persistent_anchor_residues": 4,
+        "binder_persistent_anchor_residues": 4,
+        "contact_persistence_ratio": 1.0
+      }
+    },
+    {
+      "sample_id": "5ixf_A_B",
+      "motion": 1.6652249892149353,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          41,
+          38,
+          37
+        ],
+        "min_contact_count": 37,
+        "pair_persistent_contacts": 34,
+        "target_persistent_anchor_residues": 17,
+        "binder_persistent_anchor_residues": 13,
+        "contact_persistence_ratio": 0.6181818181818182
+      }
+    },
+    {
+      "sample_id": "2loz_A_B",
+      "motion": 1.9380419707199614,
+      "decision": "keep_strict",
+      "metrics": {
+        "state_count": 3,
+        "contact_counts": [
+          16,
+          13,
+          16
+        ],
+        "min_contact_count": 13,
+        "pair_persistent_contacts": 15,
+        "target_persistent_anchor_residues": 4,
+        "binder_persistent_anchor_residues": 5,
+        "contact_persistence_ratio": 0.8823529411764706
+      }
+    }
+  ]
+}

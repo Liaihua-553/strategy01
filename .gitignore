@@ -119,3 +119,9 @@ reports/strategy01/probes/boltz_smoke_outputs_cached/
 data/strategy01/stage05_predictor_multistate/
 reports/strategy01/probes/stage05_boltz_outputs/
 ckpts/stage05_predictor_pilot/
+# Strategy01 runtime logs (keep JSON summaries and reports tracked)
+reports/strategy01/probes/*.out
+reports/strategy01/probes/*.err
+reports/strategy01/probes/*.er
+reports/strategy01/probes/*.log
+reports/strategy01/probes/cleanup_logs/

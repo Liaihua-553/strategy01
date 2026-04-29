@@ -102,7 +102,13 @@ class CrossStateFusion(nn.Module):
         attn_logits = attn_logits + key_weight_bias
 
         key_mask = valid_mask_rlk[:, :, None, None, :]  # [B, L, 1, 1, K]
-        attn_logits = attn_logits.masked_fill(~key_mask, float("-inf"))
+        # Avoid -inf-only softmax rows for padded residues / missing states.
+        # Forward nan_to_num can hide the issue, but softmax backward may still
+        # produce non-finite gradients when every key in a row is masked. A large
+        # finite negative value preserves the masking effect while keeping the
+        # gradient path numerically well-defined; downstream valid masks still
+        # zero out padded/missing-state contributions.
+        attn_logits = attn_logits.masked_fill(~key_mask, -1.0e4)
         attn = torch.softmax(attn_logits, dim=-1)
         attn = torch.nan_to_num(attn, nan=0.0, posinf=0.0, neginf=0.0)
         attn = self.dropout(attn)

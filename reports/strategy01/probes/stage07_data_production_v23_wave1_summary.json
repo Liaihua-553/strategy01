@@ -1,0 +1,488 @@
+{
+  "status": "passed",
+  "exact_count": 24,
+  "hybrid_built_count": 0,
+  "train_count": 110,
+  "val_count": 28,
+  "attrition": {
+    "base_seed_count": 142,
+    "accepted_bases": 27,
+    "rejected_bases": 115,
+    "accepted_variants": 138,
+    "hybrid_built": 0,
+    "failures": [
+      {
+        "sample_id": "2lcs_A_B",
+        "status": "state1:anchor"
+      },
+      {
+        "sample_id": "1z00_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8hep_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2g3q_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1u2u_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2mnj_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1zl8_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "1t1p_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jm6_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6gd5_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2ncz_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2n3k_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6xmn_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k9u_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2l0f_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2rr3_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2nd1_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2m5a_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2lkm_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2lbf_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8u9o_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mak_C_D",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2lox_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kxh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6g04_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2ll6_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jri_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2l2i_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1ur6_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6bnh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1rso_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2n3w_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2m14_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6x4x_B_A",
+        "status": "state1:anchor"
+      },
+      {
+        "sample_id": "2c52_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2pon_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1tba_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2a4j_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6k59_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k1r_B_A",
+        "status": "state1:anchor"
+      },
+      {
+        "sample_id": "8s8o_B_C",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2hug_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2nbw_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mpi_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2n3a_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "7x5c_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2lmc_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jy6_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k3s_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8ddd_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "8u2y_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2ggp_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6osw_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mcn_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mro_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2n13_D_C",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "7xfg_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k00_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kwk_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "6e5n_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2n0y_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "5mf9_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kxq_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mre_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k6d_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2z59_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2khs_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2koh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kjh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2knc_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kbr_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2k2q_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2lsi_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2kvq_G_E",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "9c5e_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2joa_A_B",
+        "status": "state1:anchor"
+      },
+      {
+        "sample_id": "6oqj_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "6tl0_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2fuh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "5zau_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2n2h_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8her_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1psb_A_C",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8k31_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2pq4_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1zub_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "4asw_C_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2lrl_C_D",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2loz_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2jtt_D_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kwv_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2ktr_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1tlh_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2k8m_D_C",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2rmk_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mtp_C_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "2mut_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jt4_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2phg_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2mbh_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "8fg1_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2m49_C_D",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2l0y_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2kbx_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jq9_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "8x8t_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2jss_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "1wa8_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "7sft_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "6f0y_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "5l85_B_A",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "6bgg_B_A",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "2l2l_A_B",
+        "status": "state0:anchor:RuntimeError"
+      },
+      {
+        "sample_id": "7s5j_A_B",
+        "status": "state0:anchor"
+      },
+      {
+        "sample_id": "5jtn_D_E",
+        "status": "state0:anchor"
+      }
+    ]
+  },
+  "base_seed_count": 142,
+  "work_dir": "/tmp/kfliao_strategy01_stage07_v23_wave1_1909566",
+  "out_dir": "data/strategy01/stage07_production_v23_wave1",
+  "boltz_environment": {
+    "boltz_cli": "/data/kfliao/general_model/envs/boltz_cb04aec/bin/boltz",
+    "cache_dir": "/data/kfliao/general_model/boltz_cache",
+    "boltz2_conf_ckpt": "FOUND",
+    "boltz2_aff_ckpt": "FOUND",
+    "mols_tar_or_dir": "FOUND",
+    "model": "boltz2",
+    "no_kernels": "True"
+  }
+}
