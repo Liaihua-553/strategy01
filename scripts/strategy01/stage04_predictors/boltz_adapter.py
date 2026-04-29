@@ -86,7 +86,7 @@ class BoltzAdapter:
         force_template: bool = False,
         template_threshold: float = 2.0,
         template_id: str | None = None,
-        msa: str | dict[str, str | Path] = "empty",
+        msa: str | Path | None | dict[str, str | Path | None] = "",
         contact_constraints: list[tuple[int, int]] | None = None,
     ) -> None:
         """Write a minimal Boltz YAML for target chain A + binder chain B.
@@ -99,25 +99,42 @@ class BoltzAdapter:
         binder_sequence = self._safe_sequence(binder_sequence)
         yaml_path.parent.mkdir(parents=True, exist_ok=True)
         lines: list[str] = ["version: 1", "sequences:"]
-        def msa_for_chain(chain_id: str) -> str:
+        def msa_for_chain(chain_id: str) -> str | None:
             if isinstance(msa, dict):
-                value = msa.get(chain_id, "empty")
+                value = msa.get(chain_id, "")
             else:
                 value = msa
-            return str(value)
+            if value is None:
+                return None
+            value_s = str(value).strip()
+            return value_s or None
 
-        for chain_id, seq in [("A", target_sequence), ("B", binder_sequence)]:
+        chain_specs = [("A", target_sequence), ("B", binder_sequence)]
+        chain_msas = {chain_id: msa_for_chain(chain_id) for chain_id, _ in chain_specs}
+        if isinstance(msa, dict):
+            custom_msas = [v for v in chain_msas.values() if v is not None and v.lower() != "empty"]
+            missing_msas = [v for v in chain_msas.values() if v is None]
+            if custom_msas and missing_msas:
+                # Boltz2 does not allow mixing custom MSAs and auto-generated
+                # MSAs in the same input. If any chain lacks a cache, omit all
+                # MSAs so --use_msa_server generates a paired set together.
+                chain_msas = {chain_id: None for chain_id, _ in chain_specs}
+
+        for chain_id, seq in chain_specs:
             lines.extend(
                 [
                     "  - protein:",
                     f"      id: {chain_id}",
                     f"      sequence: {seq}",
-                    f"      msa: {msa_for_chain(chain_id)}",
                 ]
             )
+            chain_msa = chain_msas[chain_id]
+            if chain_msa is not None:
+                lines.append(f"      msa: {chain_msa}")
         if target_template_pdb is not None:
             lines.append("templates:")
-            lines.append(f"  - pdb: {target_template_pdb}")
+            template_key = "cif" if target_template_pdb.suffix.lower() in {".cif", ".mmcif"} else "pdb"
+            lines.append(f"  - {template_key}: {target_template_pdb}")
             lines.append("    chain_id: A")
             if template_id:
                 lines.append(f"    template_id: {template_id}")
@@ -132,7 +149,7 @@ class BoltzAdapter:
                         f"      token1: [A, {int(target_idx)}]",
                         f"      token2: [B, {int(binder_idx)}]",
                         "      max_distance: 8.0",
-                        "      force: false",
+                        "      force: true",
                     ]
                 )
         yaml_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -331,7 +348,7 @@ class BoltzAdapter:
         force_template: bool = False,
         template_threshold: float = 2.0,
         template_id: str | None = None,
-        msa: str = "empty",
+        msa: str | Path | None | dict[str, str | Path | None] = "",
         contact_constraints: list[tuple[int, int]] | None = None,
         timeout_sec: int | None = None,
         target_len: int | None = None,
@@ -376,6 +393,3 @@ class BoltzAdapter:
         )
         result.note = f"Boltz-2 prediction completed. input_yaml={yaml_path}; log={log_path}"
         return result
-
-
-

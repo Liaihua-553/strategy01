@@ -642,3 +642,241 @@ SLURM job：`1911541`
 - state-specific sampler 的 sequence consensus 温度与 anchor 权重。
 - 训练时让 state-specific flow head 更直接监督 clean prediction，而不是只作为 raw velocity/interface proxy。
 
+## 18. B1/B2 refold smoke 接续检查、修复与结论
+
+### 18.1 接续时远程状态
+
+接续检查时间：远程时间 `2026-04-30`。
+
+队列状态：
+
+- `squeue -u kfliao` 为空，没有残留 GPU 作业。
+- 上一阶段已完成的 `1911541` state-specific sampling smoke 仍为通过状态。
+- 未提交的 B1/B2 refold smoke 首次结果为 `partial_failed`。
+
+本次继续只操作策略仓：
+
+`/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase`
+
+没有改动 benchmark baseline 仓与 baseline checkpoint。
+
+### 18.2 首次 B1/B2 refold 失败根因
+
+失败文件：
+
+- `scripts/strategy01/stage07_b1_b2_refold_smoke.py`
+- `scripts/strategy01/stage04_predictors/boltz_adapter.py`
+
+失败现象：
+
+- 6 个 Boltz2 refold 全部没有生成 prediction PDB。
+- summary 里都是 `FileNotFoundError: Boltz prediction PDB not found`。
+- Boltz 日志里的真正根因是 template 解析阶段 `IndexError: list index out of range`。
+
+进一步检查发现两个独立问题：
+
+- target template PDB 是从 seed state 提取的 PDB，残基号保留为 `177..271`，且没有完整 polymer sequence metadata。Boltz2 内部会用 gemmi 把 PDB 转 mmCIF 再解析；没有 sequence metadata 时，`parse_polymer()` 得到空序列，导致越界。
+- YAML 里写了 `msa: empty`。虽然命令带了 `--use_msa_server`，但 `msa: empty` 会强制 single-sequence mode，所以旧结果并没有真实使用云端 MSA。
+
+### 18.3 代码修复 1：Boltz2 MSA 写法修正
+
+修改文件：
+
+`scripts/strategy01/stage04_predictors/boltz_adapter.py`
+
+修改前：
+
+```yaml
+sequences:
+  - protein:
+      id: A
+      sequence: ...
+      msa: empty
+  - protein:
+      id: B
+      sequence: ...
+      msa: empty
+```
+
+问题：
+
+- `msa: empty` 明确表示不使用 MSA。
+- 这会使 `--use_msa_server` 只显示启用，但不会对该链真正生成 MSA。
+
+修改后：
+
+- `msa=""` 或 `msa=None` 时不再写 `msa:` 字段。
+- 只有存在完整缓存路径时才写入 `msa: /path/to/cache.csv`。
+- 如果 A/B 两条链只有一条有 custom MSA 缓存，adapter 会省略两条链的 MSA，让 `--use_msa_server` 对两条链一起生成 paired MSA。
+
+科学意义：
+
+- 多链复合物预测不能混用“一条链 custom MSA、另一条链 auto MSA”。Boltz2 会直接报错。
+- 对 B1/B2 refold 来说，MSA 行为必须真实可控，否则评估结果不可解释。
+
+验证结果：
+
+- 日志出现 `Calling MSA server for target ... with 2 sequences`。
+- 不再出现 `Found explicit empty MSA`。
+- 后续相同序列会写入 `data/strategy01/stage07_boltz_msa_cache/` 并复用。
+
+### 18.4 代码修复 2：target template 改成带 full sequence 的 mmCIF
+
+修改文件：
+
+`scripts/strategy01/stage07_b1_b2_refold_smoke.py`
+
+新增逻辑：
+
+- `reindex_pdb_residues()`：把 seed-state target PDB 的残基号重排为 `1..N`。
+- `write_boltz_template_cif()`：使用 gemmi 读取重编号 PDB，显式写入 target full sequence，再导出 Boltz2 可解析的 `.cif`。
+- adapter 根据 template 后缀自动写 `cif:` 或 `pdb:`。
+
+修改前：
+
+```yaml
+templates:
+  - pdb: .../2ofq_state00_target_A.pdb
+    chain_id: A
+    force: false
+    threshold: 2.000
+```
+
+修改后：
+
+```yaml
+templates:
+  - cif: .../state00_target_template.cif
+    chain_id: A
+    force: true
+    threshold: 2.000
+```
+
+验证结果：
+
+- 单独调用 Boltz2 parser 测试通过：
+  - `parse_cif_ok`
+  - chain 数：1
+  - target length：95
+- GPU refold 不再在 template parse 阶段失败。
+
+科学意义：
+
+- B1/B2 refold 的 target state 必须尽量固定在给定构象，否则就变成“只输入 target 序列”的 docking，不再是多状态构象兼容评估。
+- `.cif + full_sequence` 是比临时修改 PDB header 更稳的 template 表示。
+
+### 18.5 代码修复 3：anchor-constrained refold smoke
+
+修改文件：
+
+`scripts/strategy01/stage07_b1_b2_refold_smoke.py`
+
+新增逻辑：
+
+- 从 accepted pseudo-complex label 中提取每个 state 的 reference contact。
+- 默认最多取 8 个非重复 target/binder 接触对。
+- 将这些接触作为 Boltz2 `contact` constraints 写入 YAML。
+
+修改文件：
+
+`scripts/strategy01/stage04_predictors/boltz_adapter.py`
+
+约束写法从：
+
+```yaml
+force: false
+```
+
+改为：
+
+```yaml
+force: true
+```
+
+原因：
+
+- `--use_potentials` 只是允许使用 potentials。
+- 每条 contact constraint 仍需要 `force: true` 才会真正作为约束 potential。
+
+### 18.6 B1/B2 refold smoke 实测结果
+
+作业记录：
+
+- `1911545`：无 anchor 约束版本，status=`passed`
+- `1911549`：anchor 约束但 contact `force=false`，status=`passed`
+- `1911550`：anchor 约束且 contact `force=true`，status=`passed`
+
+当前最终 summary：
+
+`reports/strategy01/probes/stage07_b1_b2_refold_smoke_summary.json`
+
+保留的无约束 summary：
+
+`reports/strategy01/probes/stage07_b1_b2_refold_smoke_unconstrained_summary.json`
+
+样本：
+
+- sample：`2ofq_A_B__v00__k3__hexact`
+- K：3
+- B1 sequence：`APSSSSSSSSSNLNSYYYPPNS`
+- B2 reference sequence：`PPPEPDWSNTVPVNKTIPVDTQ`
+
+最终 anchor-force 结果摘要：
+
+| 模式 | all-state pass | worst interchain PAE | worst protein ipTM | worst complex pLDDT | mean contact count |
+|---|---:|---:|---:|---:|---:|
+| B1 Strategy01 | false | 24.37 Å | 0.092 | 0.645 | 0 |
+| B2 reference refold | false | 21.54 Å | 0.213 | 0.754 | 0 |
+
+解释：
+
+- 工程链路已经跑通，Boltz2 能产出 PDB、PAE、pLDDT、ipTM。
+- MSA server 真实生效，且缓存复用逻辑已修正。
+- 但这个 refold 协议无法恢复界面：即使 B2 reference binder sequence 也得到 `contact_count=0`。
+- 因此这次结果不能用来断言 Strategy01 模型一定失败；它首先说明当前 “target template + binder sequence + sparse contact constraints” 的 Boltz2 docking 评估协议不够可靠。
+
+### 18.7 为什么 anchor 约束仍然没有恢复界面
+
+当前最可能原因：
+
+- contact constraints 是从 pseudo-complex 抽出的稀疏 residue-level anchors，但没有提供 binder 初始 pose 或完整界面几何。
+- Boltz2 对短 peptide/protein binder 的自由 docking 不一定能在少量 diffusion samples 下找到正确结合模式。
+- 本次 `sampling_steps=5`、`diffusion_samples=1` 是 smoke 设置，偏向快速验证，不适合作为最终 docking benchmark。
+- 该样本属于 `train_boltz` pseudo-label，不是 `V_exact` 全实验样本；B2 不是严格实验上限。
+
+对 Strategy01 科学目标的影响：
+
+- 这一步验证的是“评估协议是否可用”，不是模型最终能力。
+- 当前协议对 reference sequence 也失败，所以不能用它判断 B1 是否优于 B0。
+- 后续 B0/B1/B2 必须转到 `V_exact` exact-complex 主口径，B2 应优先直接使用实验复合物几何作为上限，而不是只做无初始姿态的 Boltz2 redocking。
+
+### 18.8 下一步修正后的 B0/B1/B2 协议
+
+推荐下一阶段改为：
+
+- B0：baseline Complexa 单状态生成 shared sequence；评估时对每个 state 用同一套 target hotspot/anchor 信息做受控 refold。
+- B1：Strategy01 多状态 state-specific sampler 生成 shared sequence 和 K 个 state-specific binder pose；评估优先使用模型输出 pose + Boltz2/结构指标复评分，而不是让 Boltz2 从零 dock。
+- B2：`V_exact` 实验真实复合物几何上限；如做 Boltz2 ceiling，必须明确标为 predictor ceiling，不能替代实验上限。
+
+必须保留的科学标准：
+
+- 一个 shared binder sequence。
+- 每个 target state 有各自合理的 binder pose。
+- 指标看 worst-state 和 all-state，不看 averaged structure。
+- 如果 reference binder 在某个 predictor redocking 协议下也失败，该 predictor 协议不能作为主判据。
+
+### 18.9 本次接续结论
+
+已完成：
+
+- 修复 Boltz2 template PDB 解析失败。
+- 修复 `--use_msa_server` 被 `msa: empty` 抵消的问题。
+- 修复 custom MSA 与 auto MSA 混用问题。
+- 完成无约束与 anchor-constrained B1/B2 smoke。
+- 证明当前 state-specific sampling 输出可以被送入 Boltz2 refold 流程。
+
+未完成或不能宣称完成：
+
+- 不能宣称 B1 已优于 B0。
+- 当前 B1/B2 smoke 不能作为最终 benchmark，因为 B2 reference redocking 也没有恢复界面。
+- 需要在 `V_exact` 上重新设计 B0/B1/B2 评估，尤其要把实验复合物几何作为 B2 主口径。
