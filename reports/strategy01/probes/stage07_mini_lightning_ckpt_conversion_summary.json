@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "output": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage07_sequence_consensus/runs/stage07_v23_wave1_pilot_structfix5/mini_final_lightning.ckpt",
+  "output_size_bytes": 1354846658,
+  "nn_keys_written": 1035,
+  "cfg_nn_name": "local_latents_transformer_multistate",
+  "latent_dim": 8,
+  "autoencoder_ckpt_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+  "source_phase": "mini",
+  "source_steps": 3000,
+  "first_keys": [
+    "nn.init_repr_factory.linear_out.weight",
+    "nn.cond_factory.linear_out.weight",
+    "nn.transition_c_1.swish_linear.0.weight",
+    "nn.transition_c_1.linear_out.weight",
+    "nn.transition_c_2.swish_linear.0.weight",
+    "nn.transition_c_2.linear_out.weight",
+    "nn.ensemble_target_encoder.target_feature_projection.0.weight",
+    "nn.ensemble_target_encoder.target_feature_projection.0.bias",
+    "nn.ensemble_target_encoder.target_feature_projection.1.weight",
+    "nn.ensemble_target_encoder.target_feature_projection.1.bias",
+    "nn.ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+    "nn.ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+    "nn.ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+    "nn.ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight"
+  ]
+}

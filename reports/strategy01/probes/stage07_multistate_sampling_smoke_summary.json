@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "sample_index": 110,
+  "sample_id": "2ofq_A_B__v00__k3__hexact",
+  "split": "val",
+  "target_id": "2ofq",
+  "nsteps": 24,
+  "valid_states": 3,
+  "pred_sequence": "APSSSSSSSSSNLNSYYYPPNS",
+  "reference_sequence": "PPPEPDWSNTVPVNKTIPVDTQ",
+  "sequence_identity_to_reference": 0.13636363636363635,
+  "state_specific_output_shapes": {
+    "bb_ca": [
+      1,
+      3,
+      22,
+      3
+    ],
+    "local_latents": [
+      1,
+      3,
+      22,
+      8
+    ]
+  },
+  "has_shared_seq_logits": true,
+  "has_state_seq_logits": true,
+  "state_summaries": [
+    {
+      "state_index": 0,
+      "ca_rmsd_to_label_nm": 1.7734706401824951
+    },
+    {
+      "state_index": 1,
+      "ca_rmsd_to_label_nm": 1.5458593368530273
+    },
+    {
+      "state_index": 2,
+      "ca_rmsd_to_label_nm": 1.3487684726715088
+    }
+  ],
+  "generated_state_pairwise": [
+    {
+      "state_i": 0,
+      "state_j": 1,
+      "ca_rmsd_between_generated_states_nm": 0.18212561309337616
+    },
+    {
+      "state_i": 0,
+      "state_j": 2,
+      "ca_rmsd_between_generated_states_nm": 0.1495848000049591
+    },
+    {
+      "state_i": 1,
+      "state_j": 2,
+      "ca_rmsd_between_generated_states_nm": 0.1487080603837967
+    }
+  ],
+  "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage07_sampling_smoke/2ofq_A_B__v00__k3__hexact",
+  "ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage07_sequence_consensus/runs/stage07_v23_wave1_pilot_structfix5/mini_final_lightning.ckpt",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples_materialized_ae_latents.pt"
+}

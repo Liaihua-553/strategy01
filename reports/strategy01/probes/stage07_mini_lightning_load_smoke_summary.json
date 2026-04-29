@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage07_sequence_consensus/runs/stage07_v23_wave1_pilot_structfix5/mini_final_lightning.ckpt",
+  "nn_class": "LocalLatentsTransformerMultistate",
+  "cfg_nn_name": "local_latents_transformer_multistate",
+  "latent_dim": 8,
+  "nparams": 338600691,
+  "has_state_seq_head": true,
+  "has_ensemble_target_encoder": true
+}
