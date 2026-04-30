@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "source": "pinder_hf_parquet",
+  "parquets": [
+    "data/strategy01/stage08b_curated_sources/pinder_hf/pinder_s-00000-of-00001.parquet",
+    "data/strategy01/stage08b_curated_sources/pinder_hf/pinder_af2-00000-of-00001.parquet"
+  ],
+  "source_row_counts": {
+    "s": 250,
+    "af2": 180
+  },
+  "accepted_total": 17,
+  "train_count": 14,
+  "val_count": 3,
+  "target_train_count": 256,
+  "target_val_count": 64,
+  "reject_counts": {
+    "low_contacts": 3,
+    "insufficient_motion_states": 249,
+    "low_contact_f1": 27,
+    "binder_length": 59,
+    "severe_clash": 18,
+    "low_persistent_anchors": 6,
+    "target_length": 51
+  },
+  "families_train": 14,
+  "families_val": 3,
+  "elapsed_sec": 152.31347250938416,
+  "notes": [
+    "PINDER rows are constrained-hybrid supervision, not exact multistate experimental benchmark.",
+    "local_latents are geometry proxy here and must be replaced by stage05_extract_ae_latents.py before training."
+  ],
+  "tensor_dataset": "data/strategy01/stage08b_pinder_hybrid_bronze_probe/stage08b_pinder_hybrid_samples.pt",
+  "train_tensor": "data/strategy01/stage08b_pinder_hybrid_bronze_probe/T_hybrid_silver_train.pt",
+  "val_tensor": "data/strategy01/stage08b_pinder_hybrid_bronze_probe/T_hybrid_silver_val.pt",
+  "manifest": "data/strategy01/stage08b_pinder_hybrid_bronze_probe/manifests/T_hybrid_silver_manifest.json"
+}

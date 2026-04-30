@@ -1,0 +1,20 @@
+{
+  "stage": "stage08b",
+  "last_completed_step": "pilot_finetune_and_exact_geometry_smoke_report_complete",
+  "next_step": "build_v_exact_tensor_dataset_then_run_full_b0_b1_b2_exact_benchmark",
+  "dataset": "data/strategy01/stage08b_merged_training/stage08b_merged_pilot_samples.pt",
+  "train_count": 119,
+  "val_count": 30,
+  "job_id": "1911816",
+  "report": "reports/strategy01/strategy01_stage08b_high_quality_refinetune_report.md",
+  "training_results": "reports/strategy01/probes/stage08b_merged_pilot_results.json",
+  "exact_benchmark_summary": "reports/strategy01/probes/stage08b_exact_geometry_benchmark_summary.json",
+  "updated_at_epoch": 1777532302.4852824,
+  "notes": [
+    "PINDER strict hybrid produced 11 accepted samples from pinder_s+pinder_af2; pinder_xl local download was incomplete and not used.",
+    "Merged pilot uses 138 Stage07 materialized AE samples plus 11 PINDER constrained-hybrid AE samples.",
+    "Target 256/64 was not met; current run is pilot only.",
+    "Single-A100 batch_size=4 succeeded; mini pilot completed 1500 steps and produced 30 training figures.",
+    "B2 exact-only reference geometry was summarized for 48 V_exact_main samples; B1 exact-only generation and B0 baseline generation remain blocked until V_exact tensor generation artifacts are built."
+  ]
+}

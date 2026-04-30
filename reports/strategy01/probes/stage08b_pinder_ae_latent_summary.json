@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "dataset": "data/strategy01/stage08b_pinder_hybrid/stage08b_pinder_hybrid_samples.pt",
+  "output": "data/strategy01/stage08b_pinder_hybrid/stage08b_pinder_hybrid_samples_ae_latents.pt",
+  "ae_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+  "device": "cpu",
+  "num_samples_total": 11,
+  "processed_states": 22,
+  "elapsed_sec": 3.816096305847168
+}

@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "datasets": [
+    "data/strategy01/stage07_production_v23_wave1/stage06_predictor_pilot_samples_materialized_ae_latents.pt",
+    "data/strategy01/stage08b_pinder_hybrid/stage08b_pinder_hybrid_samples_ae_latents.pt"
+  ],
+  "source_counts": {
+    "stage07_v23_wave1": 138,
+    "pinder_hybrid_silver": 11
+  },
+  "skipped": {},
+  "total_count": 149,
+  "train_count": 119,
+  "val_count": 30,
+  "families_train": 31,
+  "families_val": 7,
+  "notes": [
+    "Merged set is Stage08B pilot data. It does not satisfy the desired 256/64 threshold unless train_count/val_count reach that target.",
+    "Stage07 samples are predictor-derived bronze; PINDER samples are constrained-template hybrid silver."
+  ],
+  "tensor_dataset": "data/strategy01/stage08b_merged_training/stage08b_merged_pilot_samples.pt",
+  "train_tensor": "data/strategy01/stage08b_merged_training/T_stage08b_train.pt",
+  "val_tensor": "data/strategy01/stage08b_merged_training/T_stage08b_val.pt"
+}
