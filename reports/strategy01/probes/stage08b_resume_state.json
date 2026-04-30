@@ -1,20 +1,18 @@
 {
-  "stage": "stage08b",
-  "last_completed_step": "pilot_finetune_and_exact_geometry_smoke_report_complete",
-  "next_step": "build_v_exact_tensor_dataset_then_run_full_b0_b1_b2_exact_benchmark",
-  "dataset": "data/strategy01/stage08b_merged_training/stage08b_merged_pilot_samples.pt",
-  "train_count": 119,
-  "val_count": 30,
-  "job_id": "1911816",
+  "stage": "stage08b_continued",
+  "last_completed_step": "v_exact_tensor_ae_b1_sampling_full_exact_benchmark_complete",
+  "next_step": "produce_b0_baseline_artifact_or_design_fair_baseline_sequence_pipeline_then_fix_data_and_sampling_clash",
+  "v_exact_tensor": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "b1_sampling_summary": "reports/strategy01/probes/stage08b_vexact_sampling_summary.json",
+  "full_exact_benchmark_summary": "reports/strategy01/probes/stage08b_full_exact_benchmark_summary.json",
   "report": "reports/strategy01/strategy01_stage08b_high_quality_refinetune_report.md",
-  "training_results": "reports/strategy01/probes/stage08b_merged_pilot_results.json",
-  "exact_benchmark_summary": "reports/strategy01/probes/stage08b_exact_geometry_benchmark_summary.json",
-  "updated_at_epoch": 1777532302.4852824,
+  "updated_at_epoch": 1777542845.6124399,
   "notes": [
-    "PINDER strict hybrid produced 11 accepted samples from pinder_s+pinder_af2; pinder_xl local download was incomplete and not used.",
-    "Merged pilot uses 138 Stage07 materialized AE samples plus 11 PINDER constrained-hybrid AE samples.",
-    "Target 256/64 was not met; current run is pilot only.",
-    "Single-A100 batch_size=4 succeeded; mini pilot completed 1500 steps and produced 30 training figures.",
-    "B2 exact-only reference geometry was summarized for 48 V_exact_main samples; B1 exact-only generation and B0 baseline generation remain blocked until V_exact tensor generation artifacts are built."
+    "V_exact tensor dataset built successfully: 48 samples, 41 families, 0 rejects.",
+    "V_exact AE latents extracted successfully: 144 states, encoder.mean [K,Nb,8].",
+    "Stage08B mini_final.pt converted to Lightning checkpoint and used for exact sampling.",
+    "B1 Strategy01 exact sampling completed for 48 samples with nsteps=24.",
+    "Full exact benchmark completed with B0 missing: B1 mean contact-F1 about 0.117 and clash_rate about 0.785, so current pilot is not a successful exact benchmark model.",
+    "Do not scale to 1000 samples before fixing data quality, B0 artifact, and clash/interface-aware sampling guidance."
   ]
 }

@@ -285,3 +285,85 @@ $PY scripts/strategy01/stage08b_write_report.py
 5. 对 hybrid silver 增加 source complex template 与 anchor constrained reconstruction；没有 source interface 的自由 docking 不进主监督。
 
 阶段判断：本轮证明了训练链路、AE latent 接入和 state-specific consensus loss 可以跑通并下降；真正限制模型效果的是高质量 exact/hybrid 数据和 exact benchmark artifact 还没补齐。
+
+## 9. Stage08B 未完成项补完：V_exact tensor、B1 exact sampling 与 full benchmark
+
+在上一版报告之后，本阶段继续补完了原先未完成的 exact benchmark 链路。
+
+### 9.1 V_exact tensor dataset
+
+- 构建脚本：`scripts/strategy01/stage08b_build_vexact_tensor_dataset.py`
+- 输入 manifest：`data/strategy01/stage08_high_quality_dataset/V_exact_main_manifest.json`
+- 输出 tensor：`data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples.pt`
+- 样本数：`48`
+- reject 数：`0`
+- external validation families：`41`
+
+这一步把原来只能用于审计的 `V_exact` manifest 转成了 Strategy01 sampler 能直接读取的 tensor dataset。每条样本包含 target 多状态结构、共享 binder 序列、K 个 exact complex label、binder CA、interface contact/distance labels 和 state mask。所有样本都作为 external validation，不混入训练。
+
+### 9.2 V_exact AE latent
+
+- 脚本：`scripts/strategy01/stage05_extract_ae_latents.py`
+- 输出：`data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt`
+- 样本数：`48`
+- processed states：`144`
+- AE checkpoint：`/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt`
+
+结论：`V_exact` 的 local latents 已全部替换为 Complexa AE `encoder.mean [K,Nb,8]`，没有保留 geometry proxy 作为主评估输入。
+
+### 9.3 Stage08B checkpoint 转换与 exact sampling
+
+- 转换脚本：`scripts/strategy01/stage07_convert_mini_to_lightning_ckpt.py`
+- 输出 checkpoint：`ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt`
+- source phase/steps：`mini/1500`
+- exact sampling 脚本：`scripts/strategy01/stage08b_multistate_exact_sampling.py`
+- exact sampling 样本数：`48`
+- nsteps：`24`
+- 总耗时：`76.200 sec`
+- 平均耗时：`1.587 sec/sample`
+
+这一步完成了 `V_exact` 上的 B1 Strategy01 多状态生成：一个 shared sequence 加每个 state 的 state-specific binder CA pose。输出目录为 `results/strategy01/stage08b_vexact_sampling`。
+
+### 9.4 Full exact benchmark 结果
+
+运行脚本：`scripts/strategy01/stage08b_full_exact_benchmark.py`
+
+输出：`reports/strategy01/probes/stage08b_full_exact_benchmark_summary.json`
+
+| 项 | 状态 | 说明 |
+|---|---|---|
+| B0 baseline Complexa | `not_run` | `Original Complexa baseline does not expose a shared sequence head in this Strategy01 tensor sampling path; no baseline generation artifact was available.` |
+| B1 Strategy01 | `passed` | V_exact tensor 上 48 条 exact samples 的 Strategy01 生成结果 |
+| B2 exact reference | `passed` | 实验 exact complex geometry 上限 |
+
+B1 exact 关键指标：
+
+| 指标 | 结果 |
+|---|---|
+| sample_count | `48` |
+| state_count_ok | `144` |
+| contact-F1 | `{'n': 144, 'mean': 0.11708181922641514, 'worst': 0.0, 'best': 0.45810055865921795}` |
+| direct/worst interface RMSD Å | `{'n': 144, 'mean': 26.2497934434149, 'worst': 101.48299407958984, 'best': 8.060057640075684}` |
+| aligned binder CA RMSD Å | `{'n': 144, 'mean': 11.861835042321196, 'worst': 85.13838813740836, 'best': 4.460184516758356}` |
+| generated contact persistence | `{'n': 48, 'mean': 0.49876340509741074, 'worst': 0.0, 'best': 0.7533333333333333}` |
+| state metric std contact-F1 | `{'n': 48, 'mean': 0.015135371070050719, 'worst': 0.06758688503862295, 'best': 0.0}` |
+| clash rate | `0.7847222222222222` |
+
+B2 exact reference 关键指标：
+
+| 指标 | 结果 |
+|---|---|
+| exact contact count | `{'n': 144, 'mean': 125.92361111111111, 'worst': 34.0, 'best': 417.0}` |
+| exact contact persistence | `{'n': 48, 'mean': 0.658085925508294, 'worst': 0.411214953271028, 'best': 0.9316239316239316}` |
+| target motion RMSD Å | `{'n': 48, 'mean': 4.2023125, 'worst': 26.965, 'best': 1.046}` |
+
+### 9.5 科学判断
+
+这个补完步骤给出了明确的负结果：当前 Stage08B pilot 能在训练/内部验证 loss 上下降，但在真正 `V_exact` exact geometry 上泛化很弱。B1 的 mean contact-F1 只有约 `0.117`，clash rate 约 `0.785`。这说明现有 119/30 pilot 数据和 loss 还不足以学到真实多状态 interface geometry。
+
+因此不能进入 1000 样本大训练。下一阶段应先解决三件事：
+
+1. 补原始 Complexa B0 artifact：原模型生成结构后需要接入 ProteinMPNN/sequence_hallucination 或原论文 pipeline 的序列确定步骤，否则不能和 Strategy01 的 shared sequence head 做公平比较。
+2. 提升 exact/hybrid 训练数据质量：把 `V_exact` 的一部分或同源 exact/hybrid 数据转成训练集，同时保持 family holdout，避免只用 predictor-derived bronze。
+3. 修正采样约束：当前 B1 pose clash 高，说明只靠 flow trajectory 还不够，需要把 exact interface anchors/contact constraints 或 clash-aware guidance 前移到 sampling/reward，而不是只在训练 loss 里弱监督。
+

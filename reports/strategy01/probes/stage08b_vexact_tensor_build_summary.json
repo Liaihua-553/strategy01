@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "source_manifest": "data/strategy01/stage08_high_quality_dataset/V_exact_main_manifest.json",
+  "sample_count": 48,
+  "reject_count": 0,
+  "rejects": [],
+  "val_count": 48,
+  "families_val": 41,
+  "tensor_dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples.pt",
+  "val_tensor": "data/strategy01/stage08b_vexact_tensor/V_exact_val.pt",
+  "tensor_manifest": "data/strategy01/stage08b_vexact_tensor/V_exact_tensor_manifest.json",
+  "elapsed_sec": 19.481547355651855,
+  "notes": [
+    "All samples are split=val/external benchmark; they are not used as training data in Stage08B.",
+    "local_latents are geometry proxy until stage05_extract_ae_latents.py replaces them with Complexa AE encoder.mean."
+  ]
+}

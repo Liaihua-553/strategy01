@@ -1,0 +1,2172 @@
+{
+  "status": "passed",
+  "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "ckpt": "ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+  "out_dir": "results/strategy01/stage08b_vexact_sampling",
+  "nsteps": 24,
+  "sample_count": 48,
+  "elapsed_sec": 76.19955253601074,
+  "mean_sec_per_sample": 1.5874907076358795,
+  "rows": [
+    {
+      "status": "passed",
+      "sample_index": 0,
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSQSNSNSPSPPP",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.07142857142857142,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.598326563835144
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5871910452842712
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5671094655990601
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.17232248187065125
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14218471944332123
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14745089411735535
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1a0n_B_A",
+      "elapsed_sec": 1.8971703052520752
+    },
+    {
+      "status": "passed",
+      "sample_index": 1,
+      "sample_id": "1ai0_L_K",
+      "split": "val",
+      "target_id": "1ai0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSQSSSSSSSSNNNLNLNNS",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.19047619047619047,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6077722311019897
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6121907830238342
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6081950664520264
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1337936371564865
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14033757150173187
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.12674817442893982
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1ai0_L_K",
+      "elapsed_sec": 1.5114638805389404
+    },
+    {
+      "status": "passed",
+      "sample_index": 2,
+      "sample_id": "1aze_A_B",
+      "split": "val",
+      "target_id": "1aze",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSYSPPPPP",
+      "reference_sequence": "VPPPVPPRRR",
+      "sequence_identity_to_reference": 0.3,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5270518660545349
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5563719272613525
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.49309685826301575
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.11304662376642227
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1260300576686859
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1277407854795456
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1aze_A_B",
+      "elapsed_sec": 1.426379919052124
+    },
+    {
+      "status": "passed",
+      "sample_index": 3,
+      "sample_id": "1bxp_A_B",
+      "split": "val",
+      "target_id": "1bxp",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSPPPPPPPPPP",
+      "reference_sequence": "MRYYESSLKSYPD",
+      "sequence_identity_to_reference": 0.07692307692307693,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6989262700080872
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.8102702498435974
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6992915868759155
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.19360831379890442
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15325139462947845
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1872626692056656
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1bxp_A_B",
+      "elapsed_sec": 1.5115001201629639
+    },
+    {
+      "status": "passed",
+      "sample_index": 4,
+      "sample_id": "1cee_A_B",
+      "split": "val",
+      "target_id": "1cee",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSSSPSSSSSSSSSPSSSPSPPPSSPSLNPPPPPPPPPPPPPPPPPPSSPNPSNNP",
+      "reference_sequence": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "sequence_identity_to_reference": 0.1016949152542373,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.6048810482025146
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.3213801383972168
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.403774619102478
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.13962523639202118
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15527580678462982
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13821400701999664
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1cee_A_B",
+      "elapsed_sec": 1.4402964115142822
+    },
+    {
+      "status": "passed",
+      "sample_index": 5,
+      "sample_id": "1cf4_A_B",
+      "split": "val",
+      "target_id": "1cf4",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPSPSSPPPPPPPPPPPPPPPPPPSPSSSSSSSSSPPPPPP",
+      "reference_sequence": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "sequence_identity_to_reference": 0.045454545454545456,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.044202208518982
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0538768768310547
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0138136148452759
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1491340547800064
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1549837440252304
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16507327556610107
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1cf4_A_B",
+      "elapsed_sec": 1.421738862991333
+    },
+    {
+      "status": "passed",
+      "sample_index": 6,
+      "sample_id": "1cir_A_B",
+      "split": "val",
+      "target_id": "1cir",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSPSSPPPPSPPPLPPPPPPPPP",
+      "reference_sequence": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9407357573509216
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9709655046463013
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9935485124588013
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.13629327714443207
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15947973728179932
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1540638655424118
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1cir_A_B",
+      "elapsed_sec": 1.4294984340667725
+    },
+    {
+      "status": "passed",
+      "sample_index": 7,
+      "sample_id": "1co0_A_B",
+      "split": "val",
+      "target_id": "1co0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "SPPPPPPSPPSPSSNPPPSPNPSSPNSSSTSLSTLNYNNSPYNNNNNNSPNNSPSNSPNNSNPPPPSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPPPP",
+      "reference_sequence": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "sequence_identity_to_reference": 0.02857142857142857,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 6.412023067474365
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 6.52700138092041
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 6.5274481773376465
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.164850115776062
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1657368689775467
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15276752412319183
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1co0_A_B",
+      "elapsed_sec": 1.5271251201629639
+    },
+    {
+      "status": "passed",
+      "sample_index": 8,
+      "sample_id": "1d5g_A_B",
+      "split": "val",
+      "target_id": "1d5g",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSSSPSPPPPPPPP",
+      "reference_sequence": "FADSEADENEQVSAV",
+      "sequence_identity_to_reference": 0.06666666666666667,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6645931601524353
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6592042446136475
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.780449628829956
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.13257525861263275
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.11143849790096283
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13694116473197937
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1d5g_A_B",
+      "elapsed_sec": 1.4970340728759766
+    },
+    {
+      "status": "passed",
+      "sample_index": 9,
+      "sample_id": "1ddm_A_B",
+      "split": "val",
+      "target_id": "1ddm",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APPPPPPPPPP",
+      "reference_sequence": "GFSNMSFEDFP",
+      "sequence_identity_to_reference": 0.09090909090909091,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.4758699834346771
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.44682297110557556
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.4502033591270447
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.12342802435159683
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.12429847568273544
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.12933684885501862
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1ddm_A_B",
+      "elapsed_sec": 1.5059502124786377
+    },
+    {
+      "status": "passed",
+      "sample_index": 10,
+      "sample_id": "1dpu_A_B",
+      "split": "val",
+      "target_id": "1dpu",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "SSSSSSYSPPPPPPPP",
+      "reference_sequence": "RIQRNKAAALLRLAAR",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.4954336881637573
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5784440040588379
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5422808527946472
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15939375758171082
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1459902971982956
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14633230865001678
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1dpu_A_B",
+      "elapsed_sec": 1.505364179611206
+    },
+    {
+      "status": "passed",
+      "sample_index": 11,
+      "sample_id": "1e0a_A_B",
+      "split": "val",
+      "target_id": "1e0a",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSSSSSPPSSPPPPPPSPPPPPPPPPSPSPPPPPPPPPPPPPP",
+      "reference_sequence": "GSISLPSDFEHTIHVGFDAVTGEFTGMPEQWARLLQTSNITKSEQK",
+      "sequence_identity_to_reference": 0.043478260869565216,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.5931177139282227
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.5733059644699097
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.6489596366882324
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.190046489238739
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1931263655424118
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15418162941932678
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1e0a_A_B",
+      "elapsed_sec": 1.4942095279693604
+    },
+    {
+      "status": "passed",
+      "sample_index": 12,
+      "sample_id": "1e91_A_B",
+      "split": "val",
+      "target_id": "1e91",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PSSSYPPYPPPPP",
+      "reference_sequence": "NIQMLLEAADYLE",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.50656658411026
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5449393391609192
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5241633653640747
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.17409831285476685
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1798904538154602
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16274172067642212
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1e91_A_B",
+      "elapsed_sec": 1.4940555095672607
+    },
+    {
+      "status": "passed",
+      "sample_index": 13,
+      "sample_id": "1eci_B_A",
+      "split": "val",
+      "target_id": "1eci",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPAPPSPPPPPPPPPPPPPPPPPPSSPPPPPPPP",
+      "reference_sequence": "GVIPKKIWETVCPTVEPWAKKCSGDIATYIKRECGKL",
+      "sequence_identity_to_reference": 0.08108108108108109,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9594779014587402
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0000860691070557
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9313480854034424
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1508290320634842
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14765802025794983
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1489790827035904
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1eci_B_A",
+      "elapsed_sec": 1.4364902973175049
+    },
+    {
+      "status": "passed",
+      "sample_index": 14,
+      "sample_id": "1ees_A_B",
+      "split": "val",
+      "target_id": "1ees",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PSSSSSSPSPSSSSSPPPPSSSPPPPPPPPPPPSSSPPPPPPPPPP",
+      "reference_sequence": "GSKERPEISLPSDFEHTIHVGFDAVTGEFTGIPEQWARLLQTSNIT",
+      "sequence_identity_to_reference": 0.08695652173913043,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.3332645893096924
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.4012662172317505
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.4322936534881592
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15574713051319122
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.17315655946731567
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15714286267757416
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1ees_A_B",
+      "elapsed_sec": 1.4733223915100098
+    },
+    {
+      "status": "passed",
+      "sample_index": 15,
+      "sample_id": "1f96_A_C",
+      "split": "val",
+      "target_id": "1f96",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSYSPPPPPPPPPPPPP",
+      "reference_sequence": "MKDTGIQVRDLDGKSHK",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9471323490142822
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9324342012405396
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9742958545684814
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.14019538462162018
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15167184174060822
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15424518287181854
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1f96_A_C",
+      "elapsed_sec": 1.5157966613769531
+    },
+    {
+      "status": "passed",
+      "sample_index": 16,
+      "sample_id": "1fmh_A_B",
+      "split": "val",
+      "target_id": "1fmh",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSSPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "EVQALKKRVQALKARNYAAKQKVQALRHKCG",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.2412077188491821
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.2766159772872925
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.2594096660614014
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15236404538154602
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1473870724439621
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1572808176279068
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1fmh_A_B",
+      "elapsed_sec": 1.4466781616210938
+    },
+    {
+      "status": "passed",
+      "sample_index": 17,
+      "sample_id": "1g1e_B_A",
+      "split": "val",
+      "target_id": "1g1e",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPPPPYPPPPPPPP",
+      "reference_sequence": "RMNIQMLLEAADYLER",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.4965791702270508
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5255879759788513
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5138975381851196
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1449519544839859
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14927177131175995
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1524260938167572
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1g1e_B_A",
+      "elapsed_sec": 1.5018951892852783
+    },
+    {
+      "status": "passed",
+      "sample_index": 18,
+      "sample_id": "1h0t_B_A",
+      "split": "val",
+      "target_id": "1h0t",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPPSSPSPPPSPPPPPPPPPSSSSSPPPPPPPPPPPPPPSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "VDNKFNKEQQNAFYEILHLPNLNEEQRNAFIQSLKDDPSQSANLLAEAKKLNDAQAPK",
+      "sequence_identity_to_reference": 0.05172413793103448,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.181070327758789
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.1949094533920288
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.2347209453582764
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16259106993675232
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16811509430408478
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15594549477100372
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1h0t_B_A",
+      "elapsed_sec": 1.4499294757843018
+    },
+    {
+      "status": "passed",
+      "sample_index": 19,
+      "sample_id": "1h8b_A_B",
+      "split": "val",
+      "target_id": "1h8b",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GKKAEAVATVVAAVDQARVREPR",
+      "sequence_identity_to_reference": 0.043478260869565216,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6572760343551636
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6336571574211121
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6365400552749634
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.14835786819458008
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1398620754480362
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.12829500436782837
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1h8b_A_B",
+      "elapsed_sec": 1.4371047019958496
+    },
+    {
+      "status": "passed",
+      "sample_index": 20,
+      "sample_id": "1haj_A_B",
+      "split": "val",
+      "target_id": "1haj",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APPYPPPPPPPPP",
+      "reference_sequence": "WRYYESSLEPYPD",
+      "sequence_identity_to_reference": 0.23076923076923078,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9612841010093689
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9586294293403625
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9751806259155273
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16003015637397766
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.17064593732357025
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15038597583770752
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1haj_A_B",
+      "elapsed_sec": 1.4418120384216309
+    },
+    {
+      "status": "passed",
+      "sample_index": 21,
+      "sample_id": "1hls_B_A",
+      "split": "val",
+      "target_id": "1hls",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSQSSSSSSSSYPYNPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.14285714285714285,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.7287036776542664
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7335679531097412
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.7175933122634888
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16137883067131042
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16355524957180023
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1352510005235672
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1hls_B_A",
+      "elapsed_sec": 1.4367187023162842
+    },
+    {
+      "status": "passed",
+      "sample_index": 22,
+      "sample_id": "1hoy_A_B",
+      "split": "val",
+      "target_id": "1hoy",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PSSPPYPPPPPPPP",
+      "reference_sequence": "HRYYESSLEPWYPD",
+      "sequence_identity_to_reference": 0.14285714285714285,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9696168899536133
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.980349063873291
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.968632161617279
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.11956846714019775
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1321098953485489
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15781408548355103
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1hoy_A_B",
+      "elapsed_sec": 1.4664804935455322
+    },
+    {
+      "status": "passed",
+      "sample_index": 23,
+      "sample_id": "1hv2_A_B",
+      "split": "val",
+      "target_id": "1hv2",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPPPPPSPPPPPP",
+      "reference_sequence": "TLKERCLQVVRSLVK",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6856987476348877
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6749921441078186
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6712914705276489
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.11817168444395065
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.11631178855895996
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13777823746204376
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1hv2_A_B",
+      "elapsed_sec": 1.4342761039733887
+    },
+    {
+      "status": "passed",
+      "sample_index": 24,
+      "sample_id": "1ibx_B_A",
+      "split": "val",
+      "target_id": "1ibx",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSPSSSPSSSSSPPPPSPPPPPPSPSSSSSYPPPPPPPPPPPSSSSSPPPPPSSSSPPPPSPSPSPPPPPPPPPPPPP",
+      "reference_sequence": "MLQKPKSVKLRALRSPRKFGVAGRSCQEVLRKGCLRFQLPERGSRLCLYEDGTELTEDYFPSVPDNAELVLLTLGQAWQGH",
+      "sequence_identity_to_reference": 0.06172839506172839,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.6085212230682373
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.5915857553482056
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.598561406135559
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15314017236232758
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1451590210199356
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1510324329137802
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1ibx_B_A",
+      "elapsed_sec": 1.4283137321472168
+    },
+    {
+      "status": "passed",
+      "sample_index": 25,
+      "sample_id": "1idh_A_B",
+      "split": "val",
+      "target_id": "1idh",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSYSSPPYPPPPPPPPP",
+      "reference_sequence": "YRGWKHWVYYTCCPDTPY",
+      "sequence_identity_to_reference": 0.16666666666666666,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.508317768573761
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5972815155982971
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5551773309707642
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1441131830215454
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14871525764465332
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15731792151927948
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1idh_A_B",
+      "elapsed_sec": 1.440619945526123
+    },
+    {
+      "status": "passed",
+      "sample_index": 26,
+      "sample_id": "1jco_B_A",
+      "split": "val",
+      "target_id": "1jco",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPSSNPSYSPPPPPPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.047619047619047616,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.7941765785217285
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.852469801902771
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9333582520484924
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16786271333694458
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.24167482554912567
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.2135629951953888
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1jco_B_A",
+      "elapsed_sec": 1.4272336959838867
+    },
+    {
+      "status": "passed",
+      "sample_index": 27,
+      "sample_id": "1jeg_A_B",
+      "split": "val",
+      "target_id": "1jeg",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSSSNSPPPPPPPPPPP",
+      "reference_sequence": "IPPPLPERTPESFIVVEE",
+      "sequence_identity_to_reference": 0.05555555555555555,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6289846301078796
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6034502387046814
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6052907109260559
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15566584467887878
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1700357347726822
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13017821311950684
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1jeg_A_B",
+      "elapsed_sec": 1.4337732791900635
+    },
+    {
+      "status": "passed",
+      "sample_index": 28,
+      "sample_id": "1jm7_B_A",
+      "split": "val",
+      "target_id": "1jm7",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "SSSPSPSSSSSSSSSSSSSSSSSSPPSYPPSYPSNSSSSNSSNSSSSSSSSPPPSSSSSSSSSSSSPSPPPPPNNSSPSPSPSYSSSPNNSSNYSPPPSSNSS",
+      "reference_sequence": "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYAN",
+      "sequence_identity_to_reference": 0.038834951456310676,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.8239799737930298
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.793423056602478
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.8074336051940918
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.14643989503383636
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15568511188030243
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14625635743141174
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1jm7_B_A",
+      "elapsed_sec": 1.5211336612701416
+    },
+    {
+      "status": "passed",
+      "sample_index": 29,
+      "sample_id": "1jmq_A_P",
+      "split": "val",
+      "target_id": "1jmq",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSYSPPPPP",
+      "reference_sequence": "GTPPPPYTVG",
+      "sequence_identity_to_reference": 0.1,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6163758635520935
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5975514650344849
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6247740387916565
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.184628427028656
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14839960634708405
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.21017254889011383
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1jmq_A_P",
+      "elapsed_sec": 1.485530138015747
+    },
+    {
+      "status": "passed",
+      "sample_index": 30,
+      "sample_id": "1k4u_S_P",
+      "split": "val",
+      "target_id": "1k4u",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPSSNSSPPYPPPPPPYPPPSPPPPPPPPP",
+      "reference_sequence": "SKPQPAVPPRPSADLILNRCSESTKRKLASAV",
+      "sequence_identity_to_reference": 0.0625,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.8452603220939636
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.8464760780334473
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.8371869325637817
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1530204713344574
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1719028651714325
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14907532930374146
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1k4u_S_P",
+      "elapsed_sec": 1.504044532775879
+    },
+    {
+      "status": "passed",
+      "sample_index": 31,
+      "sample_id": "1kat_W_X",
+      "split": "val",
+      "target_id": "1kat",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GGNECDIARMWEWECFERL",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.8436589241027832
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7903544306755066
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.7920230627059937
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1461869776248932
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14943182468414307
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1865730583667755
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1kat_W_X",
+      "elapsed_sec": 1.4460105895996094
+    },
+    {
+      "status": "passed",
+      "sample_index": 32,
+      "sample_id": "1kbh_B_A",
+      "split": "val",
+      "target_id": "1kbh",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPPSSSSSSSSSSSSSLSTSTTTSLLIIPPPSSSSSNSNPNNL",
+      "reference_sequence": "EGQSDERALLDQLHTLLSNTDATGLEEIDRALGIPELVNQGQALEPK",
+      "sequence_identity_to_reference": 0.06382978723404255,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 7.9308671951293945
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 7.97482967376709
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 8.513840675354004
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.18437081575393677
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.651050329208374
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.5403949022293091
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1kbh_B_A",
+      "elapsed_sec": 1.441239595413208
+    },
+    {
+      "status": "passed",
+      "sample_index": 33,
+      "sample_id": "1kc4_A_B",
+      "split": "val",
+      "target_id": "1kc4",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSPSSSPPPPPPPPPPPP",
+      "reference_sequence": "IPGKRTESFYECCKEPYPD",
+      "sequence_identity_to_reference": 0.10526315789473684,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.0646135807037354
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0145823955535889
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9806733727455139
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16891296207904816
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16545338928699493
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1815691739320755
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1kc4_A_B",
+      "elapsed_sec": 1.492915391921997
+    },
+    {
+      "status": "passed",
+      "sample_index": 34,
+      "sample_id": "1l8c_B_A",
+      "split": "val",
+      "target_id": "1l8c",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "ADPEKRKLIQQQLVLLLHAHKCQRREQANGEVRACSLPHCRTMKNVLNHMTHCQAGKACQVAHCASSRQIISHWKNCTRHDCPVCLPLKNASDKR",
+      "sequence_identity_to_reference": 0.042105263157894736,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 3.984856128692627
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 3.861445426940918
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 4.025242805480957
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.18964269757270813
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14660213887691498
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.20720423758029938
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1l8c_B_A",
+      "elapsed_sec": 1.4658920764923096
+    },
+    {
+      "status": "passed",
+      "sample_index": 35,
+      "sample_id": "1ljz_A_B",
+      "split": "val",
+      "target_id": "1ljz",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSSSPSPPPPPYPPPPPPPPPPPP",
+      "reference_sequence": "EERGWKHWVYYTCCPDTPYLDITEE",
+      "sequence_identity_to_reference": 0.08,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.4398632049560547
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.4472153186798096
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.407167911529541
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.14324618875980377
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1588192731142044
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14944405853748322
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1ljz_A_B",
+      "elapsed_sec": 1.4399430751800537
+    },
+    {
+      "status": "passed",
+      "sample_index": 36,
+      "sample_id": "1lkq_B_A",
+      "split": "val",
+      "target_id": "1lkq",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASEQSSSSSNNPNNLNNNNNS",
+      "reference_sequence": "GGGEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.09523809523809523,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5880204439163208
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5495172739028931
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5476976633071899
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.13190898299217224
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.178107351064682
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1504015177488327
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1lkq_B_A",
+      "elapsed_sec": 1.5114641189575195
+    },
+    {
+      "status": "passed",
+      "sample_index": 37,
+      "sample_id": "1lxg_A_B",
+      "split": "val",
+      "target_id": "1lxg",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSPSSSPPPPPPPPPPP",
+      "reference_sequence": "YRGWKHWVYYTCCPDTPY",
+      "sequence_identity_to_reference": 0.1111111111111111,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9193366169929504
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.868158221244812
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.8782332539558411
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15962575376033783
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15997706353664398
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14157015085220337
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1lxg_A_B",
+      "elapsed_sec": 1.443195104598999
+    },
+    {
+      "status": "passed",
+      "sample_index": 38,
+      "sample_id": "1m4p_A_B",
+      "split": "val",
+      "target_id": "1m4p",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GPSYSPPPP",
+      "reference_sequence": "PEPTAPPEE",
+      "sequence_identity_to_reference": 0.2222222222222222,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5498487949371338
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5603128671646118
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5332327485084534
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.0800691545009613
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.12444403022527695
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13162381947040558
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1m4p_A_B",
+      "elapsed_sec": 1.4186041355133057
+    },
+    {
+      "status": "passed",
+      "sample_index": 39,
+      "sample_id": "1mhi_B_A",
+      "split": "val",
+      "target_id": "1mhi",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPSSPPPPPPPPPPPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.7911522388458252
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7839194536209106
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.8068169951438904
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.14617133140563965
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14808779954910278
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1392085999250412
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1mhi_B_A",
+      "elapsed_sec": 1.4303820133209229
+    },
+    {
+      "status": "passed",
+      "sample_index": 40,
+      "sample_id": "1mq1_A_C",
+      "split": "val",
+      "target_id": "1mq1",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSSPPPPPPPP",
+      "reference_sequence": "TRTKIDWNKILS",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6488537788391113
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.66647869348526
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6222295165061951
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16848307847976685
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1592755764722824
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.13628634810447693
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1mq1_A_C",
+      "elapsed_sec": 1.4569823741912842
+    },
+    {
+      "status": "passed",
+      "sample_index": 41,
+      "sample_id": "1n7t_A_B",
+      "split": "val",
+      "target_id": "1n7t",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSYSNS",
+      "reference_sequence": "TGWETWV",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.46635210514068604
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.4460368752479553
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.45194172859191895
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.121510349214077
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14738829433918
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.09811005741357803
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1n7t_A_B",
+      "elapsed_sec": 1.4672050476074219
+    },
+    {
+      "status": "passed",
+      "sample_index": 42,
+      "sample_id": "1o0p_A_B",
+      "split": "val",
+      "target_id": "1o0p",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSPTYPPPPPPP",
+      "reference_sequence": "PSKKRKRSRWNQD",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5245368480682373
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5328633785247803
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5002812147140503
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.15363165736198425
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16224101185798645
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1193082332611084
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1o0p_A_B",
+      "elapsed_sec": 1.4413280487060547
+    },
+    {
+      "status": "passed",
+      "sample_index": 43,
+      "sample_id": "1onv_A_B",
+      "split": "val",
+      "target_id": "1onv",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GPSYPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GSSSEADEMAKALEAELNDLM",
+      "sequence_identity_to_reference": 0.09523809523809523,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.4821253716945648
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.495477557182312
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.558673083782196
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1353827565908432
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1865421086549759
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.17730247974395752
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1onv_A_B",
+      "elapsed_sec": 1.5143377780914307
+    },
+    {
+      "status": "passed",
+      "sample_index": 44,
+      "sample_id": "1oqp_A_B",
+      "split": "val",
+      "target_id": "1oqp",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSSSSSSPSSSPPPPPPP",
+      "reference_sequence": "KKRELIESKWHRLLFHDKK",
+      "sequence_identity_to_reference": 0.05263157894736842,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.479971706867218
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.48625922203063965
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.49730348587036133
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.13940253853797913
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15036727488040924
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14096468687057495
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1oqp_A_B",
+      "elapsed_sec": 1.4358527660369873
+    },
+    {
+      "status": "passed",
+      "sample_index": 45,
+      "sample_id": "1otr_A_B",
+      "split": "val",
+      "target_id": "1otr",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSPPPSSSSSPPPPPPPPSSSPSSSSPPPPPPPPPPPPPSPPPPPPSYSPPPPPPPPPPPPSSSPSSSSSPPP",
+      "reference_sequence": "MQIFVKTLTGKTITLEVESSDTIDNVKSKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
+      "sequence_identity_to_reference": 0.05263157894736842,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.1195096969604492
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0859256982803345
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0922060012817383
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16020376980304718
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.16549333930015564
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15508988499641418
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1otr_A_B",
+      "elapsed_sec": 1.517876386642456
+    },
+    {
+      "status": "passed",
+      "sample_index": 46,
+      "sample_id": "1pd7_A_B",
+      "split": "val",
+      "target_id": "1pd7",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "VRMNIQMLLEAADYLERREREAEH",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.8891733884811401
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.857290506362915
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.8330278396606445
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.1283901035785675
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.14791101217269897
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.15210647881031036
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1pd7_A_B",
+      "elapsed_sec": 1.441988229751587
+    },
+    {
+      "status": "passed",
+      "sample_index": 47,
+      "sample_id": "1pon_B_A",
+      "split": "val",
+      "target_id": "1pon",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "ASSPPPPPPPPPPPPPPPPPSLSNPPPPPPPPPP",
+      "reference_sequence": "KSEEELANAFRIFDKNADGYIDIEELGEILRATG",
+      "sequence_identity_to_reference": 0.029411764705882353,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.1396421194076538
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0597692728042603
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0746214389801025
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 0.16776984930038452
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.1748252958059311
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 0.17206695675849915
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling/1pon_B_A",
+      "elapsed_sec": 1.487788200378418
+    }
+  ]
+}

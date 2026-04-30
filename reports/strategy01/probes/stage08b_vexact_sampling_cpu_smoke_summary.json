@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+  "out_dir": "results/strategy01/stage08b_vexact_sampling_cpu_smoke",
+  "nsteps": 1,
+  "sample_count": 1,
+  "elapsed_sec": 0.5430426597595215,
+  "mean_sec_per_sample": 0.5430440902709961,
+  "rows": [
+    {
+      "status": "passed",
+      "sample_index": 0,
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "nsteps": 1,
+      "valid_states": 3,
+      "pred_sequence": "QGIQQSSMYVIGIH",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 168.9013671875
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 180.77462768554688
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 136.58804321289062
+        }
+      ],
+      "generated_state_pairwise": [
+        {
+          "state_i": 0,
+          "state_j": 1,
+          "ca_rmsd_between_generated_states_nm": 200.6908416748047
+        },
+        {
+          "state_i": 0,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 172.10279846191406
+        },
+        {
+          "state_i": 1,
+          "state_j": 2,
+          "ca_rmsd_between_generated_states_nm": 163.18113708496094
+        }
+      ],
+      "out_dir": "results/strategy01/stage08b_vexact_sampling_cpu_smoke/1a0n_B_A",
+      "elapsed_sec": 0.3365814685821533
+    }
+  ]
+}
