@@ -1,0 +1,122 @@
+{
+  "status": "blocked_by_missing_b0_generation_artifact",
+  "repo": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase",
+  "complexa_bin": null,
+  "python": "/home/kfliao/data/anaconda3/envs/proteina-complexa/bin/python",
+  "core_files": {
+    "cli_runner": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/src/proteinfoundation/cli/cli_runner.py",
+      "exists": true,
+      "size_bytes": 71219
+    },
+    "generate_py": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/src/proteinfoundation/generate.py",
+      "exists": true,
+      "size_bytes": 31256
+    },
+    "search_pipeline_config": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/search_binder_local_pipeline.yaml",
+      "exists": true,
+      "size_bytes": 1541
+    },
+    "binder_generate_config": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/pipeline/binder/binder_generate.yaml",
+      "exists": true,
+      "size_bytes": 9224
+    },
+    "targets_dict": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/targets/targets_dict.yaml",
+      "exists": true,
+      "size_bytes": 11592
+    },
+    "baseline_ckpt": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/complexa.ckpt",
+      "exists": true,
+      "size_bytes": 2934289381
+    },
+    "stage_init_ckpt_copy": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_init_readonly_copy.ckpt",
+      "exists": true,
+      "size_bytes": 2934289381
+    },
+    "v_exact_dataset": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+      "exists": true,
+      "size_bytes": 9456334
+    },
+    "v_exact_manifest": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08_high_quality_dataset/V_exact_main_manifest.json",
+      "exists": true,
+      "size_bytes": 133661
+    },
+    "b1_summary": {
+      "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage08b_vexact_sampling_summary.json",
+      "exists": true,
+      "size_bytes": 62331
+    }
+  },
+  "cli_probe": {
+    "cmd": [
+      "/home/kfliao/data/anaconda3/envs/proteina-complexa/bin/python",
+      "-m",
+      "proteinfoundation.cli.cli_runner",
+      "--help"
+    ],
+    "returncode": 0,
+    "stdout_tail": "uisites\n\noptions:\n  -h, --help            show this help message and exit\n\nComplexa CLI - Binder Design Pipeline\n\nRun individual pipeline steps or the full design pipeline locally on a single GPU.\nAll output goes to ./inference and ./evaluation_results automatically.\nLogs are saved to ./logs/ with timestamps.\n\nCommands:\n    complexa init       Initialize environment (.env + env.sh for a runtime)\n    complexa demo       Show usage examples and explanations\n    complexa validate   Validate configuration and check prerequisites\n    complexa design     Run the full binder design pipeline (generate → filter → evaluate → analyze)\n    complexa analysis   Run evaluate → analyze pipeline (for evaluating PDB files)\n    complexa generate   Generate binder structures using the partially latent flow matching model\n    complexa filter     Filter and rank generated samples by reward scores\n    complexa evaluate   Evaluate samples with refolding metrics\n    complexa analyze    Aggregate and analyze results\n    complexa status     Check pipeline status\n    complexa download   Download model weights (interactive wizard)\n    complexa target     Manage target configurations (list, add, show)\n\nExamples:\n    # Run the full design pipeline\n    complexa design configs/search_binder_local.yaml\n\n    # Run individual steps\n    complexa generate configs/search_binder_local.yaml\n    complexa filter configs/search_binder_local.yaml\n    complexa evaluate configs/search_binder_local.yaml\n    complexa analyze configs/search_binder_local.yaml\n\n    # With config overrides (Hydra-style) - applied to ALL steps in design\n    complexa design configs/search_binder_local.yaml ++run_name=exp1 ++generation.task_name=02_PDL1\n    complexa generate configs/search_binder_local.yaml ++generation.task_name=02_PDL1 ++seed=42\n\n    # Check status\n    complexa status\n\n    # Download model weights\n    complexa download\n\n    # Show full output (no log file)\n    complexa design configs/search_binder_local.yaml --verbose\n",
+    "stderr_tail": ""
+  },
+  "b0_contract": {
+    "artifact_schema": {
+      "summary_json": {
+        "rows": [
+          {
+            "sample_id": "must match V_exact sample_id",
+            "out_dir": "directory containing stateXX_binder_ca.pdb or per-state converted baseline outputs",
+            "pred_sequence": "final B0 shared sequence after native or same-refiner sequence finalization",
+            "sequence_identity_to_reference": "optional diagnostic only; not a selection criterion"
+          }
+        ]
+      },
+      "per_sample_files": [
+        "shared_sequence.fasta",
+        "state00_binder_ca.pdb",
+        "state01_binder_ca.pdb",
+        "state02_binder_ca.pdb if K=3"
+      ]
+    },
+    "fair_b0_levels": [
+      {
+        "name": "B0-native",
+        "definition": "Run original Complexa single-state binder generation and its native sequence/refinement pipeline. Re-evaluate the resulting one shared sequence/pose against every target state with the same exact-geometry evaluator used by B1.",
+        "allowed_inputs": "A single target state and user-visible hotspot/target config only. No V_exact labels or future states during generation.",
+        "selection_rule": "Same candidate budget as B1. Candidate selection may use native Complexa filtering, but not exact V_exact labels."
+      },
+      {
+        "name": "B0-same-refiner",
+        "definition": "Use original Complexa single-state backbone/latent generation, then apply the same sequence/refinement/adapter layer used by B1 so the comparison isolates multistate conditioning rather than sequence-head availability.",
+        "allowed_inputs": "Single-state target during generation; same downstream refiner for B0 and B1.",
+        "selection_rule": "Same N candidates, same refiner calls, same exact evaluator."
+      },
+      {
+        "name": "B0-oracle-posthoc-diagnostic",
+        "definition": "Post-hoc select among single-state candidates after multi-state exact evaluation. This is an upper-bound diagnostic only and must not be used as the main leaderboard baseline.",
+        "allowed_inputs": "May use exact metrics after generation only for diagnostic selection.",
+        "selection_rule": "Report separately as oracle/diagnostic."
+      }
+    ]
+  },
+  "recommended_next_commands": [
+    "complexa generate configs/search_binder_local_pipeline.yaml ++generation.task_name=<stage09_single_state_target> ++run_name=stage09_b0_native_<sample>",
+    "python scripts/strategy01/stage09_convert_b0_outputs_to_exact_schema.py --input <native_output_dir> --v-exact-dataset data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt --output reports/strategy01/probes/stage09_b0_native_summary.json",
+    "python scripts/strategy01/stage08b_full_exact_benchmark.py --b0-summary reports/strategy01/probes/stage09_b0_native_summary.json --output reports/strategy01/probes/stage09_b0_b1_exact_benchmark.json"
+  ],
+  "required_before_leaderboard": [
+    "Create V_exact-derived single-state target configs without leaking binder coordinates or exact contacts.",
+    "Run B0-native on at least the same V_exact sample subset as B1 with fixed N candidates per target.",
+    "Convert native Complexa outputs into the Stage08B summary schema above.",
+    "Run scripts/strategy01/stage08b_full_exact_benchmark.py with --b0-summary pointing to the converted B0 summary.",
+    "Repeat for B0-same-refiner if native B0 lacks a comparable final shared sequence artifact."
+  ],
+  "interpretation": "B0 is now defined as a strict artifact contract. Stage09 does not fabricate a baseline. B1 cannot be claimed better until B0-native or B0-same-refiner produces this artifact."
+}

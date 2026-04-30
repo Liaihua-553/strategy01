@@ -1,0 +1,487 @@
+{
+  "status": "passed",
+  "source": "B1_strategy01_stage08b plus oracle exact-anchor rigid guidance",
+  "oracle_warning": "Uses V_exact experimental contacts as anchors. This is a diagnostic upper-bound for guidance terms, not a fair leaderboard result.",
+  "rows": [
+    {
+      "status": "passed",
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "pred_sequence": "ASSQSNSNSPSPPP",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.07142857142857142,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1a0n_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1ai0_L_K",
+      "split": "val",
+      "target_id": "1ai0",
+      "pred_sequence": "GSSQSSSSSSSSNNNLNLNNS",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.19047619047619047,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1ai0_L_K"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1aze_A_B",
+      "split": "val",
+      "target_id": "1aze",
+      "pred_sequence": "APSYSPPPPP",
+      "reference_sequence": "VPPPVPPRRR",
+      "sequence_identity_to_reference": 0.3,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1aze_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1bxp_A_B",
+      "split": "val",
+      "target_id": "1bxp",
+      "pred_sequence": "APSPPPPPPPPPP",
+      "reference_sequence": "MRYYESSLKSYPD",
+      "sequence_identity_to_reference": 0.07692307692307693,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1bxp_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1cee_A_B",
+      "split": "val",
+      "target_id": "1cee",
+      "pred_sequence": "PPPPSSSPSSSSSSSSSPSSSPSPPPSSPSLNPPPPPPPPPPPPPPPPPPSSPNPSNNP",
+      "reference_sequence": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "sequence_identity_to_reference": 0.1016949152542373,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1cee_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1cf4_A_B",
+      "split": "val",
+      "target_id": "1cf4",
+      "pred_sequence": "PPPPPSPSSPPPPPPPPPPPPPPPPPPSPSSSSSSSSSPPPPPP",
+      "reference_sequence": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "sequence_identity_to_reference": 0.045454545454545456,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1cf4_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1cir_A_B",
+      "split": "val",
+      "target_id": "1cir",
+      "pred_sequence": "GSSPSSPPPPSPPPLPPPPPPPPP",
+      "reference_sequence": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1cir_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1co0_A_B",
+      "split": "val",
+      "target_id": "1co0",
+      "pred_sequence": "SPPPPPPSPPSPSSNPPPSPNPSSPNSSSTSLSTLNYNNSPYNNNNNNSPNNSPSNSPNNSNPPPPSPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPSSPPPP",
+      "reference_sequence": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "sequence_identity_to_reference": 0.02857142857142857,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1co0_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1d5g_A_B",
+      "split": "val",
+      "target_id": "1d5g",
+      "pred_sequence": "APSSSPSPPPPPPPP",
+      "reference_sequence": "FADSEADENEQVSAV",
+      "sequence_identity_to_reference": 0.06666666666666667,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1d5g_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1ddm_A_B",
+      "split": "val",
+      "target_id": "1ddm",
+      "pred_sequence": "APPPPPPPPPP",
+      "reference_sequence": "GFSNMSFEDFP",
+      "sequence_identity_to_reference": 0.09090909090909091,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1ddm_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1dpu_A_B",
+      "split": "val",
+      "target_id": "1dpu",
+      "pred_sequence": "SSSSSSYSPPPPPPPP",
+      "reference_sequence": "RIQRNKAAALLRLAAR",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1dpu_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1e0a_A_B",
+      "split": "val",
+      "target_id": "1e0a",
+      "pred_sequence": "PPPPSSSSSPPSSPPPPPPSPPPPPPPPPSPSPPPPPPPPPPPPPP",
+      "reference_sequence": "GSISLPSDFEHTIHVGFDAVTGEFTGMPEQWARLLQTSNITKSEQK",
+      "sequence_identity_to_reference": 0.043478260869565216,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1e0a_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1e91_A_B",
+      "split": "val",
+      "target_id": "1e91",
+      "pred_sequence": "PSSSYPPYPPPPP",
+      "reference_sequence": "NIQMLLEAADYLE",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1e91_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1eci_B_A",
+      "split": "val",
+      "target_id": "1eci",
+      "pred_sequence": "PPPPPAPPSPPPPPPPPPPPPPPPPPPSSPPPPPPPP",
+      "reference_sequence": "GVIPKKIWETVCPTVEPWAKKCSGDIATYIKRECGKL",
+      "sequence_identity_to_reference": 0.08108108108108109,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1eci_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1ees_A_B",
+      "split": "val",
+      "target_id": "1ees",
+      "pred_sequence": "PSSSSSSPSPSSSSSPPPPSSSPPPPPPPPPPPSSSPPPPPPPPPP",
+      "reference_sequence": "GSKERPEISLPSDFEHTIHVGFDAVTGEFTGIPEQWARLLQTSNIT",
+      "sequence_identity_to_reference": 0.08695652173913043,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1ees_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1f96_A_C",
+      "split": "val",
+      "target_id": "1f96",
+      "pred_sequence": "ASSYSPPPPPPPPPPPPP",
+      "reference_sequence": "MKDTGIQVRDLDGKSHK",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1f96_A_C"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1fmh_A_B",
+      "split": "val",
+      "target_id": "1fmh",
+      "pred_sequence": "APSSPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "EVQALKKRVQALKARNYAAKQKVQALRHKCG",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1fmh_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1g1e_B_A",
+      "split": "val",
+      "target_id": "1g1e",
+      "pred_sequence": "PPSPPPPYPPPPPPPP",
+      "reference_sequence": "RMNIQMLLEAADYLER",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1g1e_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1h0t_B_A",
+      "split": "val",
+      "target_id": "1h0t",
+      "pred_sequence": "PPSPPSSPSPPPSPPPPPPPPPSSSSSPPPPPPPPPPPPPPSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "VDNKFNKEQQNAFYEILHLPNLNEEQRNAFIQSLKDDPSQSANLLAEAKKLNDAQAPK",
+      "sequence_identity_to_reference": 0.05172413793103448,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1h0t_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1h8b_A_B",
+      "split": "val",
+      "target_id": "1h8b",
+      "pred_sequence": "PPPPPPSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GKKAEAVATVVAAVDQARVREPR",
+      "sequence_identity_to_reference": 0.043478260869565216,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1h8b_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1haj_A_B",
+      "split": "val",
+      "target_id": "1haj",
+      "pred_sequence": "APPYPPPPPPPPP",
+      "reference_sequence": "WRYYESSLEPYPD",
+      "sequence_identity_to_reference": 0.23076923076923078,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1haj_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1hls_B_A",
+      "split": "val",
+      "target_id": "1hls",
+      "pred_sequence": "GSSQSSSSSSSSYPYNPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.14285714285714285,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1hls_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1hoy_A_B",
+      "split": "val",
+      "target_id": "1hoy",
+      "pred_sequence": "PSSPPYPPPPPPPP",
+      "reference_sequence": "HRYYESSLEPWYPD",
+      "sequence_identity_to_reference": 0.14285714285714285,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1hoy_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1hv2_A_B",
+      "split": "val",
+      "target_id": "1hv2",
+      "pred_sequence": "PPSPPPPPSPPPPPP",
+      "reference_sequence": "TLKERCLQVVRSLVK",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1hv2_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1ibx_B_A",
+      "split": "val",
+      "target_id": "1ibx",
+      "pred_sequence": "PPPPSPSSSPSSSSSPPPPSPPPPPPSPSSSSSYPPPPPPPPPPPSSSSSPPPPPSSSSPPPPSPSPSPPPPPPPPPPPPP",
+      "reference_sequence": "MLQKPKSVKLRALRSPRKFGVAGRSCQEVLRKGCLRFQLPERGSRLCLYEDGTELTEDYFPSVPDNAELVLLTLGQAWQGH",
+      "sequence_identity_to_reference": 0.06172839506172839,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1ibx_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1idh_A_B",
+      "split": "val",
+      "target_id": "1idh",
+      "pred_sequence": "ASSYSSPPYPPPPPPPPP",
+      "reference_sequence": "YRGWKHWVYYTCCPDTPY",
+      "sequence_identity_to_reference": 0.16666666666666666,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1idh_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1jco_B_A",
+      "split": "val",
+      "target_id": "1jco",
+      "pred_sequence": "PPSPSSNPSYSPPPPPPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.047619047619047616,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1jco_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1jeg_A_B",
+      "split": "val",
+      "target_id": "1jeg",
+      "pred_sequence": "GSSSSNSPPPPPPPPPPP",
+      "reference_sequence": "IPPPLPERTPESFIVVEE",
+      "sequence_identity_to_reference": 0.05555555555555555,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1jeg_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1jm7_B_A",
+      "split": "val",
+      "target_id": "1jm7",
+      "pred_sequence": "SSSPSPSSSSSSSSSSSSSSSSSSPPSYPPSYPSNSSSSNSSNSSSSSSSSPPPSSSSSSSSSSSSPSPPPPPNNSSPSPSPSYSSSPNNSSNYSPPPSSNSS",
+      "reference_sequence": "MDLSALRVEEVQNVINAMQKILECPICLELIKEPVSTKCDHIFCKFCMLKLLNQKKGPSQCPLCKNDITKRSLQESTRFSQLVEELLKIICAFQLDTGLEYAN",
+      "sequence_identity_to_reference": 0.038834951456310676,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1jm7_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1jmq_A_P",
+      "split": "val",
+      "target_id": "1jmq",
+      "pred_sequence": "APSYSPPPPP",
+      "reference_sequence": "GTPPPPYTVG",
+      "sequence_identity_to_reference": 0.1,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1jmq_A_P"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1k4u_S_P",
+      "split": "val",
+      "target_id": "1k4u",
+      "pred_sequence": "PPSPSSNSSPPYPPPPPPYPPPSPPPPPPPPP",
+      "reference_sequence": "SKPQPAVPPRPSADLILNRCSESTKRKLASAV",
+      "sequence_identity_to_reference": 0.0625,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1k4u_S_P"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1kat_W_X",
+      "split": "val",
+      "target_id": "1kat",
+      "pred_sequence": "APSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GGNECDIARMWEWECFERL",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1kat_W_X"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1kbh_B_A",
+      "split": "val",
+      "target_id": "1kbh",
+      "pred_sequence": "PPPPPPPSSSSSSSSSSSSSLSTSTTTSLLIIPPPSSSSSNSNPNNL",
+      "reference_sequence": "EGQSDERALLDQLHTLLSNTDATGLEEIDRALGIPELVNQGQALEPK",
+      "sequence_identity_to_reference": 0.06382978723404255,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1kbh_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1kc4_A_B",
+      "split": "val",
+      "target_id": "1kc4",
+      "pred_sequence": "ASSPSSSPPPPPPPPPPPP",
+      "reference_sequence": "IPGKRTESFYECCKEPYPD",
+      "sequence_identity_to_reference": 0.10526315789473684,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1kc4_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1l8c_B_A",
+      "split": "val",
+      "target_id": "1l8c",
+      "pred_sequence": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "ADPEKRKLIQQQLVLLLHAHKCQRREQANGEVRACSLPHCRTMKNVLNHMTHCQAGKACQVAHCASSRQIISHWKNCTRHDCPVCLPLKNASDKR",
+      "sequence_identity_to_reference": 0.042105263157894736,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1l8c_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1ljz_A_B",
+      "split": "val",
+      "target_id": "1ljz",
+      "pred_sequence": "PPSSSPSPPPPPYPPPPPPPPPPPP",
+      "reference_sequence": "EERGWKHWVYYTCCPDTPYLDITEE",
+      "sequence_identity_to_reference": 0.08,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1ljz_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1lkq_B_A",
+      "split": "val",
+      "target_id": "1lkq",
+      "pred_sequence": "ASEQSSSSSNNPNNLNNNNNS",
+      "reference_sequence": "GGGEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.09523809523809523,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1lkq_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1lxg_A_B",
+      "split": "val",
+      "target_id": "1lxg",
+      "pred_sequence": "APSPSSSPPPPPPPPPPP",
+      "reference_sequence": "YRGWKHWVYYTCCPDTPY",
+      "sequence_identity_to_reference": 0.1111111111111111,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1lxg_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1m4p_A_B",
+      "split": "val",
+      "target_id": "1m4p",
+      "pred_sequence": "GPSYSPPPP",
+      "reference_sequence": "PEPTAPPEE",
+      "sequence_identity_to_reference": 0.2222222222222222,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1m4p_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1mhi_B_A",
+      "split": "val",
+      "target_id": "1mhi",
+      "pred_sequence": "PPSPSSPPPPPPPPPPPPPPP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1mhi_B_A"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1mq1_A_C",
+      "split": "val",
+      "target_id": "1mq1",
+      "pred_sequence": "PPSSPPPPPPPP",
+      "reference_sequence": "TRTKIDWNKILS",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1mq1_A_C"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1n7t_A_B",
+      "split": "val",
+      "target_id": "1n7t",
+      "pred_sequence": "ASSYSNS",
+      "reference_sequence": "TGWETWV",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1n7t_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1o0p_A_B",
+      "split": "val",
+      "target_id": "1o0p",
+      "pred_sequence": "APSPTYPPPPPPP",
+      "reference_sequence": "PSKKRKRSRWNQD",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1o0p_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1onv_A_B",
+      "split": "val",
+      "target_id": "1onv",
+      "pred_sequence": "GPSYPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "GSSSEADEMAKALEAELNDLM",
+      "sequence_identity_to_reference": 0.09523809523809523,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1onv_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1oqp_A_B",
+      "split": "val",
+      "target_id": "1oqp",
+      "pred_sequence": "ASSSSSSSPSSSPPPPPPP",
+      "reference_sequence": "KKRELIESKWHRLLFHDKK",
+      "sequence_identity_to_reference": 0.05263157894736842,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1oqp_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1otr_A_B",
+      "split": "val",
+      "target_id": "1otr",
+      "pred_sequence": "PPPPSPPPSSSSSPPPPPPPPSSSPSSSSPPPPPPPPPPPPPSPPPPPPSYSPPPPPPPPPPPPSSSPSSSSSPPP",
+      "reference_sequence": "MQIFVKTLTGKTITLEVESSDTIDNVKSKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
+      "sequence_identity_to_reference": 0.05263157894736842,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1otr_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1pd7_A_B",
+      "split": "val",
+      "target_id": "1pd7",
+      "pred_sequence": "PPPPPPPPPPPPPPPPPPPPPPPP",
+      "reference_sequence": "VRMNIQMLLEAADYLERREREAEH",
+      "sequence_identity_to_reference": 0.0,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1pd7_A_B"
+    },
+    {
+      "status": "passed",
+      "sample_id": "1pon_B_A",
+      "split": "val",
+      "target_id": "1pon",
+      "pred_sequence": "ASSPPPPPPPPPPPPPPPPPSLSNPPPPPPPPPP",
+      "reference_sequence": "KSEEELANAFRIFDKNADGYIDIEELGEILRATG",
+      "sequence_identity_to_reference": 0.029411764705882353,
+      "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided/1pon_B_A"
+    }
+  ]
+}

@@ -1,0 +1,823 @@
+{
+  "status": "passed",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "b1_summary": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage08b_vexact_sampling_summary.json",
+  "guided_summary": "reports/strategy01/probes/stage09_b1_guided_generation_summary.json",
+  "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided",
+  "settings": {
+    "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+    "b1_summary": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage08b_vexact_sampling_summary.json",
+    "out_dir": "results/strategy01/stage09_b1_oracle_anchor_guided",
+    "report": "reports/strategy01/probes/stage09_b1_interface_guidance_summary.json",
+    "guided_summary": "reports/strategy01/probes/stage09_b1_guided_generation_summary.json",
+    "contact_cutoff_a": 10.0,
+    "clash_cutoff_a": 2.8,
+    "shell_max_a": 12.0,
+    "max_pairs": 128,
+    "steps": 60,
+    "lr": 0.05,
+    "max_samples": 0,
+    "clash_weight": 30.0,
+    "shell_weight": 0.1,
+    "tether_weight": 0.002,
+    "allow_clash_worsening": false
+  },
+  "oracle_warning": "Uses V_exact experimental contacts as anchors. This is a diagnostic upper-bound for guidance terms, not a fair leaderboard result.",
+  "state_count": 144,
+  "before_direct_metrics": {
+    "contact_f1": {
+      "n": 144,
+      "mean": 0.11708181922641514,
+      "best": 0.45810055865921795,
+      "worst": 0.0
+    },
+    "direct_binder_ca_rmsd_A": {
+      "n": 144,
+      "mean": 26.2497934434149,
+      "best": 8.060057640075684,
+      "worst": 101.48299407958984
+    },
+    "clash_rate": 0.7847222222222222
+  },
+  "after_guidance_direct_metrics": {
+    "contact_f1": {
+      "n": 144,
+      "mean": 0.15696441821185175,
+      "best": 0.5093167701863355,
+      "worst": 0.0
+    },
+    "direct_binder_ca_rmsd_A": {
+      "n": 144,
+      "mean": 24.61833659807841,
+      "best": 7.050296306610107,
+      "worst": 101.2567138671875
+    },
+    "clash_rate": 0.7638888888888888
+  },
+  "delta": {
+    "contact_f1_mean_abs": 0.03988259898543661,
+    "direct_rmsd_mean_A": -1.6314568453364906,
+    "clash_rate_abs": -0.02083333333333337
+  },
+  "exact_benchmark_after_guidance": {
+    "status": "passed",
+    "label": "B1_stage09_oracle_anchor_guided",
+    "summary_path": "reports/strategy01/probes/stage09_b1_guided_generation_summary.json",
+    "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+    "sample_count": 48,
+    "state_count_ok": 144,
+    "contact_f1": {
+      "n": 144,
+      "mean": 0.15696441821185175,
+      "worst": 0.0,
+      "best": 0.5093167701863355
+    },
+    "worst_interface_rmsd_A": {
+      "n": 144,
+      "mean": 24.618334743711685,
+      "worst": 101.25672912597656,
+      "best": 7.050108909606934
+    },
+    "aligned_binder_ca_rmsd_A": {
+      "n": 144,
+      "mean": 11.861835042300898,
+      "worst": 85.13838851035926,
+      "best": 4.460184468698185
+    },
+    "contact_persistence": {
+      "n": 48,
+      "mean": 0.4887474542613172,
+      "worst": 0.0,
+      "best": 0.7236363636363636
+    },
+    "state_metric_std_contact_f1": {
+      "n": 48,
+      "mean": 0.01984170977735088,
+      "worst": 0.0737281759251185,
+      "best": 0.0
+    },
+    "clash_rate": 0.7638888888888888
+  },
+  "state_debug_sample": [
+    {
+      "sample_id": "1a0n_B_A",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 42,
+        "generated_contact_count": 8,
+        "contact_precision": 0.0,
+        "contact_recall": 0.0,
+        "contact_f1": 0.0,
+        "direct_binder_ca_rmsd_A": 26.589824676513672,
+        "min_target_generated_ca_distance_A": 8.409245491027832,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 42,
+        "generated_contact_count": 60,
+        "contact_precision": 0.05,
+        "contact_recall": 0.07142857142857142,
+        "contact_f1": 0.058823529411764705,
+        "direct_binder_ca_rmsd_A": 22.703258514404297,
+        "min_target_generated_ca_distance_A": 4.948400974273682,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 9.820809364318848,
+        "loss_trace": [
+          14.055130958557129,
+          12.118185997009277,
+          10.427184104919434,
+          9.820809364318848
+        ],
+        "selected_anchor_pairs": 42,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1a0n_B_A",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 34,
+        "generated_contact_count": 3,
+        "contact_precision": 0.0,
+        "contact_recall": 0.0,
+        "contact_f1": 0.0,
+        "direct_binder_ca_rmsd_A": 28.012405395507812,
+        "min_target_generated_ca_distance_A": 8.457180976867676,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 34,
+        "generated_contact_count": 59,
+        "contact_precision": 0.0,
+        "contact_recall": 0.0,
+        "contact_f1": 0.0,
+        "direct_binder_ca_rmsd_A": 24.118305206298828,
+        "min_target_generated_ca_distance_A": 4.0654826164245605,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 9.794508934020996,
+        "loss_trace": [
+          14.499029159545898,
+          12.514557838439941,
+          10.558526039123535,
+          9.794508934020996
+        ],
+        "selected_anchor_pairs": 34,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1a0n_B_A",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 46,
+        "generated_contact_count": 10,
+        "contact_precision": 0.1,
+        "contact_recall": 0.021739130434782608,
+        "contact_f1": 0.03571428571428571,
+        "direct_binder_ca_rmsd_A": 23.75457191467285,
+        "min_target_generated_ca_distance_A": 7.8503828048706055,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 46,
+        "generated_contact_count": 73,
+        "contact_precision": 0.0958904109589041,
+        "contact_recall": 0.15217391304347827,
+        "contact_f1": 0.11764705882352941,
+        "direct_binder_ca_rmsd_A": 20.10984230041504,
+        "min_target_generated_ca_distance_A": 3.8120474815368652,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 7.635939121246338,
+        "loss_trace": [
+          11.773381233215332,
+          9.960224151611328,
+          8.243849754333496,
+          7.635939121246338
+        ],
+        "selected_anchor_pairs": 46,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1ai0_L_K",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 73,
+        "generated_contact_count": 30,
+        "contact_precision": 0.13333333333333333,
+        "contact_recall": 0.0547945205479452,
+        "contact_f1": 0.07766990291262135,
+        "direct_binder_ca_rmsd_A": 27.966299057006836,
+        "min_target_generated_ca_distance_A": 4.078361988067627,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 73,
+        "generated_contact_count": 30,
+        "contact_precision": 0.13333333333333333,
+        "contact_recall": 0.0547945205479452,
+        "contact_f1": 0.07766990291262135,
+        "direct_binder_ca_rmsd_A": 27.966299057006836,
+        "min_target_generated_ca_distance_A": 4.078361988067627,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 11.201001167297363,
+        "loss_trace": [
+          15.251602172851562,
+          13.253435134887695,
+          11.736335754394531,
+          11.201001167297363
+        ],
+        "selected_anchor_pairs": 73,
+        "accepted_guided_pose": false,
+        "reject_reason": "would_create_new_severe_clash"
+      }
+    },
+    {
+      "sample_id": "1ai0_L_K",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 68,
+        "generated_contact_count": 13,
+        "contact_precision": 0.38461538461538464,
+        "contact_recall": 0.07352941176470588,
+        "contact_f1": 0.1234567901234568,
+        "direct_binder_ca_rmsd_A": 28.000713348388672,
+        "min_target_generated_ca_distance_A": 5.796185493469238,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 68,
+        "generated_contact_count": 13,
+        "contact_precision": 0.38461538461538464,
+        "contact_recall": 0.07352941176470588,
+        "contact_f1": 0.1234567901234568,
+        "direct_binder_ca_rmsd_A": 28.000713348388672,
+        "min_target_generated_ca_distance_A": 5.796185493469238,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 11.564910888671875,
+        "loss_trace": [
+          16.219839096069336,
+          13.954480171203613,
+          12.160274505615234,
+          11.564910888671875
+        ],
+        "selected_anchor_pairs": 68,
+        "accepted_guided_pose": false,
+        "reject_reason": "would_create_new_severe_clash"
+      }
+    },
+    {
+      "sample_id": "1ai0_L_K",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 66,
+        "generated_contact_count": 12,
+        "contact_precision": 0.3333333333333333,
+        "contact_recall": 0.06060606060606061,
+        "contact_f1": 0.10256410256410256,
+        "direct_binder_ca_rmsd_A": 28.067852020263672,
+        "min_target_generated_ca_distance_A": 6.70341157913208,
+        "severe_clash": false
+      },
+      "after": {
+        "reference_contact_count": 66,
+        "generated_contact_count": 12,
+        "contact_precision": 0.3333333333333333,
+        "contact_recall": 0.06060606060606061,
+        "contact_f1": 0.10256410256410256,
+        "direct_binder_ca_rmsd_A": 28.067852020263672,
+        "min_target_generated_ca_distance_A": 6.70341157913208,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 12.004868507385254,
+        "loss_trace": [
+          16.583986282348633,
+          14.36852741241455,
+          12.583961486816406,
+          12.004868507385254
+        ],
+        "selected_anchor_pairs": 66,
+        "accepted_guided_pose": false,
+        "reject_reason": "would_create_new_severe_clash"
+      }
+    },
+    {
+      "sample_id": "1aze_A_B",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 39,
+        "generated_contact_count": 151,
+        "contact_precision": 0.059602649006622516,
+        "contact_recall": 0.23076923076923078,
+        "contact_f1": 0.09473684210526315,
+        "direct_binder_ca_rmsd_A": 21.40864372253418,
+        "min_target_generated_ca_distance_A": 1.9523710012435913,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 39,
+        "generated_contact_count": 210,
+        "contact_precision": 0.10952380952380952,
+        "contact_recall": 0.5897435897435898,
+        "contact_f1": 0.1847389558232932,
+        "direct_binder_ca_rmsd_A": 17.831138610839844,
+        "min_target_generated_ca_distance_A": 1.3792775869369507,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 3.5048701763153076,
+        "loss_trace": [
+          5.76422119140625,
+          4.610959053039551,
+          3.6918365955352783,
+          3.5048701763153076
+        ],
+        "selected_anchor_pairs": 39,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1aze_A_B",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 46,
+        "generated_contact_count": 165,
+        "contact_precision": 0.05454545454545454,
+        "contact_recall": 0.1956521739130435,
+        "contact_f1": 0.08530805687203791,
+        "direct_binder_ca_rmsd_A": 20.824941635131836,
+        "min_target_generated_ca_distance_A": 1.3598617315292358,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 46,
+        "generated_contact_count": 221,
+        "contact_precision": 0.08597285067873303,
+        "contact_recall": 0.41304347826086957,
+        "contact_f1": 0.14232209737827717,
+        "direct_binder_ca_rmsd_A": 17.48969078063965,
+        "min_target_generated_ca_distance_A": 1.1278345584869385,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 4.338836193084717,
+        "loss_trace": [
+          6.759471416473389,
+          5.615203857421875,
+          4.789395809173584,
+          4.338836193084717
+        ],
+        "selected_anchor_pairs": 46,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1aze_A_B",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 39,
+        "generated_contact_count": 153,
+        "contact_precision": 0.0392156862745098,
+        "contact_recall": 0.15384615384615385,
+        "contact_f1": 0.0625,
+        "direct_binder_ca_rmsd_A": 22.41616439819336,
+        "min_target_generated_ca_distance_A": 1.2198684215545654,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 39,
+        "generated_contact_count": 207,
+        "contact_precision": 0.057971014492753624,
+        "contact_recall": 0.3076923076923077,
+        "contact_f1": 0.0975609756097561,
+        "direct_binder_ca_rmsd_A": 19.454471588134766,
+        "min_target_generated_ca_distance_A": 1.2471402883529663,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 4.740528106689453,
+        "loss_trace": [
+          7.168686389923096,
+          5.753218173980713,
+          5.026851654052734,
+          4.740528106689453
+        ],
+        "selected_anchor_pairs": 39,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1bxp_A_B",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 76,
+        "generated_contact_count": 166,
+        "contact_precision": 0.1746987951807229,
+        "contact_recall": 0.3815789473684211,
+        "contact_f1": 0.2396694214876033,
+        "direct_binder_ca_rmsd_A": 19.531246185302734,
+        "min_target_generated_ca_distance_A": 1.9608898162841797,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 76,
+        "generated_contact_count": 166,
+        "contact_precision": 0.27710843373493976,
+        "contact_recall": 0.6052631578947368,
+        "contact_f1": 0.38016528925619836,
+        "direct_binder_ca_rmsd_A": 17.761058807373047,
+        "min_target_generated_ca_distance_A": 2.994328022003174,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 3.2414329051971436,
+        "loss_trace": [
+          4.7483062744140625,
+          4.003324508666992,
+          3.41975474357605,
+          3.2414329051971436
+        ],
+        "selected_anchor_pairs": 76,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1bxp_A_B",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 99,
+        "generated_contact_count": 186,
+        "contact_precision": 0.12903225806451613,
+        "contact_recall": 0.24242424242424243,
+        "contact_f1": 0.16842105263157894,
+        "direct_binder_ca_rmsd_A": 16.128128051757812,
+        "min_target_generated_ca_distance_A": 1.103112816810608,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 99,
+        "generated_contact_count": 158,
+        "contact_precision": 0.2088607594936709,
+        "contact_recall": 0.3333333333333333,
+        "contact_f1": 0.2568093385214008,
+        "direct_binder_ca_rmsd_A": 12.721519470214844,
+        "min_target_generated_ca_distance_A": 1.2793282270431519,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 5.029033660888672,
+        "loss_trace": [
+          7.445724010467529,
+          6.135812282562256,
+          5.354127883911133,
+          5.029033660888672
+        ],
+        "selected_anchor_pairs": 99,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1bxp_A_B",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 82,
+        "generated_contact_count": 207,
+        "contact_precision": 0.15942028985507245,
+        "contact_recall": 0.4024390243902439,
+        "contact_f1": 0.22837370242214533,
+        "direct_binder_ca_rmsd_A": 20.149295806884766,
+        "min_target_generated_ca_distance_A": 1.502152442932129,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 82,
+        "generated_contact_count": 164,
+        "contact_precision": 0.2865853658536585,
+        "contact_recall": 0.573170731707317,
+        "contact_f1": 0.3821138211382114,
+        "direct_binder_ca_rmsd_A": 18.392927169799805,
+        "min_target_generated_ca_distance_A": 2.9628732204437256,
+        "severe_clash": false
+      },
+      "optimizer": {
+        "best_loss": 3.2243034839630127,
+        "loss_trace": [
+          4.67061185836792,
+          3.995063304901123,
+          3.4069344997406006,
+          3.2243034839630127
+        ],
+        "selected_anchor_pairs": 82,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cee_A_B",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 250,
+        "generated_contact_count": 692,
+        "contact_precision": 0.010115606936416185,
+        "contact_recall": 0.028,
+        "contact_f1": 0.014861995753715499,
+        "direct_binder_ca_rmsd_A": 29.9561824798584,
+        "min_target_generated_ca_distance_A": 0.9783655405044556,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 250,
+        "generated_contact_count": 711,
+        "contact_precision": 0.011251758087201125,
+        "contact_recall": 0.032,
+        "contact_f1": 0.01664932362122789,
+        "direct_binder_ca_rmsd_A": 30.2469482421875,
+        "min_target_generated_ca_distance_A": 1.3141788244247437,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 18.650653839111328,
+        "loss_trace": [
+          21.169240951538086,
+          20.10306167602539,
+          19.053543090820312,
+          18.650653839111328
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cee_A_B",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 243,
+        "generated_contact_count": 735,
+        "contact_precision": 0.02040816326530612,
+        "contact_recall": 0.06172839506172839,
+        "contact_f1": 0.030674846625766868,
+        "direct_binder_ca_rmsd_A": 25.57233428955078,
+        "min_target_generated_ca_distance_A": 1.101609230041504,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 243,
+        "generated_contact_count": 769,
+        "contact_precision": 0.02340702210663199,
+        "contact_recall": 0.07407407407407407,
+        "contact_f1": 0.035573122529644265,
+        "direct_binder_ca_rmsd_A": 26.18181037902832,
+        "min_target_generated_ca_distance_A": 0.7635694742202759,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 12.289602279663086,
+        "loss_trace": [
+          14.531349182128906,
+          13.512216567993164,
+          12.607044219970703,
+          12.289602279663086
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cee_A_B",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 235,
+        "generated_contact_count": 757,
+        "contact_precision": 0.013210039630118891,
+        "contact_recall": 0.0425531914893617,
+        "contact_f1": 0.020161290322580648,
+        "direct_binder_ca_rmsd_A": 25.43598747253418,
+        "min_target_generated_ca_distance_A": 0.7846896648406982,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 235,
+        "generated_contact_count": 804,
+        "contact_precision": 0.0236318407960199,
+        "contact_recall": 0.08085106382978724,
+        "contact_f1": 0.03657362848893166,
+        "direct_binder_ca_rmsd_A": 26.169809341430664,
+        "min_target_generated_ca_distance_A": 0.11950826644897461,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 11.520668029785156,
+        "loss_trace": [
+          13.579900741577148,
+          12.635991096496582,
+          11.795178413391113,
+          11.520668029785156
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cf4_A_B",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 335,
+        "generated_contact_count": 609,
+        "contact_precision": 0.019704433497536946,
+        "contact_recall": 0.03582089552238806,
+        "contact_f1": 0.025423728813559327,
+        "direct_binder_ca_rmsd_A": 23.66892433166504,
+        "min_target_generated_ca_distance_A": 0.7379039525985718,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 335,
+        "generated_contact_count": 660,
+        "contact_precision": 0.04090909090909091,
+        "contact_recall": 0.08059701492537313,
+        "contact_f1": 0.054271356783919596,
+        "direct_binder_ca_rmsd_A": 21.693185806274414,
+        "min_target_generated_ca_distance_A": 1.45015287399292,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 14.122530937194824,
+        "loss_trace": [
+          17.279794692993164,
+          15.844232559204102,
+          14.574382781982422,
+          14.122530937194824
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cf4_A_B",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 349,
+        "generated_contact_count": 653,
+        "contact_precision": 0.021439509954058193,
+        "contact_recall": 0.04011461318051576,
+        "contact_f1": 0.02794411177644711,
+        "direct_binder_ca_rmsd_A": 22.340097427368164,
+        "min_target_generated_ca_distance_A": 1.33988356590271,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 349,
+        "generated_contact_count": 671,
+        "contact_precision": 0.05514157973174367,
+        "contact_recall": 0.10601719197707736,
+        "contact_f1": 0.07254901960784314,
+        "direct_binder_ca_rmsd_A": 20.82529067993164,
+        "min_target_generated_ca_distance_A": 0.6915827989578247,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 12.172619819641113,
+        "loss_trace": [
+          14.540008544921875,
+          13.426867485046387,
+          12.46293830871582,
+          12.172619819641113
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cf4_A_B",
+      "state_index": 2,
+      "before": {
+        "reference_contact_count": 347,
+        "generated_contact_count": 645,
+        "contact_precision": 0.010852713178294573,
+        "contact_recall": 0.020172910662824207,
+        "contact_f1": 0.014112903225806453,
+        "direct_binder_ca_rmsd_A": 23.499624252319336,
+        "min_target_generated_ca_distance_A": 0.703396201133728,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 347,
+        "generated_contact_count": 707,
+        "contact_precision": 0.03818953323903819,
+        "contact_recall": 0.07780979827089338,
+        "contact_f1": 0.05123339658444023,
+        "direct_binder_ca_rmsd_A": 21.360633850097656,
+        "min_target_generated_ca_distance_A": 0.29641205072402954,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 13.20329475402832,
+        "loss_trace": [
+          16.14980125427246,
+          14.838905334472656,
+          13.628203392028809,
+          13.20329475402832
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": true,
+        "reject_reason": null
+      }
+    },
+    {
+      "sample_id": "1cir_A_B",
+      "state_index": 0,
+      "before": {
+        "reference_contact_count": 163,
+        "generated_contact_count": 227,
+        "contact_precision": 0.31718061674008813,
+        "contact_recall": 0.44171779141104295,
+        "contact_f1": 0.36923076923076925,
+        "direct_binder_ca_rmsd_A": 13.201949119567871,
+        "min_target_generated_ca_distance_A": 1.562888741493225,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 163,
+        "generated_contact_count": 227,
+        "contact_precision": 0.31718061674008813,
+        "contact_recall": 0.44171779141104295,
+        "contact_f1": 0.36923076923076925,
+        "direct_binder_ca_rmsd_A": 13.201949119567871,
+        "min_target_generated_ca_distance_A": 1.562888741493225,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 5.547060489654541,
+        "loss_trace": [
+          6.731969833374023,
+          6.112077236175537,
+          5.6878252029418945,
+          5.547060489654541
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": false,
+        "reject_reason": "contact_f1_decreased"
+      }
+    },
+    {
+      "sample_id": "1cir_A_B",
+      "state_index": 1,
+      "before": {
+        "reference_contact_count": 176,
+        "generated_contact_count": 188,
+        "contact_precision": 0.42021276595744683,
+        "contact_recall": 0.44886363636363635,
+        "contact_f1": 0.4340659340659341,
+        "direct_binder_ca_rmsd_A": 14.004947662353516,
+        "min_target_generated_ca_distance_A": 2.046125650405884,
+        "severe_clash": true
+      },
+      "after": {
+        "reference_contact_count": 176,
+        "generated_contact_count": 188,
+        "contact_precision": 0.42021276595744683,
+        "contact_recall": 0.44886363636363635,
+        "contact_f1": 0.4340659340659341,
+        "direct_binder_ca_rmsd_A": 14.004947662353516,
+        "min_target_generated_ca_distance_A": 2.046125650405884,
+        "severe_clash": true
+      },
+      "optimizer": {
+        "best_loss": 5.615996360778809,
+        "loss_trace": [
+          6.940268516540527,
+          6.002705097198486,
+          5.666036605834961,
+          5.615996360778809
+        ],
+        "selected_anchor_pairs": 128,
+        "accepted_guided_pose": false,
+        "reject_reason": "contact_f1_decreased"
+      }
+    }
+  ]
+}

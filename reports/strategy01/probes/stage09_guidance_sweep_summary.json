@@ -1,0 +1,26 @@
+[
+  {
+    "file": "stage09_b1_interface_guidance_smoke_cw15.json",
+    "contact_delta": 0.04138234536798839,
+    "rmsd_delta": -2.0096346139907837,
+    "clash_delta": 0.04166666666666674,
+    "after_f1": 0.16205711152798405,
+    "after_clash": 0.7083333333333334
+  },
+  {
+    "file": "stage09_b1_interface_guidance_smoke_cw30.json",
+    "contact_delta": 0.042694644192426315,
+    "rmsd_delta": -2.0103262662887573,
+    "clash_delta": 0.04166666666666674,
+    "after_f1": 0.16336941035242197,
+    "after_clash": 0.7083333333333334
+  },
+  {
+    "file": "stage09_b1_interface_guidance_smoke_cw60.json",
+    "contact_delta": 0.04223172284334399,
+    "rmsd_delta": -1.9746845165888445,
+    "clash_delta": 0.04166666666666674,
+    "after_f1": 0.16290648900333965,
+    "after_clash": 0.7083333333333334
+  }
+]
