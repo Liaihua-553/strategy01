@@ -1,0 +1,44 @@
+[
+  {
+    "file": "stage09_guided_state_sampling_control_seed123_exact_benchmark.json",
+    "contact_mean": 0.10317602122316305,
+    "rmsd_mean": 25.64100432395935,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s065_lr005_i3_exact_benchmark.json",
+    "contact_mean": 0.10578982469391478,
+    "rmsd_mean": 25.41912325223287,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s070_lr012_i8_a64_exact_benchmark.json",
+    "contact_mean": 0.12387770941189963,
+    "rmsd_mean": 24.863508462905884,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s075_lr008_i5_exact_benchmark.json",
+    "contact_mean": 0.11116695878910145,
+    "rmsd_mean": 25.27380148569743,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s075_lr015_i8_a32_exact_benchmark.json",
+    "contact_mean": 0.13602504846505073,
+    "rmsd_mean": 24.841167370478313,
+    "clash_rate": 0.6666666666666666,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s085_lr020_i10_a32_exact_benchmark.json",
+    "contact_mean": 0.13886523159377315,
+    "rmsd_mean": 24.681456963221233,
+    "clash_rate": 0.6666666666666666,
+    "state_count": 24
+  }
+]

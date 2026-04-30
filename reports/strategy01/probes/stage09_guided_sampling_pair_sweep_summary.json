@@ -1,0 +1,23 @@
+[
+  {
+    "file": "stage09_guided_state_sampling_control_seed123_exact_benchmark.json",
+    "contact_mean": 0.10317602122316305,
+    "rmsd_mean": 25.64100432395935,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s065_lr005_i3_exact_benchmark.json",
+    "contact_mean": 0.10578982469391478,
+    "rmsd_mean": 25.41912325223287,
+    "clash_rate": 0.75,
+    "state_count": 24
+  },
+  {
+    "file": "stage09_guided_state_sampling_guided_seed123_s075_lr008_i5_exact_benchmark.json",
+    "contact_mean": 0.11116695878910145,
+    "rmsd_mean": 25.27380148569743,
+    "clash_rate": 0.75,
+    "state_count": 24
+  }
+]
