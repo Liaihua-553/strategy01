@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "n_total": 64,
+  "counts_by_class": {
+    "V_exact_main": 48,
+    "invalid_or_auxiliary": 10,
+    "V_exact_challenge": 6
+  },
+  "counts_by_exact_kind": {
+    "exact_experimental_multimodel_nmr": 64
+  },
+  "counts_by_motion_bin": {
+    "small_1_2p5": 13,
+    "medium_2p5_5": 21,
+    "too_large_gt10": 9,
+    "large_5_8": 14,
+    "challenge_8_10": 7
+  },
+  "counts_by_source_db": {
+    "rcsb_nmr": 64
+  },
+  "families_by_class": {
+    "V_exact_main": 41,
+    "invalid_or_auxiliary": 9,
+    "V_exact_challenge": 6
+  },
+  "main_exact_sample_ids": [
+    "1a0n_B_A",
+    "1ai0_L_K",
+    "1aze_A_B",
+    "1bxp_A_B",
+    "1cee_A_B",
+    "1cf4_A_B",
+    "1cir_A_B",
+    "1co0_A_B",
+    "1d5g_A_B",
+    "1ddm_A_B",
+    "1dpu_A_B",
+    "1e0a_A_B",
+    "1e91_A_B",
+    "1eci_B_A",
+    "1ees_A_B",
+    "1f96_A_C",
+    "1fmh_A_B",
+    "1g1e_B_A",
+    "1h0t_B_A",
+    "1h8b_A_B"
+  ],
+  "criteria": {
+    "V_exact_main_min_target": 32,
+    "V_exact_main_min_families": 12,
+    "motion_main_A": "1.0-8.0",
+    "motion_challenge_A": "8.0-10.0 with persistent anchors"
+  },
+  "input_manifests": [
+    "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage07_validation_expand/V_exact_manifest.json",
+    "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage06_validation/V_exact_manifest.json"
+  ],
+  "output_dir": "data/strategy01/stage08_high_quality_dataset"
+}

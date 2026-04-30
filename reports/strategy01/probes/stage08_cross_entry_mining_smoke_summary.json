@@ -1,0 +1,50 @@
+{
+  "status": "no_cross_entry_candidates_in_smoke_window",
+  "n_entries_queried": 200,
+  "n_entries_with_usable_pair": 31,
+  "n_sequence_groups": 22,
+  "n_groups_with_ge2_entries": 3,
+  "n_cross_entry_candidates": 0,
+  "rejected_group_diagnostics": [
+    {
+      "group_key": "7e722986fb49__8b3c46f11cf2",
+      "n_records": 2,
+      "entries": [
+        "1a0n",
+        "1azg"
+      ],
+      "reason": "motion_above_max",
+      "max_target_motion_A": 16.3062,
+      "persistent_anchor_count": 9,
+      "min_contacts": 11
+    },
+    {
+      "group_key": "340ad9d1b636__1bfab6b80463",
+      "n_records": 8,
+      "entries": [
+        "1ai0",
+        "1aiy"
+      ],
+      "reason": "motion_above_max",
+      "max_target_motion_A": 13.5591,
+      "persistent_anchor_count": 31,
+      "min_contacts": 31
+    },
+    {
+      "group_key": "645a67df9384__0ba17b4132d1",
+      "n_records": 2,
+      "entries": [
+        "1cqg",
+        "1cqh"
+      ],
+      "reason": "motion_below_min",
+      "max_target_motion_A": 0.189,
+      "persistent_anchor_count": 25,
+      "min_contacts": 25
+    }
+  ],
+  "manifest": "data/strategy01/stage08_high_quality_dataset/cross_entry_candidates_manifest.json",
+  "candidate_sample_ids": [],
+  "errors": [],
+  "note": "Candidates require biological-assembly/ProtCID-style audit before being promoted to V_exact_main."
+}
