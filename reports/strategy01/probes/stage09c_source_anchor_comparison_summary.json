@@ -1,0 +1,122 @@
+{
+  "status": "ok",
+  "created_at": "2026-05-01T18:21:18",
+  "scientific_goal": "single shared binder sequence compatible with real target functional conformational changes, with state-specific complex geometries",
+  "rows": [
+    {
+      "label": "Stage08B_unguided_B1",
+      "sample_count": 48,
+      "state_count_ok": 144,
+      "contact_f1_mean": 0.11708181922641514,
+      "contact_f1_worst": 0.0,
+      "worst_interface_rmsd_A_mean": 26.2497934434149,
+      "aligned_binder_ca_rmsd_A_mean": 11.861835042321196,
+      "contact_persistence_mean": 0.49876340509741074,
+      "state_metric_std_contact_f1_mean": 0.015135371070050719,
+      "clash_rate": 0.7847222222222222,
+      "source_file": "reports/strategy01/probes/stage08b_full_exact_benchmark_summary.json",
+      "note": "Strategy01 state-specific sampler without sampling-time interface guidance."
+    },
+    {
+      "label": "Stage09B_oracle_exact_anchor_B1",
+      "sample_count": 48,
+      "state_count_ok": 144,
+      "contact_f1_mean": 0.16221737538846906,
+      "contact_f1_worst": 0.0,
+      "worst_interface_rmsd_A_mean": 24.633055922057892,
+      "aligned_binder_ca_rmsd_A_mean": 11.184919549743977,
+      "contact_persistence_mean": 0.47527268431770037,
+      "state_metric_std_contact_f1_mean": 0.026037797257887213,
+      "clash_rate": 0.7430555555555556,
+      "source_file": "reports/strategy01/probes/stage09_guided_state_sampling_full_best_exact_benchmark.json",
+      "note": "Per-state exact interface anchors; diagnostic upper-bound for this guidance form.",
+      "elapsed_sec": 113.49678611755371,
+      "mean_sec_per_sample": 2.3645164171854653,
+      "settings": {
+        "anchor_source": null,
+        "guidance_start_fraction": 0.85,
+        "guidance_inner_steps": 10,
+        "guidance_lr": 0.2,
+        "contact_cutoff_nm": 1.0,
+        "clash_cutoff_nm": 0.28,
+        "shell_max_nm": 1.2,
+        "max_anchor_pairs": 32,
+        "split": "val",
+        "max_samples": 48
+      },
+      "delta_vs_unguided": {
+        "contact_f1_mean_abs": 0.04513555616205392,
+        "contact_f1_mean_rel_pct": 38.550439735455335,
+        "worst_interface_rmsd_A_mean_abs": -1.6167375213570097,
+        "worst_interface_rmsd_A_mean_rel_pct": -6.1590485458185125,
+        "clash_rate_abs": -0.04166666666666663,
+        "clash_rate_rel_pct": -5.309734513274334,
+        "contact_persistence_mean_abs": -0.023490720779710372,
+        "contact_persistence_mean_rel_pct": -4.709792366407184
+      }
+    },
+    {
+      "label": "Stage09C_source_state0_anchor_B1",
+      "sample_count": 48,
+      "state_count_ok": 144,
+      "contact_f1_mean": 0.16316116693659719,
+      "contact_f1_worst": 0.0,
+      "worst_interface_rmsd_A_mean": 24.644507295555538,
+      "aligned_binder_ca_rmsd_A_mean": 11.181656032075129,
+      "contact_persistence_mean": 0.5229195670642534,
+      "state_metric_std_contact_f1_mean": 0.021717339892853252,
+      "clash_rate": 0.7430555555555556,
+      "source_file": "reports/strategy01/probes/stage09c_source_state0_full_exact_benchmark.json",
+      "note": "Uses only source state0 interface anchors transferred to all states; production-like when one known/source complex exists.",
+      "elapsed_sec": 102.36864614486694,
+      "mean_sec_per_sample": 2.1326801627874374,
+      "settings": {
+        "anchor_source": "source_state0",
+        "guidance_start_fraction": 0.85,
+        "guidance_inner_steps": 10,
+        "guidance_lr": 0.2,
+        "contact_cutoff_nm": 1.0,
+        "clash_cutoff_nm": 0.28,
+        "shell_max_nm": 1.2,
+        "max_anchor_pairs": 32,
+        "split": "val",
+        "max_samples": 48
+      },
+      "delta_vs_unguided": {
+        "contact_f1_mean_abs": 0.046079347710182045,
+        "contact_f1_mean_rel_pct": 39.356535467793584,
+        "worst_interface_rmsd_A_mean_abs": -1.6052861478593634,
+        "worst_interface_rmsd_A_mean_rel_pct": -6.1154239225530755,
+        "clash_rate_abs": -0.04166666666666663,
+        "clash_rate_rel_pct": -5.309734513274334,
+        "contact_persistence_mean_abs": 0.024156161966842615,
+        "contact_persistence_mean_rel_pct": 4.843210572380463
+      },
+      "delta_vs_oracle": {
+        "contact_f1_mean_abs": 0.0009437915481281256,
+        "worst_interface_rmsd_A_mean_abs": 0.011451373497646244,
+        "clash_rate_abs": 0.0,
+        "contact_persistence_mean_abs": 0.04764688274655299
+      }
+    }
+  ],
+  "warning_error_assessment": {
+    "stage09c_current_logs": [
+      {
+        "pattern": "torch.nn.modules.transformer UserWarning: enable_nested_tensor is True, but norm_first disabled nested tensor fast path",
+        "classification": "performance_warning",
+        "impact": "No evidence of metric corruption; may slightly affect runtime only."
+      },
+      {
+        "pattern": "OptionalCaCoorsNanometersSeqFeat / OptionalResidueTypeSeqFeat / OptionalCaCoorsNanometersPairwiseDistancesPairFeat returning zeros",
+        "classification": "model_input_warning",
+        "impact": "Does not break Stage09C comparison because Stage08B/09B/09C use the same fallback, but it may limit absolute scientific quality. Next stage should either wire these optional features deliberately or disable the feature factories in the multistate sampling config."
+      }
+    ],
+    "resolved_prior_error": {
+      "pattern": "stage09_guided_state_specific_sampling.py: error: unrecognized arguments: --seed 123",
+      "classification": "resolved_cli_error",
+      "impact": "Affected an early Stage09B pair job only; not used in final Stage09B/09C selected metrics."
+    }
+  }
+}

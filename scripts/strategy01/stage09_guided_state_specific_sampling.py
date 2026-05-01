@@ -104,26 +104,75 @@ def contact_pairs(target_ca_nm: torch.Tensor, binder_ca_nm: torch.Tensor, cutoff
     return ti, bj, rd
 
 
-def build_guidance_labels(sample: dict[str, Any], device: torch.device, contact_cutoff_nm: float, max_pairs: int) -> list[StateGuidanceLabels | None]:
+def _state_target_and_binder_ca_nm(
+    sample: dict[str, Any],
+    state_index: int,
+    target_chain: str,
+    binder_chain: str,
+    device: torch.device,
+) -> tuple[torch.Tensor | None, torch.Tensor | None]:
+    exact_paths = sample.get("exact_complex_paths") or sample.get("predicted_complex_paths") or []
+    target_paths = sample.get("target_state_paths") or []
+    target_path = as_path(target_paths[state_index])
+    complex_path = as_path(exact_paths[state_index])
+    target_rows = parse_ca(target_path, target_chain)
+    if len(target_rows) < 3:
+        target_rows = parse_ca(complex_path, target_chain)
+    binder_rows = parse_ca(complex_path, binder_chain)
+    if len(target_rows) < 3 or len(binder_rows) < 3:
+        return None, None
+    target_ca_nm = torch.stack([xyz for _, xyz in target_rows]).float().to(device) / 10.0
+    binder_ca_nm = torch.stack([xyz for _, xyz in binder_rows]).float().to(device) / 10.0
+    return target_ca_nm, binder_ca_nm
+
+
+def build_guidance_labels(
+    sample: dict[str, Any],
+    device: torch.device,
+    contact_cutoff_nm: float,
+    max_pairs: int,
+    anchor_source: str = "oracle",
+) -> list[StateGuidanceLabels | None]:
+    """Build state guidance labels.
+
+    anchor_source modes:
+    - oracle: use each state's exact complex contacts. Diagnostic upper bound.
+    - source_state0: use only state0/source-complex binder residue anchors and
+      transfer them to every target state by residue index. This approximates a
+      production scenario where one source interface is known and compatibility
+      with other conformations is required.
+    """
     valid_k = int(sample["state_present_mask"].bool().sum().item())
     target_chain = sample.get("target_chain_id") or "A"
     binder_chain = sample.get("binder_chain_id") or "B"
     labels: list[StateGuidanceLabels | None] = []
-    exact_paths = sample.get("exact_complex_paths") or sample.get("predicted_complex_paths") or []
-    target_paths = sample.get("target_state_paths") or []
+
+    source_ti = source_bj = source_rd = None
+    source_binder_ca_nm = None
+    if anchor_source == "source_state0":
+        source_target_ca_nm, source_binder_ca_nm = _state_target_and_binder_ca_nm(sample, 0, target_chain, binder_chain, device)
+        if source_target_ca_nm is not None and source_binder_ca_nm is not None:
+            source_ti, source_bj, source_rd = contact_pairs(source_target_ca_nm, source_binder_ca_nm, contact_cutoff_nm, max_pairs)
+
     for k in range(valid_k):
-        target_path = as_path(target_paths[k])
-        complex_path = as_path(exact_paths[k])
-        target_rows = parse_ca(target_path, target_chain)
-        if len(target_rows) < 3:
-            target_rows = parse_ca(complex_path, target_chain)
-        binder_rows = parse_ca(complex_path, binder_chain)
-        if len(target_rows) < 3 or len(binder_rows) < 3:
+        target_ca_nm, ref_binder_ca_nm = _state_target_and_binder_ca_nm(sample, k, target_chain, binder_chain, device)
+        if target_ca_nm is None or ref_binder_ca_nm is None:
             labels.append(None)
             continue
-        target_ca_nm = torch.stack([xyz for _, xyz in target_rows]).float().to(device) / 10.0
-        ref_binder_ca_nm = torch.stack([xyz for _, xyz in binder_rows]).float().to(device) / 10.0
-        ti, bj, rd = contact_pairs(target_ca_nm, ref_binder_ca_nm, contact_cutoff_nm, max_pairs)
+        if anchor_source == "oracle":
+            ti, bj, rd = contact_pairs(target_ca_nm, ref_binder_ca_nm, contact_cutoff_nm, max_pairs)
+        elif anchor_source == "source_state0":
+            if source_ti is None or source_bj is None or source_rd is None or source_binder_ca_nm is None:
+                labels.append(None)
+                continue
+            keep = (source_ti < target_ca_nm.shape[0]) & (source_bj < source_binder_ca_nm.shape[0])
+            ti, bj, rd = source_ti[keep], source_bj[keep], source_rd[keep]
+            if ti.numel() == 0:
+                labels.append(None)
+                continue
+            ref_binder_ca_nm = source_binder_ca_nm
+        else:
+            raise ValueError(f"Unknown anchor_source={anchor_source}")
         labels.append(
             StateGuidanceLabels(
                 target_ca_nm=target_ca_nm,
@@ -361,7 +410,7 @@ def guided_state_specific_sample(
 
 def sample_one(model: Proteina, sample_idx: int, sample: dict[str, Any], sampling_cfg: Any, out_root: Path, nsteps: int, device: torch.device, args: argparse.Namespace) -> dict[str, Any]:
     batch = s4.collate_samples([sample], device)
-    labels = [build_guidance_labels(sample, device, args.contact_cutoff_nm, args.max_anchor_pairs)]
+    labels = [build_guidance_labels(sample, device, args.contact_cutoff_nm, args.max_anchor_pairs, args.anchor_source)]
     started = time.time()
     x_states, nn_out, guidance_trace = guided_state_specific_sample(model, batch, labels, nsteps, sampling_cfg, device, args)
     elapsed = time.time() - started
@@ -413,6 +462,7 @@ def main() -> None:
     parser.add_argument("--nsteps", type=int, default=24)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--seed", type=int, default=5)
+    parser.add_argument("--anchor-source", choices=["oracle", "source_state0"], default="oracle")
     parser.add_argument("--guidance-start-fraction", type=float, default=0.35)
     parser.add_argument("--guidance-inner-steps", type=int, default=1)
     parser.add_argument("--guidance-lr", type=float, default=0.015)

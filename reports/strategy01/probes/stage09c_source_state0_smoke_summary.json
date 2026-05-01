@@ -1,0 +1,911 @@
+{
+  "status": "passed",
+  "oracle_warning": "Sampling-time guidance currently uses V_exact experimental contacts as anchors. This validates mechanics only; it is not a fair production benchmark until anchors are non-oracle.",
+  "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "ckpt": "ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+  "out_dir": "results/strategy01/stage09c_source_state0_smoke",
+  "nsteps": 24,
+  "settings": {
+    "ckpt": "ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+    "autoencoder_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+    "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+    "sampling_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/pipeline/model_sampling.yaml",
+    "out_dir": "results/strategy01/stage09c_source_state0_smoke",
+    "report": "reports/strategy01/probes/stage09c_source_state0_smoke_summary.json",
+    "split": "val",
+    "sample_id": [],
+    "max_samples": 8,
+    "nsteps": 24,
+    "device": "cuda",
+    "seed": 123,
+    "anchor_source": "source_state0",
+    "guidance_start_fraction": 0.85,
+    "guidance_inner_steps": 10,
+    "guidance_lr": 0.2,
+    "contact_cutoff_nm": 1.0,
+    "clash_cutoff_nm": 0.28,
+    "shell_max_nm": 1.2,
+    "max_anchor_pairs": 32,
+    "clash_weight": 80.0,
+    "shell_weight": 0.1,
+    "tether_weight": 0.002,
+    "safe_accept": true
+  },
+  "sample_count": 8,
+  "elapsed_sec": 18.888477563858032,
+  "mean_sec_per_sample": 2.3610598742961884,
+  "rows": [
+    {
+      "status": "passed",
+      "sample_index": 0,
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSESSSSSYPPPP",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5653195977210999
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5800333023071289
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5414841771125793
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.027397261932492256,
+              "after_f1": 0.06382978707551956,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.339576780796051,
+              "after_min_dist_nm": 0.16814909875392914,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.5456670522689819,
+                "clash_loss": 1.581273136253003e-05,
+                "shell_loss": 0.005321891512721777,
+                "tether_loss": 0.006651615723967552
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.023255813866853714,
+              "after_f1": 0.05607476830482483,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.4011443257331848,
+              "after_min_dist_nm": 0.1464245468378067,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.45484521985054016,
+                "clash_loss": 1.851825072662905e-05,
+                "shell_loss": 0.003080218331888318,
+                "tether_loss": 0.006239133886992931
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.024390244856476784,
+              "after_f1": 0.039603956043720245,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.43153634667396545,
+              "after_min_dist_nm": 0.23288583755493164,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.48091283440589905,
+                "clash_loss": 1.0876086662392481e-06,
+                "shell_loss": 0.0002486299490556121,
+                "tether_loss": 0.006727934814989567
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1a0n_B_A",
+      "elapsed_sec": 3.1587979793548584
+    },
+    {
+      "status": "passed",
+      "sample_index": 1,
+      "sample_id": "1ai0_L_K",
+      "split": "val",
+      "target_id": "1ai0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSESSSSSSSLNNSEENSES",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.23809523809523808,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6113573312759399
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5890606045722961
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5930448174476624
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.1221374049782753,
+              "after_f1": 0.12413792312145233,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.28780603408813477,
+              "after_min_dist_nm": 0.25956109166145325,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.5716942548751831,
+                "clash_loss": 5.496437438523571e-07,
+                "shell_loss": 0.07239672541618347,
+                "tether_loss": 0.004786109551787376
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.13793103396892548,
+              "after_f1": 0.20382164418697357,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.2960628569126129,
+              "after_min_dist_nm": 0.25200989842414856,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.558998703956604,
+                "clash_loss": 2.469545279382146e-07,
+                "shell_loss": 0.12377478182315826,
+                "tether_loss": 0.004732722416520119
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "would_create_new_clash",
+              "before_f1": 0.11023622006177902,
+              "after_f1": 0.18571428954601288,
+              "before_clash": false,
+              "after_clash": true,
+              "before_min_dist_nm": 0.3465513288974762,
+              "after_min_dist_nm": 0.2523729205131531,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.5687552690505981,
+                "clash_loss": 8.834504683363775e-09,
+                "shell_loss": 0.10305163264274597,
+                "tether_loss": 0.004812269937247038
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1ai0_L_K",
+      "elapsed_sec": 2.071338176727295
+    },
+    {
+      "status": "passed",
+      "sample_index": 2,
+      "sample_id": "1aze_A_B",
+      "split": "val",
+      "target_id": "1aze",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSSSPPPPP",
+      "reference_sequence": "VPPPVPPRRR",
+      "sequence_identity_to_reference": 0.3,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6199256181716919
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.657791018486023
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6220693588256836
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.13852813839912415,
+              "after_f1": 0.13114753365516663,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.08914543688297272,
+              "after_min_dist_nm": 0.17402561008930206,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.1569634974002838,
+                "clash_loss": 5.3065221436554566e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.003921391908079386
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.1718749850988388,
+              "after_f1": 0.1764705926179886,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.16493898630142212,
+              "after_min_dist_nm": 0.18198059499263763,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.11267484724521637,
+                "clash_loss": 2.4979286536108702e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0024051684886217117
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.16858237981796265,
+              "after_f1": 0.17454545199871063,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.2526639699935913,
+              "after_min_dist_nm": 0.23863594233989716,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.06833340972661972,
+                "clash_loss": 5.727069037675392e-06,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0012678460916504264
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1aze_A_B",
+      "elapsed_sec": 1.8573460578918457
+    },
+    {
+      "status": "passed",
+      "sample_index": 3,
+      "sample_id": "1bxp_A_B",
+      "split": "val",
+      "target_id": "1bxp",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPYPPPPPPPP",
+      "reference_sequence": "MRYYESSLKSYPD",
+      "sequence_identity_to_reference": 0.07692307692307693,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6860975027084351
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7176569700241089
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.7575390338897705
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.29535865783691406,
+              "after_f1": 0.3414634168148041,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.18925072252750397,
+              "after_min_dist_nm": 0.17823736369609833,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.1334509402513504,
+                "clash_loss": 1.1865270607813727e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0025136684998869896
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.23268696665763855,
+              "after_f1": 0.2554347813129425,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.1716088056564331,
+              "after_min_dist_nm": 0.19289813935756683,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.11083941161632538,
+                "clash_loss": 2.5346846086904407e-05,
+                "shell_loss": 6.0781043430324644e-05,
+                "tether_loss": 0.0023690175730735064
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.1640625,
+              "after_f1": 0.20155039429664612,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.20963835716247559,
+              "after_min_dist_nm": 0.1419704258441925,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.13420245051383972,
+                "clash_loss": 1.8205520973424427e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.002819532062858343
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1bxp_A_B",
+      "elapsed_sec": 1.8742115497589111
+    },
+    {
+      "status": "passed",
+      "sample_index": 4,
+      "sample_id": "1cee_A_B",
+      "split": "val",
+      "target_id": "1cee",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSSSSSSSSSSSYSSPPPPPPPPPPPPPPPPPSPPPSPPPSPPSSPSPPPPPPPPP",
+      "reference_sequence": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "sequence_identity_to_reference": 0.0847457627118644,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.5528849363327026
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.8763139247894287
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.8851702213287354
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.030741410329937935,
+              "after_f1": 0.03038427233695984,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.0856686607003212,
+              "after_min_dist_nm": 0.09147816151380539,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.9640887975692749,
+                "clash_loss": 1.8364709831075743e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0010322314919903874
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.030651342123746872,
+              "after_f1": 0.03051106072962284,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.11349992454051971,
+              "after_min_dist_nm": 0.11847689747810364,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.6723070740699768,
+                "clash_loss": 1.5915598851279356e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0007229084731079638
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.019374068826436996,
+              "after_f1": 0.019145803526043892,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.09177999198436737,
+              "after_min_dist_nm": 0.09740538150072098,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.48092788457870483,
+                "clash_loss": 1.9842676920234226e-05,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0005846919375471771
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1cee_A_B",
+      "elapsed_sec": 2.015587329864502
+    },
+    {
+      "status": "passed",
+      "sample_index": 5,
+      "sample_id": "1cf4_A_B",
+      "split": "val",
+      "target_id": "1cf4",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSSPSSSSPSSPPPPPPPPPPPPPPPPPPPPPPPPPSPPPPPP",
+      "reference_sequence": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "sequence_identity_to_reference": 0.045454545454545456,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.2481446266174316
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.2318328619003296
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.1899230480194092
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.025834230706095695,
+              "after_f1": 0.029629627242684364,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.09894896298646927,
+              "after_min_dist_nm": 0.057196684181690216,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.287360429763794,
+                "clash_loss": 2.290502015966922e-05,
+                "shell_loss": 0.018962934613227844,
+                "tether_loss": 0.0011331047862768173
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.035608310252428055,
+              "after_f1": 0.03508772328495979,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.18890175223350525,
+              "after_min_dist_nm": 0.1784740537405014,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0864636898040771,
+                "clash_loss": 5.705246621801052e-06,
+                "shell_loss": 0.006558834575116634,
+                "tether_loss": 0.0010615993523970246
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.028792910277843475,
+              "after_f1": 0.02857142686843872,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.10851000249385834,
+              "after_min_dist_nm": 0.0905156135559082,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2043790817260742,
+                "clash_loss": 1.533873364678584e-05,
+                "shell_loss": 0.0197833813726902,
+                "tether_loss": 0.0011409148573875427
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1cf4_A_B",
+      "elapsed_sec": 2.0226593017578125
+    },
+    {
+      "status": "passed",
+      "sample_index": 6,
+      "sample_id": "1cir_A_B",
+      "split": "val",
+      "target_id": "1cir",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPSSSSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.8864527940750122
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9131556749343872
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9423593282699585
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.39306357502937317,
+              "after_f1": 0.39306357502937317,
+              "before_clash": true,
+              "after_clash": false,
+              "before_min_dist_nm": 0.24386250972747803,
+              "after_min_dist_nm": 0.29296940565109253,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.23592926561832428,
+                "clash_loss": 0.0,
+                "shell_loss": 0.0,
+                "tether_loss": 0.001050724764354527
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.3999999463558197,
+              "after_f1": 0.4231884181499481,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.30691099166870117,
+              "after_min_dist_nm": 0.3229077160358429,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2238835096359253,
+                "clash_loss": 0.0,
+                "shell_loss": 0.0001458286860724911,
+                "tether_loss": 0.0008994642994366586
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.343137264251709,
+              "after_f1": 0.38072288036346436,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.24371245503425598,
+              "after_min_dist_nm": 0.2401351034641266,
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.15966138243675232,
+                "clash_loss": 3.1381005101138726e-06,
+                "shell_loss": 0.0,
+                "tether_loss": 0.0006844306481070817
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1cir_A_B",
+      "elapsed_sec": 1.8914339542388916
+    },
+    {
+      "status": "passed",
+      "sample_index": 7,
+      "sample_id": "1co0_A_B",
+      "split": "val",
+      "target_id": "1co0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPPPPSSPPPPPSPPPPPPPPPPPPPSSSLSSPPPPPPPSPSPSPPPPSPSSSPSPPPPSPPPPPPPPPPPPPPPPPPPPPSPSSPPPSPPSSSPPPPPPP",
+      "reference_sequence": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "sequence_identity_to_reference": 0.0380952380952381,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 2.159560203552246
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 2.1444356441497803
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 2.1712889671325684
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 21
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.10246305167675018,
+              "after_f1": 0.10619468241930008,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.08266530930995941,
+              "after_min_dist_nm": 0.049675267189741135,
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.4897195100784302,
+                "clash_loss": 1.4664122318208683e-05,
+                "shell_loss": 5.079793930053711,
+                "tether_loss": 0.00048030904144980013
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.0942307710647583,
+              "after_f1": 0.1034482792019844,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.0852886289358139,
+              "after_min_dist_nm": 0.034018874168395996,
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.548613429069519,
+                "clash_loss": 1.497766061220318e-05,
+                "shell_loss": 5.297086238861084,
+                "tether_loss": 0.0004942051600664854
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "existing_clash_became_closer",
+              "before_f1": 0.08712871372699738,
+              "after_f1": 0.09823182970285416,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.11686764657497406,
+              "after_min_dist_nm": 0.09711520373821259,
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.5591673851013184,
+                "clash_loss": 1.1836490557470825e-05,
+                "shell_loss": 5.33013391494751,
+                "tether_loss": 0.0005227685905992985
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09c_source_state0_smoke/1co0_A_B",
+      "elapsed_sec": 2.009397506713867
+    }
+  ]
+}
