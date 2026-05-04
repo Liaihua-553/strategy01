@@ -1,0 +1,1585 @@
+{
+  "status": "passed",
+  "oracle_warning": "Sampling-time guidance currently uses V_exact experimental contacts as anchors. This validates mechanics only; it is not a fair production benchmark until anchors are non-oracle.",
+  "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "ckpt": "ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+  "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke",
+  "nsteps": 24,
+  "settings": {
+    "ckpt": "ckpts/stage07_sequence_consensus/runs/stage08b_merged_pilot/mini_final_lightning.ckpt",
+    "autoencoder_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+    "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+    "sampling_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/pipeline/model_sampling.yaml",
+    "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke",
+    "report": "reports/strategy01/probes/stage09d_no_ca_late_soft_smoke_summary.json",
+    "split": "val",
+    "sample_id": [],
+    "max_samples": 8,
+    "nsteps": 24,
+    "device": "cuda",
+    "seed": 123,
+    "anchor_source": "source_state0",
+    "guidance_start_fraction": 0.95,
+    "guidance_inner_steps": 4,
+    "guidance_lr": 0.08,
+    "contact_cutoff_nm": 1.0,
+    "clash_cutoff_nm": 0.28,
+    "shell_max_nm": 1.2,
+    "max_anchor_pairs": 32,
+    "clash_weight": 40.0,
+    "clash_max_weight": 0.5,
+    "shell_weight": 0.1,
+    "tether_weight": 0.002,
+    "overcontact_weight": 0.0,
+    "contact_temperature_nm": 0.06,
+    "hard_min_dist_nm": 0.28,
+    "min_dist_improvement_nm": 0.002,
+    "f1_drop_tolerance": 0.0,
+    "anchor_loss_tolerance": 0.2,
+    "f1_gain_for_anchor_worsen": 0.01,
+    "max_guidance_displacement_nm": 0.04,
+    "enable_ca_feature": false,
+    "safe_accept": true
+  },
+  "sample_count": 8,
+  "elapsed_sec": 14.672764301300049,
+  "mean_sec_per_sample": 1.8340956270694733,
+  "rows": [
+    {
+      "status": "passed",
+      "sample_index": 0,
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSESSSSSYPPPP",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5094906091690063
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.5320690274238586
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5404932498931885
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.0,
+              "after_f1": 0.0,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.911888837814331,
+              "after_min_dist_nm": 0.911888837814331,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.128319501876831,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.00975306797772646,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 4.54383659362793,
+                "ref_contact_count": 42.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0956568717956543,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.008516685105860233,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 5.636172771453857,
+                "ref_contact_count": 42.0,
+                "tether_loss": 0.00020351640705484897
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0963935852050781,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.008787944912910461,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 5.701874256134033,
+                "ref_contact_count": 42.0,
+                "tether_loss": 0.00018307733989786357
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.0,
+              "after_f1": 0.0,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.8895993828773499,
+              "after_min_dist_nm": 0.8606618046760559,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0110723972320557,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.00537897227331996,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 7.818281173706055,
+                "ref_contact_count": 43.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.9797430038452148,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0050790333189070225,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 9.680959701538086,
+                "ref_contact_count": 43.0,
+                "tether_loss": 0.0001934586907736957
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.9802441596984863,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.005151810124516487,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 9.554511070251465,
+                "ref_contact_count": 43.0,
+                "tether_loss": 0.00017635738186072558
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.0,
+              "after_f1": 0.0,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.8410710096359253,
+              "after_min_dist_nm": 0.8102578520774841,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0588051080703735,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0014335480518639088,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 7.267862796783447,
+                "ref_contact_count": 40.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0264747142791748,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0012081878958269954,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 8.690049171447754,
+                "ref_contact_count": 40.0,
+                "tether_loss": 0.0002012686600210145
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.027256727218628,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0012509593507274985,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 8.54130744934082,
+                "ref_contact_count": 40.0,
+                "tether_loss": 0.00018047841149382293
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1a0n_B_A",
+      "elapsed_sec": 1.8623270988464355
+    },
+    {
+      "status": "passed",
+      "sample_index": 1,
+      "sample_id": "1ai0_L_K",
+      "split": "val",
+      "target_id": "1ai0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "GSSESSSSSSSLNNSEENSES",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.23809523809523808,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5545952916145325
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.533210813999176
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5433323383331299
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 3,
+          "rejected": 0,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.02150537632405758,
+              "after_f1": 0.02150537632405758,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.42749446630477905,
+              "after_min_dist_nm": 0.41902491450309753,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3303290605545044,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.08462046831846237,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 22.170879364013672,
+                "ref_contact_count": 73.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3008676767349243,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.08394577354192734,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 23.822223663330078,
+                "ref_contact_count": 73.0,
+                "tether_loss": 0.00012544005585368723
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3023309707641602,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.08411328494548798,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 23.506013870239258,
+                "ref_contact_count": 73.0,
+                "tether_loss": 0.00010692170326365158
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.019801979884505272,
+              "after_f1": 0.03921568766236305,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.6219202280044556,
+              "after_min_dist_nm": 0.6146275997161865,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3392153978347778,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.14910781383514404,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 7.182129859924316,
+                "ref_contact_count": 96.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3080734014511108,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.14728176593780518,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 8.032361030578613,
+                "ref_contact_count": 96.0,
+                "tether_loss": 0.00013204821152612567
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3095576763153076,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.1477036327123642,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 7.858425617218018,
+                "ref_contact_count": 96.0,
+                "tether_loss": 0.00011359432392055169
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.0,
+              "after_f1": 0.0,
+              "before_clash": false,
+              "after_clash": false,
+              "before_min_dist_nm": 0.6987476348876953,
+              "after_min_dist_nm": 0.6893049478530884,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3381752967834473,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.12085563689470291,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 9.531298637390137,
+                "ref_contact_count": 81.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3079553842544556,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.11979608237743378,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 10.700338363647461,
+                "ref_contact_count": 81.0,
+                "tether_loss": 0.00012880181020591408
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3095018863677979,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.12005756050348282,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 10.540987014770508,
+                "ref_contact_count": 81.0,
+                "tether_loss": 0.00010961452790070325
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1ai0_L_K",
+      "elapsed_sec": 1.6139483451843262
+    },
+    {
+      "status": "passed",
+      "sample_index": 2,
+      "sample_id": "1aze_A_B",
+      "split": "val",
+      "target_id": "1aze",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "APSSSPPPPP",
+      "reference_sequence": "VPPPVPPRRR",
+      "sequence_identity_to_reference": 0.3,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6183788776397705
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.6042664647102356
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5721903443336487
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.13852813839912415,
+              "after_f1": 0.13617020845413208,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.08985668420791626,
+              "after_min_dist_nm": 0.12957876920700073,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2193349301815033,
+                "clash_loss": 0.028819264844059944,
+                "clash_active_loss": 0.010742023587226868,
+                "clash_max_loss": 0.03615448251366615,
+                "shell_loss": 0.0,
+                "overcontact_loss": 12.270132064819336,
+                "soft_contact_count": 185.36212158203125,
+                "ref_contact_count": 39.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.21122553944587708,
+                "clash_loss": 0.02113332413136959,
+                "clash_active_loss": 0.009820050559937954,
+                "clash_max_loss": 0.022626547142863274,
+                "shell_loss": 0.0,
+                "overcontact_loss": 12.808805465698242,
+                "soft_contact_count": 188.32862854003906,
+                "ref_contact_count": 39.0,
+                "tether_loss": 0.00029576834640465677
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.20346517860889435,
+                "clash_loss": 0.0017039093654602766,
+                "clash_active_loss": 0.0008594705141149461,
+                "clash_max_loss": 0.001688877702690661,
+                "shell_loss": 0.0,
+                "overcontact_loss": 12.602359771728516,
+                "soft_contact_count": 187.19923400878906,
+                "ref_contact_count": 39.0,
+                "tether_loss": 0.02803897298872471
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.14937759935855865,
+              "after_f1": 0.1570247858762741,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.15326456725597382,
+              "after_min_dist_nm": 0.19326455891132355,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2058398276567459,
+                "clash_loss": 0.016245847567915916,
+                "clash_active_loss": 0.008214912377297878,
+                "clash_max_loss": 0.016061870381236076,
+                "shell_loss": 0.0,
+                "overcontact_loss": 7.530745506286621,
+                "soft_contact_count": 191.7225799560547,
+                "ref_contact_count": 48.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.20314520597457886,
+                "clash_loss": 0.007434646598994732,
+                "clash_active_loss": 0.003673128318041563,
+                "clash_max_loss": 0.007523037027567625,
+                "shell_loss": 0.0,
+                "overcontact_loss": 7.745019912719727,
+                "soft_contact_count": 193.58340454101562,
+                "ref_contact_count": 48.0,
+                "tether_loss": 0.00020468073489610106
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.20970311760902405,
+                "clash_loss": 0.00069537537638098,
+                "clash_active_loss": 0.00035093314363621175,
+                "clash_max_loss": 0.0006888844072818756,
+                "shell_loss": 0.0,
+                "overcontact_loss": 7.548330307006836,
+                "soft_contact_count": 191.87628173828125,
+                "ref_contact_count": 48.0,
+                "tether_loss": 0.016513030976057053
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.13223139941692352,
+              "after_f1": 0.14693878591060638,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.1592792570590973,
+              "after_min_dist_nm": 0.1992734968662262,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.1745818555355072,
+                "clash_loss": 0.01017536036670208,
+                "clash_active_loss": 0.0028886112850159407,
+                "clash_max_loss": 0.014573497697710991,
+                "shell_loss": 0.0,
+                "overcontact_loss": 9.433298110961914,
+                "soft_contact_count": 194.46153259277344,
+                "ref_contact_count": 45.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.16834022104740143,
+                "clash_loss": 0.005464510060846806,
+                "clash_active_loss": 0.0022061257623136044,
+                "clash_max_loss": 0.0065167685970664024,
+                "shell_loss": 0.0,
+                "overcontact_loss": 9.932589530944824,
+                "soft_contact_count": 198.07205200195312,
+                "ref_contact_count": 45.0,
+                "tether_loss": 0.0002302369539393112
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.15392473340034485,
+                "clash_loss": 1.1272636584180873e-05,
+                "clash_active_loss": 7.515091056120582e-06,
+                "clash_max_loss": 7.515091056120582e-06,
+                "shell_loss": 0.0,
+                "overcontact_loss": 10.823366165161133,
+                "soft_contact_count": 204.29498291015625,
+                "ref_contact_count": 45.0,
+                "tether_loss": 0.009605126455426216
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1aze_A_B",
+      "elapsed_sec": 1.633610725402832
+    },
+    {
+      "status": "passed",
+      "sample_index": 3,
+      "sample_id": "1bxp_A_B",
+      "split": "val",
+      "target_id": "1bxp",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPYPPPPPPPP",
+      "reference_sequence": "MRYYESSLKSYPD",
+      "sequence_identity_to_reference": 0.07692307692307693,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.7160062789916992
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.8225559592247009
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.7927817106246948
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.25974029302597046,
+              "after_f1": 0.274678111076355,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.10463298857212067,
+              "after_min_dist_nm": 0.14460216462612152,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2710387110710144,
+                "clash_loss": 0.025744302198290825,
+                "clash_active_loss": 0.010367508046329021,
+                "clash_max_loss": 0.030753588303923607,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.8833169937133789,
+                "soft_contact_count": 166.42855834960938,
+                "ref_contact_count": 76.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2633829712867737,
+                "clash_loss": 0.01498397346585989,
+                "clash_active_loss": 0.005817686207592487,
+                "clash_max_loss": 0.018332574516534805,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.8836389183998108,
+                "soft_contact_count": 166.4415740966797,
+                "ref_contact_count": 76.0,
+                "tether_loss": 0.0001677831751294434
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.2532598674297333,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.7834786176681519,
+                "soft_contact_count": 162.27088928222656,
+                "ref_contact_count": 76.0,
+                "tether_loss": 0.018485866487026215
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.18965516984462738,
+              "after_f1": 0.18857143819332123,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.04736265167593956,
+              "after_min_dist_nm": 0.0873614177107811,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.5381961464881897,
+                "clash_loss": 0.05154721438884735,
+                "clash_active_loss": 0.024487148970365524,
+                "clash_max_loss": 0.05412013456225395,
+                "shell_loss": 7.078699127305299e-05,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 171.3906707763672,
+                "ref_contact_count": 178.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.5161367654800415,
+                "clash_loss": 0.0405348539352417,
+                "clash_active_loss": 0.021980045363307,
+                "clash_max_loss": 0.0371096208691597,
+                "shell_loss": 7.009326509432867e-05,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 173.41598510742188,
+                "ref_contact_count": 178.0,
+                "tether_loss": 0.00028091270360164344
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.518399715423584,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 7.026609819149598e-05,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 181.74766540527344,
+                "ref_contact_count": 178.0,
+                "tether_loss": 0.03746677562594414
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.12851405143737793,
+              "after_f1": 0.12096774578094482,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.2147921472787857,
+              "after_min_dist_nm": 0.243754580616951,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.30706095695495605,
+                "clash_loss": 0.003816640703007579,
+                "clash_active_loss": 0.0016906086821109056,
+                "clash_max_loss": 0.004252064041793346,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.9639485478401184,
+                "soft_contact_count": 176.31289672851562,
+                "ref_contact_count": 79.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.296146035194397,
+                "clash_loss": 0.0013426588848233223,
+                "clash_active_loss": 0.0006857935804873705,
+                "clash_max_loss": 0.0013137304922565818,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.9307013154029846,
+                "soft_contact_count": 174.96356201171875,
+                "ref_contact_count": 79.0,
+                "tether_loss": 0.00019257370149716735
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.26184308528900146,
+                "clash_loss": 0.0004485457902774215,
+                "clash_active_loss": 0.00029903053655289114,
+                "clash_max_loss": 0.00029903053655289114,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.9072955846786499,
+                "soft_contact_count": 173.99913024902344,
+                "ref_contact_count": 79.0,
+                "tether_loss": 0.00590296508744359
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1bxp_A_B",
+      "elapsed_sec": 1.8034000396728516
+    },
+    {
+      "status": "passed",
+      "sample_index": 4,
+      "sample_id": "1cee_A_B",
+      "split": "val",
+      "target_id": "1cee",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPSSSSSSSSSSSYSSPPPPPPPPPPPPPPPPPSPPPSPPPSPPSSPSPPPPPPPPP",
+      "reference_sequence": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "sequence_identity_to_reference": 0.0847457627118644,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.5499920845031738
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.8811436891555786
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.9120466709136963
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 1,
+          "rejected": 2,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.030741410329937935,
+              "after_f1": 0.030881017446517944,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.08516904711723328,
+              "after_min_dist_nm": 0.12516963481903076,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.065245509147644,
+                "clash_loss": 0.02760750614106655,
+                "clash_active_loss": 0.008627956733107567,
+                "clash_max_loss": 0.03795909881591797,
+                "shell_loss": 0.0,
+                "overcontact_loss": 5.019514083862305,
+                "soft_contact_count": 872.6068115234375,
+                "ref_contact_count": 250.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0488204956054688,
+                "clash_loss": 0.015778666362166405,
+                "clash_active_loss": 0.0037924456410109997,
+                "clash_max_loss": 0.023972442373633385,
+                "shell_loss": 0.0,
+                "overcontact_loss": 5.040430545806885,
+                "soft_contact_count": 873.7725830078125,
+                "ref_contact_count": 250.0,
+                "tether_loss": 0.00015137935406528413
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.0449484586715698,
+                "clash_loss": 0.007602945435792208,
+                "clash_active_loss": 0.0014643644681200385,
+                "clash_max_loss": 0.012277161702513695,
+                "shell_loss": 0.0,
+                "overcontact_loss": 4.952015399932861,
+                "soft_contact_count": 868.828125,
+                "ref_contact_count": 250.0,
+                "tether_loss": 0.005017609801143408
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.029141103848814964,
+              "after_f1": 0.02902979589998722,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.10965529084205627,
+              "after_min_dist_nm": 0.14098481833934784,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.8199384212493896,
+                "clash_loss": 0.022338807582855225,
+                "clash_active_loss": 0.007830146700143814,
+                "clash_max_loss": 0.029017319902777672,
+                "shell_loss": 0.0,
+                "overcontact_loss": 1.7198163270950317,
+                "soft_contact_count": 957.97021484375,
+                "ref_contact_count": 374.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.8076850175857544,
+                "clash_loss": 0.01293147262185812,
+                "clash_active_loss": 0.0032688623759895563,
+                "clash_max_loss": 0.019325220957398415,
+                "shell_loss": 0.0,
+                "overcontact_loss": 1.726624608039856,
+                "soft_contact_count": 958.9400634765625,
+                "ref_contact_count": 374.0,
+                "tether_loss": 0.0001703822345007211
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.8103582262992859,
+                "clash_loss": 0.0021764826960861683,
+                "clash_active_loss": 0.0008690824033692479,
+                "clash_max_loss": 0.0026148008182644844,
+                "shell_loss": 0.0,
+                "overcontact_loss": 1.6729581356048584,
+                "soft_contact_count": 951.2423706054688,
+                "ref_contact_count": 374.0,
+                "tether_loss": 0.0032432510051876307
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.01657875068485737,
+              "after_f1": 0.018099548295140266,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.11578264832496643,
+              "after_min_dist_nm": 0.1556897610425949,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.7277209758758545,
+                "clash_loss": 0.018493715673685074,
+                "clash_active_loss": 0.005010046996176243,
+                "clash_max_loss": 0.02696733921766281,
+                "shell_loss": 0.0,
+                "overcontact_loss": 2.2314748764038086,
+                "soft_contact_count": 987.7723999023438,
+                "ref_contact_count": 360.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.7148194909095764,
+                "clash_loss": 0.010048330761492252,
+                "clash_active_loss": 0.00232181278988719,
+                "clash_max_loss": 0.015453035943210125,
+                "shell_loss": 0.0,
+                "overcontact_loss": 2.2353363037109375,
+                "soft_contact_count": 988.2374877929688,
+                "ref_contact_count": 360.0,
+                "tether_loss": 0.00012212440196890384
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.7171393632888794,
+                "clash_loss": 0.00984721165150404,
+                "clash_active_loss": 0.001330082886852324,
+                "clash_max_loss": 0.0170342568308115,
+                "shell_loss": 0.0,
+                "overcontact_loss": 2.2210183143615723,
+                "soft_contact_count": 986.5109252929688,
+                "ref_contact_count": 360.0,
+                "tether_loss": 0.0033117500133812428
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1cee_A_B",
+      "elapsed_sec": 1.5816264152526855
+    },
+    {
+      "status": "passed",
+      "sample_index": 5,
+      "sample_id": "1cf4_A_B",
+      "split": "val",
+      "target_id": "1cf4",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSSPSSSSPSSPPPPPPPPPPPPPPPPPPPPPPPPPSPPPPPP",
+      "reference_sequence": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "sequence_identity_to_reference": 0.045454545454545456,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.251063585281372
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.233552098274231
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.1899207830429077
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.02594594657421112,
+              "after_f1": 0.027987083420157433,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.1387573778629303,
+              "after_min_dist_nm": 0.17850804328918457,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3633241653442383,
+                "clash_loss": 0.015849385410547256,
+                "clash_active_loss": 0.005874645430594683,
+                "clash_max_loss": 0.019949479028582573,
+                "shell_loss": 0.02390735037624836,
+                "overcontact_loss": 0.3152068853378296,
+                "soft_contact_count": 606.8300170898438,
+                "ref_contact_count": 335.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3560819625854492,
+                "clash_loss": 0.00821046531200409,
+                "clash_active_loss": 0.0030601562466472387,
+                "clash_max_loss": 0.010300617665052414,
+                "shell_loss": 0.022769561037421227,
+                "overcontact_loss": 0.3158571720123291,
+                "soft_contact_count": 607.02392578125,
+                "ref_contact_count": 335.0,
+                "tether_loss": 0.00012036963744321838
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3690502643585205,
+                "clash_loss": 0.0010186019353568554,
+                "clash_active_loss": 0.0004127212450839579,
+                "clash_max_loss": 0.0012117614969611168,
+                "shell_loss": 0.023050257936120033,
+                "overcontact_loss": 0.33019477128982544,
+                "soft_contact_count": 611.2496337890625,
+                "ref_contact_count": 335.0,
+                "tether_loss": 0.0036110857035964727
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.033898305147886276,
+              "after_f1": 0.0356435663998127,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.13611163198947906,
+              "after_min_dist_nm": 0.1718878298997879,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2464699745178223,
+                "clash_loss": 0.014688365161418915,
+                "clash_active_loss": 0.00433643301948905,
+                "clash_max_loss": 0.020703863352537155,
+                "shell_loss": 0.01120902132242918,
+                "overcontact_loss": 0.48547476530075073,
+                "soft_contact_count": 671.6322631835938,
+                "ref_contact_count": 345.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2319917678833008,
+                "clash_loss": 0.007697867229580879,
+                "clash_active_loss": 0.0018537461291998625,
+                "clash_max_loss": 0.011688241735100746,
+                "shell_loss": 0.010835113003849983,
+                "overcontact_loss": 0.49513837695121765,
+                "soft_contact_count": 674.012939453125,
+                "ref_contact_count": 345.0,
+                "tether_loss": 0.00014103835565038025
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2197970151901245,
+                "clash_loss": 0.0005210160161368549,
+                "clash_active_loss": 0.00021944325999356806,
+                "clash_max_loss": 0.0006031455122865736,
+                "shell_loss": 0.010925752110779285,
+                "overcontact_loss": 0.49256831407546997,
+                "soft_contact_count": 673.382080078125,
+                "ref_contact_count": 345.0,
+                "tether_loss": 0.0030570467934012413
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.028856826946139336,
+              "after_f1": 0.028792910277843475,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.14737805724143982,
+              "after_min_dist_nm": 0.17893293499946594,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2757771015167236,
+                "clash_loss": 0.013942968100309372,
+                "clash_active_loss": 0.005148678552359343,
+                "clash_max_loss": 0.017588580027222633,
+                "shell_loss": 0.023191550746560097,
+                "overcontact_loss": 0.29166632890701294,
+                "soft_contact_count": 587.14013671875,
+                "ref_contact_count": 328.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.2651889324188232,
+                "clash_loss": 0.007714919745922089,
+                "clash_active_loss": 0.0026076436042785645,
+                "clash_max_loss": 0.010214552283287048,
+                "shell_loss": 0.022393379360437393,
+                "overcontact_loss": 0.3027934730052948,
+                "soft_contact_count": 590.4874877929688,
+                "ref_contact_count": 328.0,
+                "tether_loss": 0.00012437520490493625
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 1.3179378509521484,
+                "clash_loss": 0.0005873217014595866,
+                "clash_active_loss": 0.000201397153432481,
+                "clash_max_loss": 0.0007718490669503808,
+                "shell_loss": 0.02258979342877865,
+                "overcontact_loss": 0.2563227415084839,
+                "soft_contact_count": 576.0609130859375,
+                "ref_contact_count": 328.0,
+                "tether_loss": 0.008706916123628616
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1cf4_A_B",
+      "elapsed_sec": 1.613907814025879
+    },
+    {
+      "status": "passed",
+      "sample_index": 6,
+      "sample_id": "1cir_A_B",
+      "split": "val",
+      "target_id": "1cir",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPSPSSSSPPPPPPPPPPPPPPPP",
+      "reference_sequence": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9430152177810669
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9759198427200317
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0056047439575195
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.3452381193637848,
+              "after_f1": 0.3452381193637848,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.14786942303180695,
+              "after_min_dist_nm": 0.18786664307117462,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.3848600387573242,
+                "clash_loss": 0.026187732815742493,
+                "clash_active_loss": 0.017458489164710045,
+                "clash_max_loss": 0.017458489164710045,
+                "shell_loss": 0.0012557543814182281,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 175.58181762695312,
+                "ref_contact_count": 163.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.37399929761886597,
+                "clash_loss": 0.012732833623886108,
+                "clash_active_loss": 0.008488555438816547,
+                "clash_max_loss": 0.008488555438816547,
+                "shell_loss": 0.0012952603865414858,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 176.84205627441406,
+                "ref_contact_count": 163.0,
+                "tether_loss": 6.906942144269124e-05
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.40863585472106934,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0012849452905356884,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 166.8379669189453,
+                "ref_contact_count": 163.0,
+                "tether_loss": 0.0220178309828043
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.35625001788139343,
+              "after_f1": 0.35514020919799805,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.24890528619289398,
+              "after_min_dist_nm": 0.2775004804134369,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.4333483576774597,
+                "clash_loss": 0.0010066686663776636,
+                "clash_active_loss": 0.0005232279654592276,
+                "clash_max_loss": 0.0009668812854215503,
+                "shell_loss": 0.0006363781867548823,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 151.520263671875,
+                "ref_contact_count": 173.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.4211030900478363,
+                "clash_loss": 9.3714061222272e-06,
+                "clash_active_loss": 6.24760423306725e-06,
+                "clash_max_loss": 6.24760423306725e-06,
+                "shell_loss": 0.0006170886335894465,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 153.07154846191406,
+                "ref_contact_count": 173.0,
+                "tether_loss": 7.487976108677685e-05
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.4227053225040436,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0006215909961611032,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 152.68194580078125,
+                "ref_contact_count": 173.0,
+                "tether_loss": 0.0005906793521717191
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": true,
+              "reject_reason": null,
+              "before_f1": 0.2513089179992676,
+              "after_f1": 0.2590673863887787,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.17845627665519714,
+              "after_min_dist_nm": 0.20077164471149445,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.3266242742538452,
+                "clash_loss": 0.01305476576089859,
+                "clash_active_loss": 0.007899201475083828,
+                "clash_max_loss": 0.01031112764030695,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 203.458984375,
+                "ref_contact_count": 186.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.3184366226196289,
+                "clash_loss": 0.007014806382358074,
+                "clash_active_loss": 0.0038762404583394527,
+                "clash_max_loss": 0.00627713231369853,
+                "shell_loss": 0.0,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 204.68862915039062,
+                "ref_contact_count": 186.0,
+                "tether_loss": 0.00010480359196662903
+              },
+              "energy_meta": {
+                "anchor_pairs": 32.0,
+                "anchor_loss": 0.4873664379119873,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 0.0015950481174513698,
+                "overcontact_loss": 0.0,
+                "soft_contact_count": 186.8539581298828,
+                "ref_contact_count": 186.0,
+                "tether_loss": 0.07811656594276428
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1cir_A_B",
+      "elapsed_sec": 1.5845983028411865
+    },
+    {
+      "status": "passed",
+      "sample_index": 7,
+      "sample_id": "1co0_A_B",
+      "split": "val",
+      "target_id": "1co0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "pred_sequence": "PPPPPPPPPSSPPPPPSPPPPPPPPPPPPPSSSLSSPPPPPPPSPSPSPPPPSPSSSPSPPPPSPPPPPPPPPPPPPPPPPPPPPSPSSPPPSPPSSSPPPPPPP",
+      "reference_sequence": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "sequence_identity_to_reference": 0.0380952380952381,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 2.1868677139282227
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 2.172116994857788
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 2.19193434715271
+        }
+      ],
+      "guidance_trace_tail": [
+        {
+          "applied": true,
+          "accepted": 2,
+          "rejected": 1,
+          "final_step_state_logs": [],
+          "step": 22
+        },
+        {
+          "applied": true,
+          "accepted": 0,
+          "rejected": 3,
+          "final_step_state_logs": [
+            {
+              "batch": 0,
+              "state": 0,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.08142998814582825,
+              "after_f1": 0.07761194556951523,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.10724861919879913,
+              "after_min_dist_nm": 0.1472489833831787,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8523705005645752,
+                "clash_loss": 0.019932245835661888,
+                "clash_active_loss": 0.0050107259303331375,
+                "clash_max_loss": 0.0298430398106575,
+                "shell_loss": 5.346565246582031,
+                "overcontact_loss": 0.2967541515827179,
+                "soft_contact_count": 638.9315185546875,
+                "ref_contact_count": 356.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8349348306655884,
+                "clash_loss": 0.011364445090293884,
+                "clash_active_loss": 0.0025530289858579636,
+                "clash_max_loss": 0.01762283220887184,
+                "shell_loss": 5.334510803222656,
+                "overcontact_loss": 0.295921266078949,
+                "soft_contact_count": 638.6591796875,
+                "ref_contact_count": 356.0,
+                "tether_loss": 4.910404095426202e-05
+              },
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8373807668685913,
+                "clash_loss": 4.995219569536857e-06,
+                "clash_active_loss": 1.9939227513532387e-06,
+                "clash_max_loss": 6.002593636367237e-06,
+                "shell_loss": 5.3371758460998535,
+                "overcontact_loss": 0.2879491150379181,
+                "soft_contact_count": 636.0327758789062,
+                "ref_contact_count": 356.0,
+                "tether_loss": 0.0017000955995172262
+              }
+            },
+            {
+              "batch": 0,
+              "state": 1,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.07297830283641815,
+              "after_f1": 0.07290639728307724,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.10913495719432831,
+              "after_min_dist_nm": 0.14913615584373474,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.926450252532959,
+                "clash_loss": 0.02312346175312996,
+                "clash_active_loss": 0.0085260309278965,
+                "clash_max_loss": 0.029194863513112068,
+                "shell_loss": 5.579493045806885,
+                "overcontact_loss": 0.05672931671142578,
+                "soft_contact_count": 599.7362060546875,
+                "ref_contact_count": 403.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.9090741872787476,
+                "clash_loss": 0.016703002154827118,
+                "clash_active_loss": 0.008140329271554947,
+                "clash_max_loss": 0.017125345766544342,
+                "shell_loss": 5.566769599914551,
+                "overcontact_loss": 0.05815889686346054,
+                "soft_contact_count": 600.9381103515625,
+                "ref_contact_count": 403.0,
+                "tether_loss": 3.717431172844954e-05
+              },
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.914482831954956,
+                "clash_loss": 0.0,
+                "clash_active_loss": 0.0,
+                "clash_max_loss": 0.0,
+                "shell_loss": 5.569565296173096,
+                "overcontact_loss": 0.046075548976659775,
+                "soft_contact_count": 590.2548217773438,
+                "ref_contact_count": 403.0,
+                "tether_loss": 0.001707043731585145
+              }
+            },
+            {
+              "batch": 0,
+              "state": 2,
+              "accepted": false,
+              "reject_reason": "contact_f1_decreased",
+              "before_f1": 0.0800800770521164,
+              "after_f1": 0.07831325381994247,
+              "before_clash": true,
+              "after_clash": true,
+              "before_min_dist_nm": 0.056077990680933,
+              "after_min_dist_nm": 0.09608104825019836,
+              "hard_min_dist_nm": 0.28,
+              "before_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8536195755004883,
+                "clash_loss": 0.04068967327475548,
+                "clash_active_loss": 0.015619137324392796,
+                "clash_max_loss": 0.050141070038080215,
+                "shell_loss": 5.547927379608154,
+                "overcontact_loss": 0.07262814790010452,
+                "soft_contact_count": 591.083984375,
+                "ref_contact_count": 389.0,
+                "tether_loss": 0.0
+              },
+              "after_energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8357511758804321,
+                "clash_loss": 0.026030026376247406,
+                "clash_active_loss": 0.009116936475038528,
+                "clash_max_loss": 0.033826179802417755,
+                "shell_loss": 5.535426139831543,
+                "overcontact_loss": 0.06986334174871445,
+                "soft_contact_count": 589.0692138671875,
+                "ref_contact_count": 389.0,
+                "tether_loss": 5.112662256578915e-05
+              },
+              "energy_meta": {
+                "anchor_pairs": 28.0,
+                "anchor_loss": 1.8296964168548584,
+                "clash_loss": 0.0002520136476960033,
+                "clash_active_loss": 5.677930312231183e-05,
+                "clash_max_loss": 0.000390468689147383,
+                "shell_loss": 5.538174152374268,
+                "overcontact_loss": 0.04747503623366356,
+                "soft_contact_count": 571.00830078125,
+                "ref_contact_count": 389.0,
+                "tether_loss": 0.003043539123609662
+              }
+            }
+          ],
+          "step": 23
+        }
+      ],
+      "out_dir": "results/strategy01/stage09d_no_ca_late_soft_smoke/1co0_A_B",
+      "elapsed_sec": 1.5953173637390137
+    }
+  ]
+}

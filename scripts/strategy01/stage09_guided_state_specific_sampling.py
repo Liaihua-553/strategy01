@@ -200,6 +200,22 @@ def contact_f1_and_clash(target_ca_nm: torch.Tensor, ref_binder_ca_nm: torch.Ten
     return f1, min_d < clash_cutoff_nm, min_d
 
 
+def set_sampling_optional_features(batch: dict[str, Any], args: argparse.Namespace) -> None:
+    """Expose current CA coordinates to baseline optional feature factories.
+
+    Residue-type optional features intentionally stay disabled in de novo
+    sampling: using `binder_seq_shared` would leak the exact reference sequence
+    into B1. A future self-conditioning path can feed previous-step generated
+    sequence tokens without using labels.
+    """
+    if args.enable_ca_feature:
+        batch["ca_coors_nm"] = batch["x_t"]["bb_ca"].detach()
+        batch["use_ca_coors_nm_feature"] = True
+    else:
+        batch["use_ca_coors_nm_feature"] = False
+    batch["use_residue_type_feature"] = False
+
+
 def guidance_energy(
     x_ca_nm: torch.Tensor,
     label: StateGuidanceLabels,
@@ -211,6 +227,10 @@ def guidance_energy(
     clash_weight: float,
     shell_weight: float,
     tether_weight: float,
+    overcontact_weight: float,
+    clash_max_weight: float,
+    contact_temperature_nm: float,
+    clash_loss_mode: str,
     x_anchor: torch.Tensor,
 ) -> tuple[torch.Tensor, dict[str, float]]:
     common_len = min(x_ca_nm.shape[0], label.ref_binder_ca_nm.shape[0])
@@ -229,17 +249,52 @@ def guidance_energy(
     anchor_d = torch.linalg.norm(pred_valid[bj] - label.target_ca_nm[ti], dim=-1)
     anchor_loss = F.smooth_l1_loss(anchor_d, rd.clamp(min=0.35, max=contact_cutoff_nm))
     all_d = torch.cdist(label.target_ca_nm.float(), pred_valid.float())
-    clash_loss = torch.relu(clash_cutoff_nm - all_d).pow(2).mean()
+    clash_violation = torch.relu(clash_cutoff_nm - all_d)
+    if contact_temperature_nm < 0:
+        raise ValueError("contact_temperature_nm must be non-negative")
+    if clash_loss_mode == "mean":
+        clash_active = clash_violation.pow(2).mean()
+        clash_max = clash_violation.pow(2).max()
+        clash_loss = clash_active
+    elif clash_loss_mode == "active" and bool((clash_violation > 0).any()):
+        clash_active = clash_violation[clash_violation > 0].pow(2).mean()
+        clash_max = clash_violation.pow(2).max()
+        clash_loss = clash_active + clash_max_weight * clash_max
+    elif clash_loss_mode != "active":
+        raise ValueError(f"Unknown clash_loss_mode={clash_loss_mode}")
+    else:
+        clash_active = all_d.sum() * 0.0
+        clash_max = all_d.sum() * 0.0
+        clash_loss = all_d.sum() * 0.0
     shell_loss = torch.relu(all_d.min(dim=0).values - shell_max_nm).pow(2).mean()
+    ref_d = torch.cdist(label.target_ca_nm.float(), label.ref_binder_ca_nm[:common_len].float())
+    ref_contact_count = (ref_d <= contact_cutoff_nm).float().sum().clamp_min(1.0)
+    soft_contact_count = torch.sigmoid((contact_cutoff_nm - all_d) / max(contact_temperature_nm, 1e-4)).sum()
+    overcontact_loss = torch.relu(soft_contact_count - 1.25 * ref_contact_count).pow(2) / ref_contact_count.pow(2)
     tether_loss = ((x_ca_nm[valid_mask] - x_anchor[valid_mask]) ** 2).mean() if int(valid_mask.sum()) else x_ca_nm.sum() * 0.0
-    loss = anchor_loss + clash_weight * clash_loss + shell_weight * shell_loss + tether_weight * tether_loss
+    loss = anchor_loss + clash_weight * clash_loss + shell_weight * shell_loss + tether_weight * tether_loss + overcontact_weight * overcontact_loss
     return loss, {
         "anchor_pairs": float(bj.numel()),
         "anchor_loss": float(anchor_loss.detach().cpu().item()),
         "clash_loss": float(clash_loss.detach().cpu().item()),
+        "clash_active_loss": float(clash_active.detach().cpu().item()),
+        "clash_max_loss": float(clash_max.detach().cpu().item()),
         "shell_loss": float(shell_loss.detach().cpu().item()),
+        "overcontact_loss": float(overcontact_loss.detach().cpu().item()),
+        "soft_contact_count": float(soft_contact_count.detach().cpu().item()),
+        "ref_contact_count": float(ref_contact_count.detach().cpu().item()),
         "tether_loss": float(tether_loss.detach().cpu().item()),
     }
+
+
+def clamp_guidance_displacement(candidate: torch.Tensor, x0: torch.Tensor, mask: torch.Tensor, max_disp_nm: float) -> torch.Tensor:
+    if max_disp_nm <= 0:
+        return candidate
+    delta = candidate - x0
+    delta_norm = torch.linalg.norm(delta, dim=-1, keepdim=True).clamp_min(1e-8)
+    scale = torch.clamp(max_disp_nm / delta_norm, max=1.0)
+    clamped = x0 + delta * scale
+    return clamped * mask[:, None] + x0 * (~mask)[:, None]
 
 
 def apply_sampling_guidance(
@@ -278,6 +333,10 @@ def apply_sampling_guidance(
                     args.clash_weight,
                     args.shell_weight,
                     args.tether_weight,
+                    args.overcontact_weight,
+                    args.clash_max_weight,
+                    args.contact_temperature_nm,
+                    args.clash_loss_mode,
                     x0,
                 )
                 grad = torch.autograd.grad(loss, x, retain_graph=False, create_graph=False)[0]
@@ -287,6 +346,41 @@ def apply_sampling_guidance(
                 x = x * mask[:, None] + x0 * (~mask)[:, None]
                 last_meta = meta
             candidate = x.detach()
+            candidate = clamp_guidance_displacement(candidate, x0, mask, args.max_guidance_displacement_nm)
+            _, before_meta = guidance_energy(
+                x0,
+                label,
+                mask,
+                args.contact_cutoff_nm,
+                args.clash_cutoff_nm,
+                args.shell_max_nm,
+                args.max_anchor_pairs,
+                args.clash_weight,
+                args.shell_weight,
+                args.tether_weight,
+                args.overcontact_weight,
+                args.clash_max_weight,
+                args.contact_temperature_nm,
+                args.clash_loss_mode,
+                x0,
+            )
+            _, after_meta = guidance_energy(
+                candidate,
+                label,
+                mask,
+                args.contact_cutoff_nm,
+                args.clash_cutoff_nm,
+                args.shell_max_nm,
+                args.max_anchor_pairs,
+                args.clash_weight,
+                args.shell_weight,
+                args.tether_weight,
+                args.overcontact_weight,
+                args.clash_max_weight,
+                args.contact_temperature_nm,
+                args.clash_loss_mode,
+                x0,
+            )
             before_f1, before_clash, before_min_d = contact_f1_and_clash(
                 label.target_ca_nm,
                 label.ref_binder_ca_nm,
@@ -304,15 +398,25 @@ def apply_sampling_guidance(
             accept = True
             reject_reason = None
             if args.safe_accept:
-                if (not before_clash) and after_clash:
+                hard_min = float(args.hard_min_dist_nm)
+                min_improved = after_min_d >= before_min_d + float(args.min_dist_improvement_nm)
+                f1_drop = before_f1 - after_f1
+                anchor_worsened = after_meta["anchor_loss"] > before_meta["anchor_loss"] + float(args.anchor_loss_tolerance)
+                if after_min_d < hard_min and not min_improved:
+                    accept = False
+                    reject_reason = "hard_min_distance_not_improved"
+                elif (not before_clash) and after_clash:
                     accept = False
                     reject_reason = "would_create_new_clash"
                 elif before_clash and after_min_d + 1e-6 < before_min_d:
                     accept = False
                     reject_reason = "existing_clash_became_closer"
-                elif after_f1 + 1e-8 < before_f1:
+                elif f1_drop > float(args.f1_drop_tolerance):
                     accept = False
                     reject_reason = "contact_f1_decreased"
+                elif anchor_worsened and after_f1 < before_f1 + float(args.f1_gain_for_anchor_worsen):
+                    accept = False
+                    reject_reason = "anchor_loss_worsened_without_f1_gain"
             if accept:
                 guided[b, k] = candidate * mask[:, None] + x0 * (~mask)[:, None]
                 accepted += 1
@@ -331,6 +435,9 @@ def apply_sampling_guidance(
                         "after_clash": after_clash,
                         "before_min_dist_nm": before_min_d,
                         "after_min_dist_nm": after_min_d,
+                        "hard_min_dist_nm": args.hard_min_dist_nm,
+                        "before_energy_meta": before_meta,
+                        "after_energy_meta": after_meta,
                         "energy_meta": last_meta,
                     }
                 )
@@ -366,6 +473,7 @@ def guided_state_specific_sample(
     guidance_trace: list[dict[str, Any]] = []
     for step in range(nsteps):
         batch["x_t"] = s7.weighted_average_states(x_states, weights, mask)
+        set_sampling_optional_features(batch, args)
         batch["t"] = {dm: ts[dm][step].expand(b).to(device) for dm in fm.data_modes}
         batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in fm.data_modes}
         with torch.no_grad():
@@ -401,6 +509,7 @@ def guided_state_specific_sample(
         x_states = updated
 
     batch["x_t"] = s7.weighted_average_states(x_states, weights, mask)
+    set_sampling_optional_features(batch, args)
     batch["t"] = {dm: torch.ones(b, device=device) for dm in fm.data_modes}
     batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in fm.data_modes}
     with torch.no_grad():
@@ -471,8 +580,20 @@ def main() -> None:
     parser.add_argument("--shell-max-nm", type=float, default=1.2)
     parser.add_argument("--max-anchor-pairs", type=int, default=128)
     parser.add_argument("--clash-weight", type=float, default=30.0)
+    parser.add_argument("--clash-loss-mode", choices=["mean", "active"], default="mean")
+    parser.add_argument("--clash-max-weight", type=float, default=4.0)
     parser.add_argument("--shell-weight", type=float, default=0.10)
     parser.add_argument("--tether-weight", type=float, default=0.002)
+    parser.add_argument("--overcontact-weight", type=float, default=0.02)
+    parser.add_argument("--contact-temperature-nm", type=float, default=0.06)
+    parser.add_argument("--hard-min-dist-nm", type=float, default=0.28)
+    parser.add_argument("--min-dist-improvement-nm", type=float, default=0.005)
+    parser.add_argument("--f1-drop-tolerance", type=float, default=0.02)
+    parser.add_argument("--anchor-loss-tolerance", type=float, default=0.25)
+    parser.add_argument("--f1-gain-for-anchor-worsen", type=float, default=0.02)
+    parser.add_argument("--max-guidance-displacement-nm", type=float, default=0.25)
+    parser.add_argument("--enable-ca-feature", action="store_true", default=True)
+    parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
     parser.add_argument("--safe-accept", action="store_true", default=True)
     parser.add_argument("--unsafe-no-safe-accept", dest="safe_accept", action="store_false")
     args = parser.parse_args()
