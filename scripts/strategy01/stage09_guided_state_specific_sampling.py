@@ -592,7 +592,7 @@ def main() -> None:
     parser.add_argument("--anchor-loss-tolerance", type=float, default=0.25)
     parser.add_argument("--f1-gain-for-anchor-worsen", type=float, default=0.02)
     parser.add_argument("--max-guidance-displacement-nm", type=float, default=0.25)
-    parser.add_argument("--enable-ca-feature", action="store_true", default=True)
+    parser.add_argument("--enable-ca-feature", action="store_true", default=False)
     parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
     parser.add_argument("--safe-accept", action="store_true", default=True)
     parser.add_argument("--unsafe-no-safe-accept", dest="safe_accept", action="store_false")

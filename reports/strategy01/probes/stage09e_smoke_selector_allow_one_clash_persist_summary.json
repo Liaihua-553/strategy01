@@ -1,0 +1,277 @@
+{
+  "status": "passed",
+  "rows": [
+    {
+      "sample_id": "1a0n_B_A",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1a0n_B_A/candidate_05_seed128/1a0n_B_A",
+      "sequence_identity_to_reference": 0.07142857142857142,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 5,
+        "seed": 128,
+        "selector_key": [
+          0,
+          -0.007719936780631542,
+          0,
+          -0.6964285714285714,
+          0.1418065742125697,
+          0.0029408546268649017,
+          1.0254189570744832
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 0,
+          "all_states_no_severe_clash": true,
+          "worst_source_anchor_score": 0.007719936780631542,
+          "mean_source_anchor_score": 0.011567835385600725,
+          "state_consistency_std_source_anchor_score": 0.0029408546268649017,
+          "mean_source_anchor_distance_error_nm": 1.0254189570744832,
+          "worst_source_anchor_distance_error_nm": 1.0391794443130493,
+          "mean_generated_source_contact_ratio": 1.152860834256183,
+          "mean_contact_ratio_penalty": 0.1418065742125697,
+          "source_contact_persistence_generated": 0.6964285714285714,
+          "min_target_binder_distance_nm": 0.3561152219772339
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1ai0_L_K",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1ai0_L_K/candidate_05_seed1125/1ai0_L_K",
+      "sequence_identity_to_reference": 0.19047619047619047,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 5,
+        "seed": 1125,
+        "selector_key": [
+          0,
+          -0.07321828603744507,
+          0,
+          -0.6363636363636364,
+          0.46692459654187507,
+          0.00795978874269433,
+          1.1241299708684285
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 0,
+          "all_states_no_severe_clash": true,
+          "worst_source_anchor_score": 0.07321828603744507,
+          "mean_source_anchor_score": 0.08105752368768056,
+          "state_consistency_std_source_anchor_score": 0.00795978874269433,
+          "mean_source_anchor_distance_error_nm": 1.1241299708684285,
+          "worst_source_anchor_distance_error_nm": 1.1484488248825073,
+          "mean_generated_source_contact_ratio": 0.6438303314730255,
+          "mean_contact_ratio_penalty": 0.46692459654187507,
+          "source_contact_persistence_generated": 0.6363636363636364,
+          "min_target_binder_distance_nm": 0.2830338478088379
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1aze_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1aze_A_B/candidate_02_seed2119/1aze_A_B",
+      "sequence_identity_to_reference": 0.3,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 2,
+        "seed": 2119,
+        "selector_key": [
+          1,
+          -0.2110878974199295,
+          1,
+          -0.7291666666666666,
+          1.305970538794165,
+          0.035646533368619164,
+          0.4461403985818227
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 3,
+          "all_states_no_severe_clash": false,
+          "worst_source_anchor_score": 0.2110878974199295,
+          "mean_source_anchor_score": 0.2596798489491145,
+          "state_consistency_std_source_anchor_score": 0.035646533368619164,
+          "mean_source_anchor_distance_error_nm": 0.4461403985818227,
+          "worst_source_anchor_distance_error_nm": 0.4795829653739929,
+          "mean_generated_source_contact_ratio": 3.6947293447293448,
+          "mean_contact_ratio_penalty": 1.305970538794165,
+          "source_contact_persistence_generated": 0.7291666666666666,
+          "min_target_binder_distance_nm": 0.20004892349243164
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1bxp_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1bxp_A_B/candidate_07_seed3121/1bxp_A_B",
+      "sequence_identity_to_reference": 0.07692307692307693,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 7,
+        "seed": 3121,
+        "selector_key": [
+          1,
+          -0.4251461625099182,
+          1,
+          -0.19886363636363635,
+          0.6601566155650508,
+          0.04542521747266162,
+          0.44708860913912457
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 3,
+          "all_states_no_severe_clash": false,
+          "worst_source_anchor_score": 0.4251461625099182,
+          "mean_source_anchor_score": 0.45831891894340515,
+          "state_consistency_std_source_anchor_score": 0.04542521747266162,
+          "mean_source_anchor_distance_error_nm": 0.44708860913912457,
+          "worst_source_anchor_distance_error_nm": 0.49056345224380493,
+          "mean_generated_source_contact_ratio": 2.0587379948947895,
+          "mean_contact_ratio_penalty": 0.6601566155650508,
+          "source_contact_persistence_generated": 0.19886363636363635,
+          "min_target_binder_distance_nm": 0.16559191048145294
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1cee_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1cee_A_B/candidate_02_seed4113/1cee_A_B",
+      "sequence_identity_to_reference": 0.03389830508474576,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 2,
+        "seed": 4113,
+        "selector_key": [
+          1,
+          -0.009006110019981861,
+          1,
+          -0.13708759954493743,
+          1.1043170156652895,
+          0.11304422253031086,
+          1.1755772233009338
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 3,
+          "all_states_no_severe_clash": false,
+          "worst_source_anchor_score": 0.009006110019981861,
+          "mean_source_anchor_score": 0.16807000742604336,
+          "state_consistency_std_source_anchor_score": 0.11304422253031086,
+          "mean_source_anchor_distance_error_nm": 1.1755772233009338,
+          "worst_source_anchor_distance_error_nm": 1.5583494901657104,
+          "mean_generated_source_contact_ratio": 3.0481150722915427,
+          "mean_contact_ratio_penalty": 1.1043170156652895,
+          "source_contact_persistence_generated": 0.13708759954493743,
+          "min_target_binder_distance_nm": 0.10781870037317276
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1cf4_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1cf4_A_B/candidate_00_seed5108/1cf4_A_B",
+      "sequence_identity_to_reference": 0.11363636363636363,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 0,
+        "seed": 5108,
+        "selector_key": [
+          1,
+          -0.00028821604792028666,
+          1,
+          -0.5555555555555556,
+          0.9452062853409154,
+          0.013340152781503599,
+          4.9989752769470215
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 3,
+          "all_states_no_severe_clash": false,
+          "worst_source_anchor_score": 0.00028821604792028666,
+          "mean_source_anchor_score": 0.010385105658012131,
+          "state_consistency_std_source_anchor_score": 0.013340152781503599,
+          "mean_source_anchor_distance_error_nm": 4.9989752769470215,
+          "worst_source_anchor_distance_error_nm": 5.024640083312988,
+          "mean_generated_source_contact_ratio": 0.3888302390486591,
+          "mean_contact_ratio_penalty": 0.9452062853409154,
+          "source_contact_persistence_generated": 0.5555555555555556,
+          "min_target_binder_distance_nm": 0.1500406563282013
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1cir_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1cir_A_B/candidate_05_seed6110/1cir_A_B",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 5,
+        "seed": 6110,
+        "selector_key": [
+          0,
+          -0.2415100634098053,
+          0,
+          -0.3423913043478261,
+          0.3909315399726523,
+          0.19539995048204079,
+          0.5804786880811056
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 0,
+          "all_states_no_severe_clash": true,
+          "worst_source_anchor_score": 0.2415100634098053,
+          "mean_source_anchor_score": 0.5088308155536652,
+          "state_consistency_std_source_anchor_score": 0.19539995048204079,
+          "mean_source_anchor_distance_error_nm": 0.5804786880811056,
+          "worst_source_anchor_distance_error_nm": 0.8048665523529053,
+          "mean_generated_source_contact_ratio": 0.6896329224923582,
+          "mean_contact_ratio_penalty": 0.3909315399726523,
+          "source_contact_persistence_generated": 0.3423913043478261,
+          "min_target_binder_distance_nm": 0.28099197149276733
+        },
+        "rigid_relief_accepted": false
+      }
+    },
+    {
+      "sample_id": "1co0_A_B",
+      "out_dir": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage09e_multiseed_smoke/candidates/1co0_A_B/candidate_02_seed7104/1co0_A_B",
+      "sequence_identity_to_reference": 0.01904761904761905,
+      "mode": "allow_one_clash_persist",
+      "chosen_candidate": {
+        "candidate_index": 2,
+        "seed": 7104,
+        "selector_key": [
+          0,
+          -0.00046576507156714797,
+          1,
+          -0.5813953488372093,
+          2.462138625726626,
+          0.002921560932535123,
+          1.9757106701533
+        ],
+        "source_anchor_metrics": {
+          "valid_state_count": 3,
+          "severe_clash_count": 0,
+          "all_states_no_severe_clash": true,
+          "worst_source_anchor_score": 0.00046576507156714797,
+          "mean_source_anchor_score": 0.002732352508852879,
+          "state_consistency_std_source_anchor_score": 0.002921560932535123,
+          "mean_source_anchor_distance_error_nm": 1.9757106701533,
+          "worst_source_anchor_distance_error_nm": 2.0072295665740967,
+          "mean_generated_source_contact_ratio": 0.08707733170836396,
+          "mean_contact_ratio_penalty": 2.462138625726626,
+          "source_contact_persistence_generated": 0.5813953488372093,
+          "min_target_binder_distance_nm": 0.56378173828125
+        },
+        "rigid_relief_accepted": false
+      }
+    }
+  ]
+}
