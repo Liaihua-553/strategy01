@@ -86,15 +86,26 @@ def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
     x_t_states = {}
     for data_mode in flow_matcher.data_modes:
         x_1 = x_1_states[data_mode].to(device=device)
-        x_0_base = flow_matcher.base_flow_matchers[data_mode].sample_noise(
-            n=n,
-            shape=base_shape,
-            device=device,
-            mask=base_mask,
-            training=flow_matcher.training,
-        )
-        x_0 = x_0_base[:, None, :, :].expand(b, k, n, x_0_base.shape[-1]).contiguous()
-        x_0 = x_0 * state_mask[..., None]
+        # MODIFIED 2026-05-05 Stage10:
+        # If a transferred source-pose initialization is available, use it as
+        # the bb_ca flow start instead of unconditional Gaussian noise.  This
+        # makes B1 a pose-initialized multistate refinement model: one shared
+        # sequence is still learned, but each target state starts from a
+        # biologically interpretable source-interface transfer.
+        if data_mode == "bb_ca" and "init_bb_ca_states" in batch:
+            init = batch["init_bb_ca_states"].to(device=device, dtype=x_1.dtype)
+            noise_scale = float(_cfg_get(_multistate_cfg(flow_matcher), "init_pose_noise_scale_nm", 0.02))
+            x_0 = (init + torch.randn_like(init) * noise_scale) * state_mask[..., None]
+        else:
+            x_0_base = flow_matcher.base_flow_matchers[data_mode].sample_noise(
+                n=n,
+                shape=base_shape,
+                device=device,
+                mask=base_mask,
+                training=flow_matcher.training,
+            )
+            x_0 = x_0_base[:, None, :, :].expand(b, k, n, x_0_base.shape[-1]).contiguous()
+            x_0 = x_0 * state_mask[..., None]
         x_t = flow_matcher.base_flow_matchers[data_mode].interpolate(
             x_0=x_0,
             x_1=x_1,
@@ -282,10 +293,32 @@ def _pairwise_target_binder_dist(target_ca: Tensor, binder_ca: Tensor) -> Tensor
     return d.reshape(b, k, nt, nb)
 
 
-def _compute_interface_losses(cfg: Any, batch: dict, nn_out: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
+def _state_clean_prediction(flow_matcher: Any, batch: dict, nn_out: dict, data_mode: str, out_key: str) -> Tensor:
+    """Return predicted clean x1 for a state-specific output.
+
+    Stage10 fixes a scientific bug from earlier probes: the multistate nn config
+    outputs velocity `v`, but interface/contact/clash losses were previously
+    computed directly on `nn_out['bb_ca_states']`.  For `v` parameterization the
+    clean pose is x_t + v * (1 - t); using raw velocity as coordinates corrupts
+    the interface supervision.
+    """
+    if out_key not in nn_out:
+        raise KeyError(f"Multistate loss requires nn_out['{out_key}']")
+    pred = nn_out[out_key]
+    param = flow_matcher.cfg_exp.nn.output_parameterization[data_mode]
+    if param == "x_1":
+        return pred
+    if param == "v":
+        x_t = batch["x_t_states"][data_mode].to(device=pred.device, dtype=pred.dtype)
+        t = batch["t_states"][data_mode].to(device=pred.device, dtype=pred.dtype)[:, :, None, None]
+        return x_t + pred * (1.0 - t)
+    raise ValueError(f"Unsupported multistate output parameterization for {data_mode}: {param}")
+
+
+def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
     if "bb_ca_states" not in nn_out:
         raise KeyError("Stage04 interface loss requires nn_out['bb_ca_states']")
-    pred_bb = nn_out["bb_ca_states"]
+    pred_bb = _state_clean_prediction(flow_matcher, batch, nn_out, "bb_ca", "bb_ca_states")
     device = pred_bb.device
     dtype = pred_bb.dtype
     b, k, nb = pred_bb.shape[:3]
@@ -436,7 +469,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_anchor = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     l_self = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     if _interface_enabled(cfg):
-        interface = _compute_interface_losses(cfg, batch, nn_out, state_present, state_mask)
+        interface = _compute_interface_losses(flow_matcher, cfg, batch, nn_out, state_present, state_mask)
         l_contact_state = interface["contact_state"]
         l_distance_state = interface["distance_state"]
         l_clash_state = interface["clash_state"]

@@ -1,0 +1,204 @@
+{
+  "status": "passed",
+  "stage": "stage10_exactaug",
+  "notes": [
+    "Experimental V_exact is intentionally allowed into Stage10 training to strengthen exact interface supervision.",
+    "Exact holdout remains family/split_group separated for diagnostics; it is not a fully external benchmark once V_exact is used in training.",
+    "Variable binder/target lengths require Stage10 variable-length collate."
+  ],
+  "source_paths": {
+    "train": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_train.pt",
+    "val": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_val.pt",
+    "exact": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt"
+  },
+  "exact_train_fraction": 0.75,
+  "exact_train_groups": [
+    "06b6b82df6aa",
+    "095b2a929b3f",
+    "1088fb58162c",
+    "1199063295e3",
+    "1c8995b8b1de",
+    "233b65fe2aee",
+    "2464c4621457",
+    "2d210a7f0b34",
+    "31e9d33c070e",
+    "340ad9d1b636",
+    "3d55184ca7fe",
+    "4a683010f5ce",
+    "5082011b32ee",
+    "6a7f0302d575",
+    "74de758b9716",
+    "7e722986fb49",
+    "87f24a171107",
+    "8d2c8d621f8a",
+    "90aca2d3b3ce",
+    "94991d1021f5",
+    "956bf0c3d94a",
+    "99293b00467c",
+    "9b3ad16d60d1",
+    "a62b69154650",
+    "a95eccc78096",
+    "acdc493c2104",
+    "b755d773447a",
+    "c053b1b271b9",
+    "ccf6c760d8cd",
+    "d8a74511c002",
+    "d952e952cd15",
+    "e7e7f86a4ac0",
+    "ee265e002617",
+    "fab4c8e4ff78",
+    "fb5b6e084c18"
+  ],
+  "exact_val_groups": [
+    "02060ac11427",
+    "6d9a4910c4d4",
+    "828031e26137",
+    "9a201231192f",
+    "a1b83f6c1df0",
+    "d152cc784ade"
+  ],
+  "input_summary": {
+    "train": {
+      "count": 119,
+      "splits": {
+        "train": 119
+      },
+      "source_tier": {
+        "train_boltz": 110,
+        "T_hybrid_silver": 9
+      },
+      "binder_len_minmax": [
+        8,
+        145
+      ],
+      "target_len_minmax": [
+        30,
+        426
+      ],
+      "K": {
+        "3": 22,
+        "2": 97
+      },
+      "family_count": 31
+    },
+    "val": {
+      "count": 30,
+      "splits": {
+        "val": 30
+      },
+      "source_tier": {
+        "train_boltz": 28,
+        "T_hybrid_silver": 2
+      },
+      "binder_len_minmax": [
+        11,
+        89
+      ],
+      "target_len_minmax": [
+        43,
+        95
+      ],
+      "K": {
+        "3": 6,
+        "2": 24
+      },
+      "family_count": 7
+    },
+    "exact": {
+      "count": 48,
+      "splits": {
+        "val": 48
+      },
+      "source_tier": {
+        "exact_experimental": 48
+      },
+      "binder_len_minmax": [
+        7,
+        105
+      ],
+      "target_len_minmax": [
+        30,
+        184
+      ],
+      "K": {
+        "3": 48
+      },
+      "family_count": 41
+    }
+  },
+  "output_summary": {
+    "merged_train": {
+      "count": 161,
+      "splits": {
+        "train": 161
+      },
+      "source_tier": {
+        "train_boltz": 110,
+        "exact_experimental": 42,
+        "T_hybrid_silver": 9
+      },
+      "binder_len_minmax": [
+        7,
+        145
+      ],
+      "target_len_minmax": [
+        30,
+        426
+      ],
+      "K": {
+        "3": 64,
+        "2": 97
+      },
+      "family_count": 66
+    },
+    "merged_val": {
+      "count": 36,
+      "splits": {
+        "val": 36
+      },
+      "source_tier": {
+        "train_boltz": 28,
+        "exact_experimental": 6,
+        "T_hybrid_silver": 2
+      },
+      "binder_len_minmax": [
+        9,
+        95
+      ],
+      "target_len_minmax": [
+        30,
+        178
+      ],
+      "K": {
+        "3": 12,
+        "2": 24
+      },
+      "family_count": 13
+    },
+    "merged_all": {
+      "count": 197,
+      "splits": {
+        "train": 161,
+        "val": 36
+      },
+      "source_tier": {
+        "train_boltz": 138,
+        "exact_experimental": 48,
+        "T_hybrid_silver": 11
+      },
+      "binder_len_minmax": [
+        7,
+        145
+      ],
+      "target_len_minmax": [
+        30,
+        426
+      ],
+      "K": {
+        "3": 76,
+        "2": 121
+      },
+      "family_count": 79
+    }
+  }
+}

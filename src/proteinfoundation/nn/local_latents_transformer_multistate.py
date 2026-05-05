@@ -142,6 +142,17 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, self.token_dim),
         )
         self.state_token_norm = nn.LayerNorm(self.token_dim)
+        # MODIFIED 2026-05-05 Stage10:
+        # Optional transferred source-pose initialization is encoded as a
+        # state-specific token bias.  This lets B1 refine plausible source-pose
+        # transfers instead of generating each state pose from a weak averaged
+        # representation.
+        self.init_pose_projector = nn.Sequential(
+            nn.LayerNorm(3),
+            nn.Linear(3, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
         # MODIFIED 2026-04-19: Stage04 adds a light quality-proxy head.
         # It learns offline complex-confidence labels such as iPAE/pLDDT/ipTM
         # proxies without calling an external predictor during backpropagation.
@@ -177,6 +188,18 @@ class LocalLatentsTransformerMultistate(nn.Module):
         state_tokens = self.state_token_norm(seqs[:, None, :, :] + state_bias)
         state_seq_bias = self.state_seq_condition_projector(target_bundle["state_summary_tokens"])[:, :, None, :]
         state_seq_tokens = self.state_token_norm(seqs[:, None, :, :] + state_seq_bias)
+        init_pose = input.get("init_bb_ca_states")
+        if init_pose is not None:
+            init_pose = init_pose.to(device=seqs.device, dtype=seqs.dtype)
+            if init_pose.shape[:3] != (batch_size, nstates, nbinder):
+                raise ValueError(
+                    f"init_bb_ca_states shape {tuple(init_pose.shape)} is incompatible with "
+                    f"(B,K,Nb)=({batch_size},{nstates},{nbinder})"
+                )
+            init_tokens = self.init_pose_projector(init_pose)
+            init_tokens = init_tokens * mask[:, None, :, None] * target_bundle["state_present_mask"][:, :, None, None]
+            state_tokens = self.state_token_norm(state_tokens + init_tokens)
+            state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.5 * init_tokens)
         flat_state_tokens = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_mask = mask[:, None, :].expand(-1, nstates, -1).reshape(batch_size * nstates, nbinder)

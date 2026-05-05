@@ -464,8 +464,16 @@ def guided_state_specific_sample(
         dim = int(batch["x_1_states"][dm].shape[-1])
         base = fm.base_flow_matchers[dm]
         flat_mask = state_mask.reshape(b * k, n)
-        x0 = base.sample_noise(n=n, shape=(b * k,), device=device, mask=flat_mask, training=False)
-        x_states[dm] = x0.reshape(b, k, n, dim) * state_mask[..., None]
+        # MODIFIED 2026-05-05 Stage10:
+        # Optional pose-initialized B1 sampling.  If init_bb_ca_states is in
+        # the batch, bb_ca trajectories start from transferred source poses;
+        # otherwise Stage09 noise initialization is unchanged.
+        if dm == "bb_ca" and "init_bb_ca_states" in batch:
+            x0 = batch["init_bb_ca_states"].to(device=device, dtype=batch["x_1_states"][dm].dtype)
+            x_states[dm] = x0 * state_mask[..., None]
+        else:
+            x0 = base.sample_noise(n=n, shape=(b * k,), device=device, mask=flat_mask, training=False)
+            x_states[dm] = x0.reshape(b, k, n, dim) * state_mask[..., None]
 
     ts, gt = fm.sample_schedule(nsteps=nsteps, sampling_model_args=sampling_cfg)
     ts = {dm: val.to(device) for dm, val in ts.items()}
@@ -500,6 +508,28 @@ def guided_state_specific_sample(
                 mask=flat_mask,
                 simulation_step_params=sampling_cfg[dm]["simulation_step_params"],
             )
+            # MODIFIED 2026-05-05 Stage10B:
+            # Pose-initialized multistate design should behave as bounded
+            # refinement, not as a full re-generation that can destroy the
+            # transferred source interface.  The default scale is 1.0, so old
+            # Stage09 behavior is unchanged unless explicitly overridden.
+            flow_scale = float(getattr(args, "flow_step_scale", 1.0))
+            if dm == "bb_ca" and getattr(args, "bb_ca_flow_step_scale", None) is not None:
+                flow_scale = float(args.bb_ca_flow_step_scale)
+            if dm == "local_latents" and getattr(args, "local_latents_flow_step_scale", None) is not None:
+                flow_scale = float(args.local_latents_flow_step_scale)
+            if flow_scale != 1.0:
+                flat_next = flat_x + flow_scale * (flat_next - flat_x)
+            max_flow_disp = float(getattr(args, "max_flow_displacement_nm", 0.0))
+            if dm == "bb_ca" and getattr(args, "bb_ca_max_flow_displacement_nm", None) is not None:
+                max_flow_disp = float(args.bb_ca_max_flow_displacement_nm)
+            if dm == "local_latents" and getattr(args, "local_latents_max_flow_displacement_nm", None) is not None:
+                max_flow_disp = float(args.local_latents_max_flow_displacement_nm)
+            if max_flow_disp > 0.0:
+                delta = flat_next - flat_x
+                delta_norm = torch.linalg.norm(delta, dim=-1, keepdim=True).clamp_min(1e-8)
+                scale = torch.clamp(max_flow_disp / delta_norm, max=1.0)
+                flat_next = flat_x + delta * scale
             updated[dm] = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
         guided_bb, trace = apply_sampling_guidance(updated["bb_ca"], state_mask, labels_batch, step, nsteps, args)
         updated["bb_ca"] = guided_bb
@@ -518,7 +548,11 @@ def guided_state_specific_sample(
 
 
 def sample_one(model: Proteina, sample_idx: int, sample: dict[str, Any], sampling_cfg: Any, out_root: Path, nsteps: int, device: torch.device, args: argparse.Namespace) -> dict[str, Any]:
-    batch = s4.collate_samples([sample], device)
+    if getattr(args, "enable_init_pose", False):
+        import scripts.strategy01.stage10_pose_init_training as s10  # local import avoids changing Stage09 default behavior
+        batch = s10.collate_variable([sample], device)
+    else:
+        batch = s4.collate_samples([sample], device)
     labels = [build_guidance_labels(sample, device, args.contact_cutoff_nm, args.max_anchor_pairs, args.anchor_source)]
     started = time.time()
     x_states, nn_out, guidance_trace = guided_state_specific_sample(model, batch, labels, nsteps, sampling_cfg, device, args)
@@ -592,8 +626,15 @@ def main() -> None:
     parser.add_argument("--anchor-loss-tolerance", type=float, default=0.25)
     parser.add_argument("--f1-gain-for-anchor-worsen", type=float, default=0.02)
     parser.add_argument("--max-guidance-displacement-nm", type=float, default=0.25)
+    parser.add_argument("--flow-step-scale", type=float, default=1.0, help="Stage10B: multiply each model flow update; <1 keeps pose-initialized sampling closer to transferred source poses")
+    parser.add_argument("--max-flow-displacement-nm", type=float, default=0.0, help="Stage10B: optional per-step displacement clamp for model flow updates; 0 disables")
+    parser.add_argument("--bb-ca-flow-step-scale", type=float, default=None, help="Stage10B: override flow-step-scale for bb_ca only")
+    parser.add_argument("--local-latents-flow-step-scale", type=float, default=None, help="Stage10B: override flow-step-scale for local_latents only")
+    parser.add_argument("--bb-ca-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for bb_ca only")
+    parser.add_argument("--local-latents-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for local_latents only")
     parser.add_argument("--enable-ca-feature", action="store_true", default=False)
     parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
+    parser.add_argument("--enable-init-pose", action="store_true", default=False, help="Stage10: collate init_bb_ca_states and start bb_ca trajectories from transferred source pose")
     parser.add_argument("--safe-accept", action="store_true", default=True)
     parser.add_argument("--unsafe-no-safe-accept", dest="safe_accept", action="store_false")
     args = parser.parse_args()

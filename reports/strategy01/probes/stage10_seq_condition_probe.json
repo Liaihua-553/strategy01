@@ -1,0 +1,39 @@
+['nlayers', 'token_dim', 'abs_coors', 'nheads', 'parallel_mha_transition', 'strict_feats', 'feats_seq', 'feats_cond_seq', 'dim_cond', 'idx_emb_dim', 'feats_pair_repr', 'seq_sep_dim', 'pair_repr_dim', 'update_pair_repr', 'update_pair_repr_every_n', 'use_tri_mult', 'use_qkln']
+{
+  "x1_t0.0": {
+    "pred": "RRRRPPPPAAYALG",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 0.14285714285714285,
+    "ce_sample0": 2.805629253387451
+  },
+  "x1_t0.5": {
+    "pred": "PPRPLPVAPGSSKT",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 1.0,
+    "ce_sample0": 0.03941882774233818
+  },
+  "x1_t1.0": {
+    "pred": "PPRPLPVAPGSSKT",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 1.0,
+    "ce_sample0": 0.03912768140435219
+  },
+  "init_t0.0": {
+    "pred": "PPPRPPPPAAYAPG",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 0.21428571428571427,
+    "ce_sample0": 2.3392627239227295
+  },
+  "init_t0.5": {
+    "pred": "PPRPLPVAPGSSKT",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 1.0,
+    "ce_sample0": 0.041828788816928864
+  },
+  "init_t1.0": {
+    "pred": "PPRPLPVAPGSSKT",
+    "ref": "PPRPLPVAPGSSKT",
+    "identity_sample0": 1.0,
+    "ce_sample0": 0.06829740852117538
+  }
+}

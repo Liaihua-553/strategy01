@@ -1,0 +1,118 @@
+{
+  "stage10c": {
+    "exact_train_included": {
+      "samples": 42,
+      "states": 126,
+      "contact_f1": 0.8888814019123721,
+      "clash_rate": 0.047619047619047616,
+      "direct_rmsd": 2.3389268099581675,
+      "aligned_rmsd": 1.4616754967555594,
+      "persistence": 0.6455029219736192
+    },
+    "exact_holdout6": {
+      "samples": 6,
+      "states": 18,
+      "contact_f1": 0.8729080995102096,
+      "clash_rate": 0.1111111111111111,
+      "direct_rmsd": 2.2465446765224137,
+      "aligned_rmsd": 1.1760169413024217,
+      "persistence": 0.587632430654713
+    },
+    "all48": {
+      "samples": 48,
+      "states": 144,
+      "contact_f1": 0.8868847391121019,
+      "clash_rate": 0.05555555555555555,
+      "direct_rmsd": 2.3273790432786985,
+      "aligned_rmsd": 1.4259681773239175,
+      "persistence": 0.638269110558756
+    }
+  },
+  "stage10b": {
+    "exact_train_included": {
+      "samples": 42,
+      "states": 126,
+      "contact_f1": 0.8888814019123721,
+      "clash_rate": 0.047619047619047616,
+      "direct_rmsd": 2.3389268099581675,
+      "aligned_rmsd": 1.4616754967555594,
+      "persistence": 0.6455029219736192
+    },
+    "exact_holdout6": {
+      "samples": 6,
+      "states": 18,
+      "contact_f1": 0.8729080995102096,
+      "clash_rate": 0.1111111111111111,
+      "direct_rmsd": 2.2465446765224137,
+      "aligned_rmsd": 1.1760169413024217,
+      "persistence": 0.587632430654713
+    },
+    "all48": {
+      "samples": 48,
+      "states": 144,
+      "contact_f1": 0.8868847391121019,
+      "clash_rate": 0.05555555555555555,
+      "direct_rmsd": 2.3273790432786985,
+      "aligned_rmsd": 1.4259681773239175,
+      "persistence": 0.638269110558756
+    }
+  },
+  "stage09f_B0": {
+    "exact_train_included": {
+      "samples": 42,
+      "states": 126,
+      "contact_f1": 0.20012339383988823,
+      "clash_rate": 0.6666666666666666,
+      "direct_rmsd": 21.655709947858536,
+      "aligned_rmsd": 7.638599784548106,
+      "persistence": 0.7434964860823774
+    },
+    "exact_holdout6": {
+      "samples": 6,
+      "states": 18,
+      "contact_f1": 0.25035035425572394,
+      "clash_rate": 0.6666666666666666,
+      "direct_rmsd": 20.54542393154568,
+      "aligned_rmsd": 10.285882932922254,
+      "persistence": 0.7524039512094801
+    },
+    "all48": {
+      "samples": 48,
+      "states": 144,
+      "contact_f1": 0.20640176389186765,
+      "clash_rate": 0.6666666666666666,
+      "direct_rmsd": 21.51692419581943,
+      "aligned_rmsd": 7.9695101780948745,
+      "persistence": 0.7446099192232655
+    }
+  },
+  "stage09f_B1_old": {
+    "exact_train_included": {
+      "samples": 42,
+      "states": 126,
+      "contact_f1": 0.15262714449527887,
+      "clash_rate": 0.48412698412698413,
+      "direct_rmsd": 25.34012915217687,
+      "aligned_rmsd": 11.601084420227366,
+      "persistence": 0.5350224114606721
+    },
+    "exact_holdout6": {
+      "samples": 6,
+      "states": 18,
+      "contact_f1": 0.20227513954873086,
+      "clash_rate": 0.5555555555555556,
+      "direct_rmsd": 26.98797294828627,
+      "aligned_rmsd": 16.84984792533343,
+      "persistence": 0.555745817934305
+    },
+    "all48": {
+      "samples": 48,
+      "states": 144,
+      "contact_f1": 0.15883314387696032,
+      "clash_rate": 0.4930555555555556,
+      "direct_rmsd": 25.546109626690548,
+      "aligned_rmsd": 12.257179858365625,
+      "persistence": 0.5376128372698763
+    }
+  }
+}
