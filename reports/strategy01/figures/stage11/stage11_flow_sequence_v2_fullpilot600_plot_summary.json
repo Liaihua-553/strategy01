@@ -1,0 +1,10 @@
+{
+  "input": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage11_flow_sequence_v2_fullpilot600_results.json",
+  "plots": [
+    "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/figures/stage11/stage11_flow_sequence_v2_fullpilot600_linear.png",
+    "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/figures/stage11/stage11_flow_sequence_v2_fullpilot600_log.png"
+  ],
+  "status": "passed",
+  "train_count": 161,
+  "val_count": 36
+}
