@@ -1,0 +1,30 @@
+{
+  "fallback": {
+    "seq_mean": 0.44141384611828893,
+    "seq_min": 0.06666666666666667,
+    "seq_max": 0.9523809523809523,
+    "n": 48,
+    "elapsed": 82.75569248199463,
+    "state0_rmsd_mean": 0.0001512832799928828,
+    "state0_rmsd_max": 0.0027393880300223827,
+    "state1_rmsd_mean": 0.20263749566705277,
+    "state1_rmsd_max": 1.1249278783798218,
+    "state2_rmsd_mean": 0.19258597708540037,
+    "state2_rmsd_max": 1.1628727912902832
+  },
+  "learned_safe": {
+    "seq_mean": 0.4389385589147834,
+    "seq_min": 0.058823529411764705,
+    "seq_max": 0.9523809523809523,
+    "n": 48,
+    "elapsed": 83.33530974388123,
+    "state0_rmsd_mean": 0.001995946038277907,
+    "state0_rmsd_max": 0.0033265436068177223,
+    "state1_rmsd_mean": 0.20700962488384297,
+    "state1_rmsd_max": 1.1230535507202148,
+    "state2_rmsd_mean": 0.19733554575941525,
+    "state2_rmsd_max": 1.1628727912902832,
+    "safe_rejected_total_tail": 34,
+    "safe_reject_entries": 48
+  }
+}

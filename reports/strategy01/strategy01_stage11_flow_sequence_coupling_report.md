@@ -553,3 +553,170 @@ Stage11 到目前为止的真实结论是：
 - **成功部分**：Complexa-native sequence-flow coupling 已接通，AE sequence loss 能反传到 local latent flow；fullpilot600 能让训练 loss、AE sequence loss 和结构 loss 同时下降；Stage11 checkpoint 可保存并被 sampling 使用。
 - **未成功部分**：learned flow gate 还没有学到“保留 source/interface anchor，只微调 flexible 区域”。直接启用 gate 会降低 sequence identity 并增大各 state CA RMSD。
 - **下一步优先级**：不是扩大数据，也不是外接 refiner，而是修改 gate/sequence 训练目标：hard-state sequence weighting + anchor-preserving gate loss + learned-gate safe-accept，然后再重跑 Stage11D。
+## 11. Stage11E/Stage11F 继续优化记录
+
+### 11.1 科学依据与本轮判断
+
+本轮继续围绕唯一目标：`一个 shared binder sequence` 要兼容 target 的多个功能构象，并且每个 state 都有合理 target-binder complex geometry。
+
+参考文献给出的共同方向是：
+
+- DynamicMPNN 强调 multi-state design 不能做 post-hoc aggregation，而要显式联合学习跨构象兼容序列。
+- ADFLIP 使用 discrete flow matching，把 all-atom / multi-structure context 纳入 inverse folding，说明 sequence 生成必须和结构上下文反复耦合。
+- ProChoreo 的 ensemble-aware binder design 说明 target conformational ensemble 应作为生成器主条件，而不是后筛选附属信息。
+
+对应到 Complexa，本轮不接外部 refiner，而继续加强 `state-specific flow trajectories -> local_latents -> AE decoder -> shared sequence` 的模型内闭环。
+
+### 11.2 Stage11E 代码改动
+
+#### hard-state AE sequence weighting
+
+文件：`src/proteinfoundation/flow_matching/multistate_loss.py`
+
+新增：
+
+- `ae_seq_hard_state_alpha`
+- `ae_seq_hard_state_gamma`
+- `multistate_ae_seq_hard_justlog`
+
+目的：
+
+- Stage11 fullpilot600 中 state0 容易、state1/state2 难，平均或普通 CVaR 仍不足以阻止 shared sequence 被 source-like state 主导。
+- 新逻辑用 detached per-state AE sequence loss 做 softmax hard-state weights，使 loss 更聚焦当前最差状态，但不让 hard-state 权重本身引入不稳定梯度。
+
+#### anchor-preserving gate loss
+
+文件：`src/proteinfoundation/flow_matching/multistate_loss.py`
+
+新增：
+
+- `flow_gate_anchor_max_update_nm`
+- `lambda_flow_gate_anchor_update`
+- `multistate_flow_gate_anchor_update_justlog`
+
+目的：
+
+- Stage11D 证明单纯输出 `flow_gate` 不够，learned gate 会破坏 source/init pose。
+- 新 loss 不只约束 gate 数值，还约束 `gate * predicted_bb_displacement` 在 interface anchor residues 上不能超过阈值。
+- 这更符合科学目标：binder 可以在 flexible 区域调整，但不能破坏跨状态保守 interface anchor。
+
+#### learned-gate safe-accept
+
+文件：`scripts/strategy01/stage09_guided_state_specific_sampling.py`
+
+新增：
+
+- `--gate-safe-accept`
+- `--unsafe-no-gate-safe-accept`
+- `--gate-f1-drop-tolerance`
+- `safe_accept_model_flow_update()`
+
+目的：
+
+- 训练中 gate 是 soft constraint；采样选择中 severe clash/contact anchor 破坏必须 hard fail。
+- 新逻辑在 learned gate 的 bb_ca update 之后，用 source-anchor contact-F1、min distance、clash 判断是否接受 model-flow update。
+- 注意：这个 safe-accept 只用 source anchors，不用 V_exact per-state exact labels，避免 benchmark 泄漏。
+
+### 11.3 Stage11E CPU probe
+
+命令核心参数：
+
+```bash
+--ae-seq-hard-state-alpha 0.45
+--ae-seq-hard-state-gamma 4.0
+--lambda-flow-gate-reg 0.08
+--lambda-flow-gate-anchor-update 0.25
+--flow-gate-anchor-target 0.02
+--flow-gate-flex-target 0.20
+--flow-gate-anchor-max-update-nm 0.015
+```
+
+结果：
+
+- `status = passed`
+- `grad_route = passed`
+- `flow_gate_head.1.weight` grad norm = `2.1239`
+- `multistate_ae_seq_hard_justlog = 1.9930`
+- `multistate_flow_gate_anchor_update_justlog = 0.5389`
+
+结论：hard-state sequence loss 和 anchor-update gate loss 都已接入，并且能对相应模块产生梯度。
+
+### 11.4 Stage11E 训练结果
+
+运行：`stage11e_hardstate_anchor_gate_fullpilot600`，数据仍为 `161 train / 36 val`。
+
+| 阶段 | eval total | AE seq | AE hard | gate anchor update | struct | clash | 结论 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| overfit1 初始 | 18.5718 | 1.2128 | 1.3603 | 0.7270 | 16.0192 | 0.0068 | 起点 |
+| overfit1 结束 | 16.5406 | 0.7473 | 0.8565 | 0.0192 | 15.0834 | 0.0083 | sequence/gate/struct 均改善 |
+| overfit4 初始 | 17.2880 | 0.9979 | 1.1072 | 0.6292 | 15.1788 | 0.0079 | 起点 |
+| overfit4 结束 | 15.6982 | 0.8418 | 0.9245 | 0.0560 | 14.0643 | 0.0090 | sequence/gate/struct 均改善 |
+| mini 初始 | 17.3366 | 1.0184 | 1.1355 | 0.5265 | 15.2177 | 0.0072 | 161/36 pilot 起点 |
+| mini 结束 | 16.1104 | 0.8134 | 0.8837 | 0.0200 | 14.5252 | 0.0081 | total 下降 7.1%，gate anchor update 大幅下降 |
+
+验证集：
+
+- `validation total = 31.7964`
+- `validation AE seq = 3.0073`
+- `validation AE hard = 3.5882`
+- `validation struct = 25.5524`
+
+判断：
+
+- 训练集机制明显变好，尤其 gate anchor update 从 `0.5265` 降到 `0.0200`。
+- 但 validation 比 Stage11 v2 更差，说明 hard-state/gate 约束当前主要改善训练局部，不足以解决泛化。
+
+### 11.5 Stage11E sampling48
+
+使用 Stage11E checkpoint，在 48 samples 上比较：
+
+| 采样分支 | sequence identity mean | state0 RMSD mean (nm) | state1 RMSD mean (nm) | state2 RMSD mean (nm) | 结论 |
+|---|---:|---:|---:|---:|---|
+| fallback/shared_head | 0.4414 | 0.00015 | 0.2026 | 0.1926 | 当前安全默认 |
+| learned_gate_safe/shared_head | 0.4389 | 0.00200 | 0.2070 | 0.1973 | 可运行，但略差，不设为默认 |
+
+4-sample smoke 中 learned gate 看起来略好，但 48-sample 后这个信号消失。因此不能根据 4 条样本升级默认策略。
+
+### 11.6 Stage11F sequence-source 对比
+
+新增 sampling 参数：
+
+- `--sequence-source shared_head`
+- `--sequence-source ae_consensus`
+- `--sequence-source hybrid`
+- `--sequence-hybrid-ae-weight`
+
+目的：确认是否只是最终读出没有使用 AE decoder。结果：
+
+| sequence source | sequence identity mean | 结论 |
+|---|---:|---|
+| shared_head | 0.4414 | baseline |
+| ae_consensus | 0.4414 | 与 shared head 完全相同 |
+| hybrid_w05 | 0.4414 | 与 shared head 完全相同 |
+
+判断：
+
+- 这不是“最后没有用 AE decoder 输出”的单点问题。
+- Stage11 训练已经把 shared head 和 AE consensus 对齐到同一套 sampled-latent 错误序列。
+- 根因仍是 sampled local_latents 本身没有足够恢复真实 shared binder sequence，尤其在未见家族/困难 state 上。
+
+### 11.7 警告与错误影响
+
+本轮日志仍出现：
+
+- PyTorch nested tensor warning：性能影响，不影响数值。
+- optional CA/residue type features 返回 zeros：当前 intentional no-leak 设定，不影响公平比较；但可能限制绝对质量。
+
+没有出现 NaN、OOM、Traceback、disk quota、killed 或 unbound variable。
+
+### 11.8 下一步必须转向 sampled latent cache 训练
+
+Stage11E/F 后，下一步不应继续调 gate 或 final sequence readout。更科学的下一步是：
+
+1. 构建 Stage11G sampled-latent cache：保存多个随机 seed 下的 sampled `local_latents_states`、对应 AE decoded sequence、真实 shared sequence、source/init geometry。
+2. 训练一个 Complexa-native latent correction objective：输入 sampled latent 条件，预测 correction 或 denoised latent，使 AE decoder 更接近 shared binder sequence。
+3. 对 hard states 做 explicit replay：state1/state2 这类 AE sequence loss 高的状态在 batch 里重复采样，而不是只靠 loss 权重。
+4. 保持 `bb_ca_flow=0` 安全 fallback，先把 sequence 做好；只有 sequence 提升后再重新打开 bounded bb_ca flow。
+5. 继续把 severe clash/contact anchor 作为采样 hard fail。
+
+这仍然是 Complexa-native 路线：不接外部 DynamicMPNN/ADFLIP 作为主模型，只借鉴其“多状态联合序列兼容性”原则。

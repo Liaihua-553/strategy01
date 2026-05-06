@@ -298,7 +298,17 @@ def _ae_sequence_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tens
         cvar_topk = int(cvar_topk)
     ae_seq_mean = torch.sum(ae_seq_state * weights, dim=1)
     ae_seq_cvar = _masked_topk_mean(ae_seq_state, state_present.to(device).bool(), cvar_topk)
-    ae_seq_sample = 0.5 * ae_seq_mean + 0.5 * ae_seq_cvar
+    hard_gamma = float(_cfg_get(cfg, "ae_seq_hard_state_gamma", 0.0))
+    hard_alpha = float(_cfg_get(cfg, "ae_seq_hard_state_alpha", 0.0))
+    if hard_gamma > 0.0 and hard_alpha > 0.0:
+        masked_scores = ae_seq_state.detach().masked_fill(~state_present.to(device).bool(), -1.0e6)
+        hard_weights = torch.softmax(masked_scores * hard_gamma, dim=1) * state_present.to(device).float()
+        hard_weights = hard_weights / hard_weights.sum(dim=1, keepdim=True).clamp_min(1.0e-6)
+        ae_seq_hard = torch.sum(ae_seq_state * hard_weights.to(dtype), dim=1)
+    else:
+        ae_seq_hard = ae_seq_cvar
+    base_sample = 0.5 * ae_seq_mean + 0.5 * ae_seq_cvar
+    ae_seq_sample = (1.0 - hard_alpha) * base_sample + hard_alpha * ae_seq_hard
 
     seq_ae_consistency = torch.zeros(b, device=device, dtype=dtype)
     state_seq_logits = nn_out.get("state_seq_logits")
@@ -323,16 +333,18 @@ def _ae_sequence_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tens
         "ae_seq_state": ae_seq_state,
         "ae_seq_sample": ae_seq_sample,
         "ae_seq_cvar_sample": ae_seq_cvar,
+        "ae_seq_hard_sample": ae_seq_hard,
         "seq_ae_consistency_sample": seq_ae_consistency,
     }
 
 
-def _flow_gate_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
+def _flow_gate_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor, state_mask: Tensor, flow_matcher: Any | None = None) -> dict[str, Tensor]:
     gate = nn_out.get("flow_gate")
     device = state_mask.device
     b, k = state_present.shape
     if gate is None:
-        return {"flow_gate_reg_sample": torch.zeros(b, device=device), "flow_gate_anchor_sample": torch.zeros(b, device=device)}
+        zero = torch.zeros(b, device=device)
+        return {"flow_gate_reg_sample": zero, "flow_gate_anchor_sample": zero, "flow_gate_anchor_update_sample": zero}
     gate = gate.squeeze(-1).to(device=device)
     dtype = gate.dtype
     valid = state_mask.to(device=device).bool() & state_present.to(device=device).bool()[:, :, None]
@@ -345,7 +357,23 @@ def _flow_gate_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor
     gate_valid = torch.where(valid, gate, torch.zeros_like(gate))
     mean_gate = gate_valid.sum(dim=(1, 2)) / valid.float().sum(dim=(1, 2)).clamp_min(1.0)
     collapse = F.relu(0.05 - mean_gate) + F.relu(mean_gate - 0.95)
-    return {"flow_gate_reg_sample": 0.5 * (anchor_loss + flex_loss) + collapse, "flow_gate_anchor_sample": anchor_loss}
+    anchor_update_loss = torch.zeros(b, device=device, dtype=dtype)
+    if flow_matcher is not None and "init_bb_ca_states" in batch and "bb_ca_states" in nn_out:
+        try:
+            clean_bb = _state_clean_prediction(flow_matcher, batch, nn_out, "bb_ca", "bb_ca_states").to(device=device, dtype=dtype)
+            init_bb = batch["init_bb_ca_states"].to(device=device, dtype=dtype)
+            disp = torch.linalg.norm(clean_bb - init_bb, dim=-1)
+            gated_disp = gate * disp
+            anchor_max = float(_cfg_get(cfg, "flow_gate_anchor_max_update_nm", 0.025))
+            anchor_update_loss = (F.relu(gated_disp - anchor_max).pow(2) * anchors.float()).sum(dim=(1, 2)) / anchors.float().sum(dim=(1, 2)).clamp_min(1.0)
+        except Exception:
+            # Do not hide the main loss if an old batch lacks clean-prediction fields.
+            anchor_update_loss = torch.zeros(b, device=device, dtype=dtype)
+    return {
+        "flow_gate_reg_sample": 0.5 * (anchor_loss + flex_loss) + collapse,
+        "flow_gate_anchor_sample": anchor_loss,
+        "flow_gate_anchor_update_sample": anchor_update_loss,
+    }
 
 
 def _interface_enabled(cfg: Any) -> bool:
@@ -591,7 +619,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_seq = _sequence_loss(nn_out, batch)
     sequence_consensus = _state_sequence_losses(cfg, nn_out, batch, state_present, state_mask)
     ae_sequence = _ae_sequence_losses(cfg, nn_out, batch, state_present, state_mask)
-    flow_gate_losses = _flow_gate_losses(cfg, nn_out, batch, state_present, state_mask)
+    flow_gate_losses = _flow_gate_losses(cfg, nn_out, batch, state_present, state_mask, flow_matcher)
     alpha = float(_cfg_get(cfg, "alpha_mean", 0.5))
     beta = float(_cfg_get(cfg, "beta_cvar", 0.4))
     gamma = float(_cfg_get(cfg, "gamma_var", 0.1))
@@ -609,6 +637,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         + float(_cfg_get(cfg, "lambda_ae_seq", 0.0)) * ae_sequence["ae_seq_sample"]
         + float(_cfg_get(cfg, "lambda_seq_ae_consistency", 0.0)) * ae_sequence["seq_ae_consistency_sample"]
         + float(_cfg_get(cfg, "lambda_flow_gate_reg", 0.0)) * flow_gate_losses["flow_gate_reg_sample"]
+        + float(_cfg_get(cfg, "lambda_flow_gate_anchor_update", 0.0)) * flow_gate_losses["flow_gate_anchor_update_sample"]
     )
     losses = {
         "multistate_total": l_total,
@@ -618,8 +647,10 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         "multistate_anchor_disagreement_justlog": sequence_consensus["anchor_disagreement_sample"],
         "multistate_ae_seq_justlog": ae_sequence["ae_seq_sample"],
         "multistate_ae_seq_cvar_justlog": ae_sequence["ae_seq_cvar_sample"],
+        "multistate_ae_seq_hard_justlog": ae_sequence["ae_seq_hard_sample"],
         "multistate_seq_ae_consistency_justlog": ae_sequence["seq_ae_consistency_sample"],
         "multistate_flow_gate_reg_justlog": flow_gate_losses["flow_gate_reg_sample"],
+        "multistate_flow_gate_anchor_update_justlog": flow_gate_losses["flow_gate_anchor_update_sample"],
         "multistate_struct_justlog": l_struct,
         "multistate_fm_mean_justlog": torch.sum(l_fm_state * weights, dim=1),
         "multistate_contact_justlog": torch.sum(l_contact_state * weights, dim=1),

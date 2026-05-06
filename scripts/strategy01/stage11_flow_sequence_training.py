@@ -73,9 +73,13 @@ def configure_stage11_loss(fm: Any) -> dict[str, float]:
         "lambda_ae_seq": 0.80,
         "lambda_seq_ae_consistency": 0.10,
         "lambda_flow_gate_reg": 0.03,
+        "lambda_flow_gate_anchor_update": 0.0,
         "flow_gate_anchor_target": 0.12,
         "flow_gate_flex_target": 0.45,
+        "flow_gate_anchor_max_update_nm": 0.025,
         "ae_seq_cvar_topk": 2,
+        "ae_seq_hard_state_alpha": 0.0,
+        "ae_seq_hard_state_gamma": 0.0,
     }
     for key, value in values.items():
         cfg[key] = value
@@ -414,6 +418,12 @@ def main() -> None:
     ap.add_argument("--lambda-ae-seq", type=float, default=1.5)
     ap.add_argument("--lambda-seq-ae-consistency", type=float, default=0.15)
     ap.add_argument("--lambda-flow-gate-reg", type=float, default=0.03)
+    ap.add_argument("--lambda-flow-gate-anchor-update", type=float, default=0.0)
+    ap.add_argument("--flow-gate-anchor-target", type=float, default=0.12)
+    ap.add_argument("--flow-gate-flex-target", type=float, default=0.45)
+    ap.add_argument("--flow-gate-anchor-max-update-nm", type=float, default=0.025)
+    ap.add_argument("--ae-seq-hard-state-alpha", type=float, default=0.0)
+    ap.add_argument("--ae-seq-hard-state-gamma", type=float, default=0.0)
     ap.add_argument("--skip-training", action="store_true")
     args = ap.parse_args()
 
@@ -435,10 +445,22 @@ def main() -> None:
     fm.cfg_exp.loss.multistate.lambda_ae_seq = args.lambda_ae_seq
     fm.cfg_exp.loss.multistate.lambda_seq_ae_consistency = args.lambda_seq_ae_consistency
     fm.cfg_exp.loss.multistate.lambda_flow_gate_reg = args.lambda_flow_gate_reg
+    fm.cfg_exp.loss.multistate.lambda_flow_gate_anchor_update = args.lambda_flow_gate_anchor_update
+    fm.cfg_exp.loss.multistate.flow_gate_anchor_target = args.flow_gate_anchor_target
+    fm.cfg_exp.loss.multistate.flow_gate_flex_target = args.flow_gate_flex_target
+    fm.cfg_exp.loss.multistate.flow_gate_anchor_max_update_nm = args.flow_gate_anchor_max_update_nm
+    fm.cfg_exp.loss.multistate.ae_seq_hard_state_alpha = args.ae_seq_hard_state_alpha
+    fm.cfg_exp.loss.multistate.ae_seq_hard_state_gamma = args.ae_seq_hard_state_gamma
     loss_cfg.update({
         "lambda_ae_seq": args.lambda_ae_seq,
         "lambda_seq_ae_consistency": args.lambda_seq_ae_consistency,
         "lambda_flow_gate_reg": args.lambda_flow_gate_reg,
+        "lambda_flow_gate_anchor_update": args.lambda_flow_gate_anchor_update,
+        "flow_gate_anchor_target": args.flow_gate_anchor_target,
+        "flow_gate_flex_target": args.flow_gate_flex_target,
+        "flow_gate_anchor_max_update_nm": args.flow_gate_anchor_max_update_nm,
+        "ae_seq_hard_state_alpha": args.ae_seq_hard_state_alpha,
+        "ae_seq_hard_state_gamma": args.ae_seq_hard_state_gamma,
         "ae_ca_source": args.ae_ca_source,
         "noise_repeats": args.noise_repeats,
     })
@@ -475,6 +497,12 @@ def main() -> None:
         fm.cfg_exp.loss.multistate.lambda_ae_seq = args.lambda_ae_seq
         fm.cfg_exp.loss.multistate.lambda_seq_ae_consistency = args.lambda_seq_ae_consistency
         fm.cfg_exp.loss.multistate.lambda_flow_gate_reg = args.lambda_flow_gate_reg
+        fm.cfg_exp.loss.multistate.lambda_flow_gate_anchor_update = args.lambda_flow_gate_anchor_update
+        fm.cfg_exp.loss.multistate.flow_gate_anchor_target = args.flow_gate_anchor_target
+        fm.cfg_exp.loss.multistate.flow_gate_flex_target = args.flow_gate_flex_target
+        fm.cfg_exp.loss.multistate.flow_gate_anchor_max_update_nm = args.flow_gate_anchor_max_update_nm
+        fm.cfg_exp.loss.multistate.ae_seq_hard_state_alpha = args.ae_seq_hard_state_alpha
+        fm.cfg_exp.loss.multistate.ae_seq_hard_state_gamma = args.ae_seq_hard_state_gamma
         result["training"]["overfit4"] = train_loop(model, ae, fm, train_samples[: min(4, len(train_samples))], device, "overfit4", args.overfit4_steps, min(args.batch_size, 4), args.eval_every, 1e-4, run_dir, args.mini_trainable_phase, fixed_seed=1234, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
         model, fm, _ = s4.build_model(device)
         load_strategy_checkpoint(model, args.stage10_ckpt)
@@ -482,6 +510,12 @@ def main() -> None:
         fm.cfg_exp.loss.multistate.lambda_ae_seq = args.lambda_ae_seq
         fm.cfg_exp.loss.multistate.lambda_seq_ae_consistency = args.lambda_seq_ae_consistency
         fm.cfg_exp.loss.multistate.lambda_flow_gate_reg = args.lambda_flow_gate_reg
+        fm.cfg_exp.loss.multistate.lambda_flow_gate_anchor_update = args.lambda_flow_gate_anchor_update
+        fm.cfg_exp.loss.multistate.flow_gate_anchor_target = args.flow_gate_anchor_target
+        fm.cfg_exp.loss.multistate.flow_gate_flex_target = args.flow_gate_flex_target
+        fm.cfg_exp.loss.multistate.flow_gate_anchor_max_update_nm = args.flow_gate_anchor_max_update_nm
+        fm.cfg_exp.loss.multistate.ae_seq_hard_state_alpha = args.ae_seq_hard_state_alpha
+        fm.cfg_exp.loss.multistate.ae_seq_hard_state_gamma = args.ae_seq_hard_state_gamma
         result["training"]["mini"] = train_loop(model, ae, fm, train_samples, device, "mini", args.mini_steps, args.batch_size, args.eval_every, 5e-5, run_dir, args.mini_trainable_phase, fixed_seed=None, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
         run_dir.mkdir(parents=True, exist_ok=True)
         mini_ckpt = run_dir / "stage11_mini_final.pt"

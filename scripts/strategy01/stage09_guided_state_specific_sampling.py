@@ -34,6 +34,7 @@ if str(REPO / "src") not in sys.path:
 
 from proteinfoundation.proteina import Proteina  # noqa: E402
 import scripts.strategy01.stage04_real_complex_loss_debug as s4  # noqa: E402
+import scripts.strategy01.stage05_extract_ae_latents as s5ae  # noqa: E402
 import scripts.strategy01.stage07_multistate_sampling_smoke as s7  # noqa: E402
 from scripts.strategy01.stage08b_exact_geometry_benchmark import parse_ca  # noqa: E402
 
@@ -234,6 +235,110 @@ def contact_f1_and_clash(target_ca_nm: torch.Tensor, ref_binder_ca_nm: torch.Ten
     f1 = 0.0 if float(precision + recall) <= 0 else float((2.0 * precision * recall / (precision + recall)).detach().cpu().item())
     min_d = float(d_pred.min().detach().cpu().item()) if d_pred.numel() else math.inf
     return f1, min_d < clash_cutoff_nm, min_d
+
+
+def ae_consensus_logits(ae: torch.nn.Module, x_states: dict[str, torch.Tensor], state_mask: torch.Tensor, weights: torch.Tensor) -> torch.Tensor:
+    lat = x_states["local_latents"]
+    bb = x_states["bb_ca"].to(dtype=lat.dtype)
+    b, k, n, z = lat.shape
+    dec = ae.decode(
+        z_latent=lat.reshape(b * k, n, z),
+        ca_coors_nm=bb.reshape(b * k, n, 3),
+        mask=state_mask.reshape(b * k, n).bool(),
+    )
+    logits = dec["seq_logits"].reshape(b, k, n, 20)
+    return (logits * weights[:, :, None, None].to(dtype=logits.dtype)).sum(dim=1)
+
+
+def choose_sequence_logits(final_nn_out: dict[str, torch.Tensor], ae: torch.nn.Module | None, x_states: dict[str, torch.Tensor], state_mask: torch.Tensor, weights: torch.Tensor, args: argparse.Namespace) -> torch.Tensor:
+    shared = final_nn_out["seq_logits_shared"]
+    if args.sequence_source == "shared_head":
+        return shared
+    if ae is None:
+        raise RuntimeError("sequence_source requires autoencoder, but ae is None")
+    ae_logits = ae_consensus_logits(ae, x_states, state_mask, weights)
+    if args.sequence_source == "ae_consensus":
+        return ae_logits
+    if args.sequence_source == "hybrid":
+        w = float(args.sequence_hybrid_ae_weight)
+        return (1.0 - w) * shared + w * ae_logits
+    raise ValueError(f"Unknown sequence_source={args.sequence_source}")
+
+
+def safe_accept_model_flow_update(
+    before_flat: torch.Tensor,
+    after_flat: torch.Tensor,
+    labels_batch: list[list[StateGuidanceLabels | None]],
+    state_mask: torch.Tensor,
+    args: argparse.Namespace,
+) -> tuple[torch.Tensor, dict[str, Any]]:
+    """Reject learned model-flow bb_ca updates that damage source-anchor geometry.
+
+    This is deliberately source-anchor based, not exact benchmark based.  The goal
+    is to let learned flow refine flexible regions while preventing it from
+    destroying the source/interface pose that Stage10C showed was the reliable
+    geometric prior.
+    """
+    if not getattr(args, "gate_safe_accept", True):
+        return after_flat, {"type": "model_flow_safe_accept", "applied": False, "accepted": 0, "rejected": 0}
+    b, k, n = state_mask.shape
+    out = after_flat.clone()
+    accepted = 0
+    rejected = 0
+    final_logs: list[dict[str, Any]] = []
+    for bi in range(b):
+        for ki in range(k):
+            label = labels_batch[bi][ki]
+            flat_idx = bi * k + ki
+            if label is None:
+                accepted += 1
+                continue
+            mask = state_mask[bi, ki].bool()
+            before = before_flat[flat_idx]
+            after = after_flat[flat_idx]
+            before_f1, before_clash, before_min_d = contact_f1_and_clash(
+                label.target_ca_nm,
+                label.ref_binder_ca_nm,
+                before[: min(before.shape[0], label.ref_binder_ca_nm.shape[0])],
+                args.contact_cutoff_nm,
+                args.clash_cutoff_nm,
+            )
+            after_f1, after_clash, after_min_d = contact_f1_and_clash(
+                label.target_ca_nm,
+                label.ref_binder_ca_nm,
+                after[: min(after.shape[0], label.ref_binder_ca_nm.shape[0])],
+                args.contact_cutoff_nm,
+                args.clash_cutoff_nm,
+            )
+            reject_reason = None
+            hard_min = float(args.hard_min_dist_nm)
+            min_improved = after_min_d >= before_min_d + float(args.min_dist_improvement_nm)
+            if after_min_d < hard_min and not min_improved:
+                reject_reason = "model_flow_hard_min_distance_not_improved"
+            elif (not before_clash) and after_clash:
+                reject_reason = "model_flow_would_create_new_clash"
+            elif before_clash and after_min_d + 1e-6 < before_min_d:
+                reject_reason = "model_flow_existing_clash_became_closer"
+            elif before_f1 - after_f1 > float(args.gate_f1_drop_tolerance):
+                reject_reason = "model_flow_contact_f1_decreased"
+            if reject_reason is not None:
+                out[flat_idx] = before * mask[:, None] + after * (~mask)[:, None]
+                rejected += 1
+            else:
+                accepted += 1
+            final_logs.append({
+                "batch": bi,
+                "state": ki,
+                "accepted": reject_reason is None,
+                "reject_reason": reject_reason,
+                "before_f1": before_f1,
+                "after_f1": after_f1,
+                "before_clash": before_clash,
+                "after_clash": after_clash,
+                "before_min_dist_nm": before_min_d,
+                "after_min_dist_nm": after_min_d,
+            })
+    return out, {"type": "model_flow_safe_accept", "applied": True, "accepted": accepted, "rejected": rejected, "final_step_state_logs": final_logs}
 
 
 def set_sampling_optional_features(batch: dict[str, Any], args: argparse.Namespace) -> None:
@@ -570,6 +675,11 @@ def guided_state_specific_sample(
                 delta_norm = torch.linalg.norm(delta, dim=-1, keepdim=True).clamp_min(1e-8)
                 scale = torch.clamp(max_flow_disp / delta_norm, max=1.0)
                 flat_next = flat_x + delta * scale
+            if dm == "bb_ca" and getattr(args, "use_learned_flow_gate", False) and getattr(args, "gate_safe_accept", True):
+                flat_next, gate_trace = safe_accept_model_flow_update(flat_x, flat_next, labels_batch, state_mask, args)
+                if gate_trace.get("applied"):
+                    gate_trace["step"] = step
+                    guidance_trace.append(gate_trace)
             updated[dm] = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
         guided_bb, trace = apply_sampling_guidance(updated["bb_ca"], state_mask, labels_batch, step, nsteps, args)
         updated["bb_ca"] = guided_bb
@@ -587,7 +697,7 @@ def guided_state_specific_sample(
     return x_states, final_nn_out, guidance_trace
 
 
-def sample_one(model: Proteina, sample_idx: int, sample: dict[str, Any], sampling_cfg: Any, out_root: Path, nsteps: int, device: torch.device, args: argparse.Namespace) -> dict[str, Any]:
+def sample_one(model: Proteina, ae: torch.nn.Module | None, sample_idx: int, sample: dict[str, Any], sampling_cfg: Any, out_root: Path, nsteps: int, device: torch.device, args: argparse.Namespace) -> dict[str, Any]:
     if getattr(args, "enable_init_pose", False):
         import scripts.strategy01.stage10_pose_init_training as s10  # local import avoids changing Stage09 default behavior
         batch = s10.collate_variable([sample], device)
@@ -597,7 +707,8 @@ def sample_one(model: Proteina, sample_idx: int, sample: dict[str, Any], samplin
     started = time.time()
     x_states, nn_out, guidance_trace = guided_state_specific_sample(model, batch, labels, nsteps, sampling_cfg, device, args)
     elapsed = time.time() - started
-    pred_seq = s7.seq_from_logits(nn_out["seq_logits_shared"], batch["mask"])
+    seq_logits = choose_sequence_logits(nn_out, ae, x_states, batch["state_mask"], s7.normalize_weights(batch, device), args)
+    pred_seq = s7.seq_from_logits(seq_logits, batch["mask"])
     ref_seq = sample.get("shared_binder_sequence") or s7.seq_from_tokens(sample["binder_seq_shared"], sample["binder_seq_mask"])
     seq_identity = sum(a == b for a, b in zip(pred_seq, ref_seq)) / max(1, min(len(pred_seq), len(ref_seq)))
     sample_out = out_root / str(sample.get("sample_id", f"sample_{sample_idx}"))
@@ -621,6 +732,7 @@ def sample_one(model: Proteina, sample_idx: int, sample: dict[str, Any], samplin
         "target_id": sample.get("target_id"),
         "nsteps": nsteps,
         "valid_states": valid_k,
+        "sequence_source": args.sequence_source,
         "pred_sequence": pred_seq,
         "reference_sequence": ref_seq,
         "sequence_identity_to_reference": seq_identity,
@@ -635,6 +747,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--ckpt", type=Path, default=DEFAULT_CKPT)
     parser.add_argument("--autoencoder-ckpt", type=Path, default=DEFAULT_AE)
+    parser.add_argument("--sequence-source", choices=["shared_head", "ae_consensus", "hybrid"], default="shared_head")
+    parser.add_argument("--sequence-hybrid-ae-weight", type=float, default=0.5)
     parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
     parser.add_argument("--sampling-config", type=Path, default=DEFAULT_SAMPLING)
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT)
@@ -673,6 +787,9 @@ def main() -> None:
     parser.add_argument("--bb-ca-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for bb_ca only")
     parser.add_argument("--local-latents-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for local_latents only")
     parser.add_argument("--use-learned-flow-gate", action="store_true", default=False, help="Stage11: use nn_out['flow_gate'] as bounded bb_ca flow blend instead of a fixed scalar only")
+    parser.add_argument("--gate-safe-accept", action="store_true", default=True, help="Stage11E: reject learned-gate model flow updates that damage source-anchor contact/clash geometry")
+    parser.add_argument("--unsafe-no-gate-safe-accept", dest="gate_safe_accept", action="store_false")
+    parser.add_argument("--gate-f1-drop-tolerance", type=float, default=0.01)
     parser.add_argument("--enable-ca-feature", action="store_true", default=False)
     parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
     parser.add_argument("--enable-init-pose", action="store_true", default=False, help="Stage10: collate init_bb_ca_states and start bb_ca trajectories from transferred source pose")
@@ -687,12 +804,18 @@ def main() -> None:
     samples = load_samples(args.dataset)
     selected = select_samples(samples, args.split, set(args.sample_id) if args.sample_id else None, args.max_samples)
     model = load_sampling_model(args.ckpt, args.autoencoder_ckpt, device)
+    ae = None
+    if args.sequence_source != "shared_head":
+        ae = s5ae.load_autoencoder(args.autoencoder_ckpt, device)
+        ae.eval()
+        for p in ae.parameters():
+            p.requires_grad = False
     sampling_cfg = OmegaConf.to_container(OmegaConf.load(args.sampling_config).model, resolve=True)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     started = time.time()
     for sample_idx, sample in selected:
-        rows.append(sample_one(model, sample_idx, sample, sampling_cfg, args.out_dir, args.nsteps, device, args))
+        rows.append(sample_one(model, ae, sample_idx, sample, sampling_cfg, args.out_dir, args.nsteps, device, args))
         write_json(args.report, {"status": "running", "rows": rows, "completed": len(rows), "total": len(selected)})
     summary = {
         "status": "passed",
