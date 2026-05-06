@@ -483,6 +483,20 @@ def main() -> None:
         fm.cfg_exp.loss.multistate.lambda_seq_ae_consistency = args.lambda_seq_ae_consistency
         fm.cfg_exp.loss.multistate.lambda_flow_gate_reg = args.lambda_flow_gate_reg
         result["training"]["mini"] = train_loop(model, ae, fm, train_samples, device, "mini", args.mini_steps, args.batch_size, args.eval_every, 5e-5, run_dir, args.mini_trainable_phase, fixed_seed=None, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
+        run_dir.mkdir(parents=True, exist_ok=True)
+        mini_ckpt = run_dir / "stage11_mini_final.pt"
+        json_args = {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()}
+        torch.save({
+            "model_state_dict": model.state_dict(),
+            "stage10_ckpt": str(args.stage10_ckpt),
+            "ae_ckpt": str(args.ae_ckpt),
+            "run_name": args.run_name,
+            "args": json_args,
+            "loss_cfg": loss_cfg,
+            "train_count": len(train_samples),
+            "val_count": len(val_samples),
+        }, mini_ckpt)
+        result["checkpoint_path"] = str(mini_ckpt)
         if val_samples:
             model.eval()
             with torch.no_grad():

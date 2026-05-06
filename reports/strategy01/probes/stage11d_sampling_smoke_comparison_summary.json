@@ -1,0 +1,39 @@
+{
+  "fallback": {
+    "status": "passed",
+    "sample_count": 4,
+    "elapsed_sec": 7.140858173370361,
+    "seq_identity_mean": 0.5815018315018315,
+    "seq_identity_min": 0.23076923076923078,
+    "seq_identity_max": 0.9523809523809523,
+    "state_rmsd_nm_mean": {
+      "0": 6.624844128566565e-05,
+      "1": 0.21848610788583755,
+      "2": 0.1820252314209938
+    },
+    "state_rmsd_nm_max": {
+      "0": 0.00022204694687388837,
+      "1": 0.4164815843105316,
+      "2": 0.32814672589302063
+    }
+  },
+  "learned_gate": {
+    "status": "passed",
+    "sample_count": 4,
+    "elapsed_sec": 6.970597982406616,
+    "seq_identity_mean": 0.48131868131868133,
+    "seq_identity_min": 0.15384615384615385,
+    "seq_identity_max": 1.0,
+    "state_rmsd_nm_mean": {
+      "0": 0.1422096434980631,
+      "1": 0.28477970510721207,
+      "2": 0.21717743761837482
+    },
+    "state_rmsd_nm_max": {
+      "0": 0.21166227757930756,
+      "1": 0.49597057700157166,
+      "2": 0.33566004037857056
+    }
+  },
+  "conclusion": "learned_gate_ran_but_underperformed_fallback_on_4_sample_smoke; do_not_use_as_default_without stronger anchor-preserving gate training"
+}

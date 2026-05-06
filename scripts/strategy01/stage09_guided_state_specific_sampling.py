@@ -87,6 +87,42 @@ def select_samples(samples: list[dict[str, Any]], split: str, sample_ids: set[st
     return selected
 
 
+class PlainStrategySamplingModel(torch.nn.Module):
+    """Minimal Proteina-like wrapper for Strategy01 plain model_state_dict checkpoints."""
+
+    def __init__(self, nn: torch.nn.Module, fm: Any):
+        super().__init__()
+        self.nn = nn
+        self.fm = fm
+        self.cfg_exp = fm.cfg_exp
+
+
+def load_sampling_model(ckpt_path: Path, autoencoder_ckpt: Path, device: torch.device) -> torch.nn.Module:
+    try:
+        model = Proteina.load_from_checkpoint(str(ckpt_path), strict=False, autoencoder_ckpt_path=str(autoencoder_ckpt), map_location="cpu")
+        return model.to(device).eval()
+    except Exception as exc:
+        payload = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+        if not isinstance(payload, dict) or "model_state_dict" not in payload:
+            raise RuntimeError(f"Failed to load checkpoint as Lightning or plain model_state_dict: {ckpt_path}") from exc
+        nn, fm, _ = s4.build_model(torch.device("cpu"))
+        state = payload["model_state_dict"]
+        model_state = nn.state_dict()
+        compatible = {k: v for k, v in state.items() if k in model_state and tuple(v.shape) == tuple(model_state[k].shape)}
+        missing_or_bad = [k for k, v in state.items() if k in model_state and tuple(v.shape) != tuple(model_state[k].shape)]
+        info = nn.load_state_dict(compatible, strict=False)
+        if missing_or_bad:
+            print(json.dumps({"plain_ckpt_warning": "shape_mismatch", "keys": missing_or_bad[:20]}, ensure_ascii=False), flush=True)
+        print(json.dumps({
+            "plain_ckpt_loaded": str(ckpt_path),
+            "compatible_keys": len(compatible),
+            "missing_keys_count": len(info.missing_keys),
+            "unexpected_keys_count": len(info.unexpected_keys),
+        }, ensure_ascii=False), flush=True)
+        model = PlainStrategySamplingModel(nn, fm)
+        return model.to(device).eval()
+
+
 def contact_pairs(target_ca_nm: torch.Tensor, binder_ca_nm: torch.Tensor, cutoff_nm: float, max_pairs: int) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     d = torch.cdist(target_ca_nm.float(), binder_ca_nm.float())
     idx = torch.nonzero(d <= cutoff_nm, as_tuple=False)
@@ -650,9 +686,7 @@ def main() -> None:
     device = torch.device(args.device)
     samples = load_samples(args.dataset)
     selected = select_samples(samples, args.split, set(args.sample_id) if args.sample_id else None, args.max_samples)
-    model = Proteina.load_from_checkpoint(str(args.ckpt), strict=False, autoencoder_ckpt_path=str(args.autoencoder_ckpt), map_location="cpu")
-    model.to(device)
-    model.eval()
+    model = load_sampling_model(args.ckpt, args.autoencoder_ckpt, device)
     sampling_cfg = OmegaConf.to_container(OmegaConf.load(args.sampling_config).model, resolve=True)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     rows = []

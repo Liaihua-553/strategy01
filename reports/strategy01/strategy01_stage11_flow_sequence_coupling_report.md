@@ -457,3 +457,99 @@ reports/strategy01/probes/stage11_flow_sequence_v2_fullpilot600_results.json
 reports/strategy01/figures/stage11/stage11_flow_sequence_v2_fullpilot600_linear.png
 reports/strategy01/figures/stage11/stage11_flow_sequence_v2_fullpilot600_log.png
 ```
+## 10. checkpoint 与 Stage11D sampling smoke 补充
+
+### 10.1 checkpoint 保存修正
+
+为了让 Stage11D 能使用真实 Stage11 微调权重，而不是误用 Stage10 checkpoint，已在 `scripts/strategy01/stage11_flow_sequence_training.py` 中新增 `mini_final.pt` 保存逻辑。保存内容包括：
+
+- `model_state_dict`
+- `stage10_ckpt`
+- `ae_ckpt`
+- `run_name`
+- `args`
+- `loss_cfg`
+- `train_count / val_count`
+
+本次 checkpoint 路径：
+
+```text
+/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage11_flow_sequence/runs/stage11_flow_sequence_v2_fullpilot600_ckpt/stage11_mini_final.pt
+```
+
+该 checkpoint 约 `1.3G`，不进入 Git，只在报告和 result JSON 中记录路径。
+
+### 10.2 checkpoint 生成错误与修复
+
+第一次 checkpoint 生成任务 `1915290` 失败，错误为：
+
+```text
+/var/spool/slurmd/job1915290/slurm_script: line 11: PYTHONPATH: unbound variable
+```
+
+根因：sbatch 脚本使用 `set -u`，但 `PYTHONPATH` 在该作业环境中未定义，`export PYTHONPATH=...:$PYTHONPATH` 触发 unbound variable。
+
+修复：改为：
+
+```bash
+export PYTHONPATH=/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/src:${PYTHONPATH:-}
+```
+
+修复后任务 `1915291` 成功，产出 checkpoint 与结果：
+
+```text
+reports/strategy01/probes/stage11_flow_sequence_v2_fullpilot600_ckpt_results.json
+```
+
+### 10.3 sampling checkpoint 兼容修正
+
+`stage09_guided_state_specific_sampling.py` 原来只支持 `Proteina.load_from_checkpoint` 形式的 Lightning checkpoint，而 Stage10/Stage11 的训练产物是轻量 `model_state_dict`。为了避免 Stage11D 仍然加载旧权重，已新增：
+
+- `PlainStrategySamplingModel`
+- `load_sampling_model()`
+
+新逻辑：
+
+- 如果 checkpoint 是 Lightning 格式，保持原加载路径。
+- 如果 checkpoint 含 `model_state_dict`，则用 Strategy01 multistate NN + FlowMatcher 构造轻量 wrapper，并加载所有 compatible keys。
+
+CPU loader probe 结果：
+
+```text
+compatible_keys = 1051
+missing_keys_count = 0
+unexpected_keys_count = 0
+has_flow_gate = True
+```
+
+### 10.4 Stage11D sampling smoke
+
+使用 Stage11 checkpoint 跑了 4-sample sampling smoke，对比两个分支：
+
+| 分支 | 样本数 | sequence identity mean | state0 RMSD mean (nm) | state1 RMSD mean (nm) | state2 RMSD mean (nm) | 结论 |
+|---|---:|---:|---:|---:|---:|---|
+| fallback | 4 | 0.5815 | 0.00007 | 0.2185 | 0.1820 | 保持 source/init pose，序列更好，几何更稳 |
+| learned_gate | 4 | 0.4813 | 0.1422 | 0.2848 | 0.2172 | 路径可运行，但当前 gate 破坏 source-pose 几何且序列更差 |
+
+结论：
+
+- learned bounded flow gate 的代码路径已经跑通。
+- 但当前训练出的 gate 不能作为默认采样策略。
+- Stage10C/Stage11 fallback 仍是当前安全默认。
+- 如果要让 learned gate 成为主线，下一步必须把 gate 训练改成 anchor-preserving / contact-preserving，而不是只做弱正则。
+
+结果文件：
+
+```text
+reports/strategy01/probes/stage11d_sampling_smoke_fallback_summary.json
+reports/strategy01/probes/stage11d_sampling_smoke_learned_gate_summary.json
+reports/strategy01/probes/stage11d_sampling_smoke_comparison_summary.json
+```
+
+### 10.5 更新后的技术判断
+
+Stage11 到目前为止的真实结论是：
+
+- **成功部分**：Complexa-native sequence-flow coupling 已接通，AE sequence loss 能反传到 local latent flow；fullpilot600 能让训练 loss、AE sequence loss 和结构 loss 同时下降；Stage11 checkpoint 可保存并被 sampling 使用。
+- **未成功部分**：learned flow gate 还没有学到“保留 source/interface anchor，只微调 flexible 区域”。直接启用 gate 会降低 sequence identity 并增大各 state CA RMSD。
+- **下一步优先级**：不是扩大数据，也不是外接 refiner，而是修改 gate/sequence 训练目标：hard-state sequence weighting + anchor-preserving gate loss + learned-gate safe-accept，然后再重跑 Stage11D。
