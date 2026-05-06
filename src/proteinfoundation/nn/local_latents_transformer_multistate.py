@@ -129,6 +129,23 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, 1),
             nn.Sigmoid(),
         )
+        # MODIFIED 2026-05-06 Stage11:
+        # Feed the model's own robust shared sequence distribution back into
+        # the state-specific structure/latent heads.  The input is a soft AA
+        # distribution from model logits, not the ground-truth sequence, so this
+        # keeps sampling-time behavior aligned with training and avoids label
+        # leakage.
+        self.soft_sequence_feedback_projector = nn.Sequential(
+            nn.LayerNorm(20),
+            nn.Linear(20, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
+        self.flow_gate_head = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, 1),
+            nn.Sigmoid(),
+        )
         self.state_condition_projector = nn.Sequential(
             nn.LayerNorm(self.token_dim),
             nn.Linear(self.token_dim, self.token_dim),
@@ -204,23 +221,8 @@ class LocalLatentsTransformerMultistate(nn.Module):
         flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_mask = mask[:, None, :].expand(-1, nstates, -1).reshape(batch_size * nstates, nbinder)
 
-        flat_local_latents = self.local_latents_linear(flat_state_tokens) * flat_state_mask[..., None]
-        flat_bb_ca = self.ca_linear(flat_state_tokens) * flat_state_mask[..., None]
-        flat_state_seq_logits = self.state_seq_head(flat_state_seq_tokens) * flat_state_mask[..., None]
-        local_latents_states = flat_local_latents.reshape(batch_size, nstates, nbinder, self.latent_dim)
-        bb_ca_states = flat_bb_ca.reshape(batch_size, nstates, nbinder, 3)
-        state_seq_logits = flat_state_seq_logits.reshape(batch_size, nstates, nbinder, 20)
-
-        state_present_mask = target_bundle["state_present_mask"][:, :, None, None]
-        local_latents_states = local_latents_states * state_present_mask
-        bb_ca_states = bb_ca_states * state_present_mask
-        state_seq_logits = state_seq_logits * state_present_mask
-
         state_weights = target_bundle["target_state_weights"].float() * target_bundle["state_present_mask"].float()
         state_weights = state_weights / state_weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
-        state_weight_view = state_weights[:, :, None, None]
-        shared_local_latents = (local_latents_states * state_weight_view).sum(dim=1) * mask[..., None]
-        shared_bb_ca = (bb_ca_states * state_weight_view).sum(dim=1) * mask[..., None]
 
         state_binder_summary = (state_tokens * mask[:, None, :, None]).sum(dim=2) / mask.float().sum(dim=1).clamp_min(1.0)[:, None, None]
         interface_quality_logits = self.interface_quality_head(
@@ -234,6 +236,43 @@ class LocalLatentsTransformerMultistate(nn.Module):
         state_uncertainty = (1.0 - state_quality) * target_bundle["state_present_mask"].float()
         robust_state_weights = state_weights * (1.0 + 0.5 * state_uncertainty)
         robust_state_weights = robust_state_weights / robust_state_weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
+
+        # First sequence readout: estimate a shared soft sequence and feed it
+        # back into state-conditioned tokens before final structure/latent
+        # readout.  This is the Stage11 Complexa-native coupling: K state
+        # trajectories jointly form one sequence signal, and that signal then
+        # influences the local latent flow that the frozen AE decoder reads.
+        flat_state_seq_logits_pre = self.state_seq_head(flat_state_seq_tokens) * flat_state_mask[..., None]
+        state_seq_logits_pre = flat_state_seq_logits_pre.reshape(batch_size, nstates, nbinder, 20)
+        state_present_mask = target_bundle["state_present_mask"][:, :, None, None]
+        state_seq_logits_pre = state_seq_logits_pre * state_present_mask
+        consensus_logits_pre = (state_seq_logits_pre * robust_state_weights[:, :, None, None]).sum(dim=1)
+        consensus_gate_pre = self.shared_seq_consensus_gate(seqs)
+        shared_seq_logits_pre = (base_shared_seq_logits + consensus_gate_pre * consensus_logits_pre) * mask[..., None]
+        shared_seq_soft = torch.softmax(shared_seq_logits_pre.float(), dim=-1).to(dtype=seqs.dtype) * mask[..., None]
+        seq_feedback_tokens = self.soft_sequence_feedback_projector(shared_seq_soft) * mask[..., None]
+        state_tokens = self.state_token_norm(state_tokens + 0.25 * seq_feedback_tokens[:, None, :, :])
+        state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.50 * seq_feedback_tokens[:, None, :, :])
+
+        flat_state_tokens = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
+        flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
+        flat_local_latents = self.local_latents_linear(flat_state_tokens) * flat_state_mask[..., None]
+        flat_bb_ca = self.ca_linear(flat_state_tokens) * flat_state_mask[..., None]
+        flat_state_seq_logits = self.state_seq_head(flat_state_seq_tokens) * flat_state_mask[..., None]
+        flat_flow_gate = self.flow_gate_head(flat_state_tokens) * flat_state_mask[..., None]
+        local_latents_states = flat_local_latents.reshape(batch_size, nstates, nbinder, self.latent_dim)
+        bb_ca_states = flat_bb_ca.reshape(batch_size, nstates, nbinder, 3)
+        state_seq_logits = flat_state_seq_logits.reshape(batch_size, nstates, nbinder, 20)
+        flow_gate = flat_flow_gate.reshape(batch_size, nstates, nbinder, 1)
+
+        local_latents_states = local_latents_states * state_present_mask
+        bb_ca_states = bb_ca_states * state_present_mask
+        state_seq_logits = state_seq_logits * state_present_mask
+        flow_gate = flow_gate * state_present_mask
+
+        state_weight_view = state_weights[:, :, None, None]
+        shared_local_latents = (local_latents_states * state_weight_view).sum(dim=1) * mask[..., None]
+        shared_bb_ca = (bb_ca_states * state_weight_view).sum(dim=1) * mask[..., None]
         consensus_logits = (state_seq_logits * robust_state_weights[:, :, None, None]).sum(dim=1)
         consensus_gate = self.shared_seq_consensus_gate(seqs)
         shared_seq_logits = (base_shared_seq_logits + consensus_gate * consensus_logits) * mask[..., None]
@@ -246,6 +285,9 @@ class LocalLatentsTransformerMultistate(nn.Module):
             "state_seq_logits": state_seq_logits,
             "bb_ca_states": bb_ca_states,
             "local_latents_states": local_latents_states,
+            "flow_gate": flow_gate,
+            "seq_feedback_tokens": seq_feedback_tokens,
+            "seq_logits_pre_feedback": shared_seq_logits_pre,
             "interface_quality_logits": interface_quality_logits,
             "arch_debug": {
                 "ensemble_target_memory": target_bundle["ensemble_target_memory"],
@@ -259,5 +301,8 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "sequence_consensus_state_weights": robust_state_weights,
                 "sequence_consensus_gate_mean": consensus_gate.detach().mean(),
                 "cross_state_attention_mean": target_bundle["cross_state_attention_mean"],
+                "sequence_feedback_norm_mean": seq_feedback_tokens.detach().norm(dim=-1).mean(),
+                "flow_gate_mean": flow_gate.detach().mean(),
+                "flow_gate_std": flow_gate.detach().std(),
             },
         }

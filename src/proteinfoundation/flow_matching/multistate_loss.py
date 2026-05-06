@@ -252,6 +252,102 @@ def _state_sequence_losses(cfg: Any, nn_out: dict, batch: dict, state_present: T
     }
 
 
+def _ae_sequence_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
+    """Sequence losses on frozen-AE-decoded logits from predicted clean local latents.
+
+    The logits are injected by the Stage11 training/probe script because the
+    flow matcher does not own the AutoEncoder. Keeping this optional preserves
+    older Stage03-10 paths while allowing Stage11 to bind sequence quality
+    directly to local latent flow.
+    """
+    state_logits = nn_out.get("ae_seq_logits_states")
+    device = batch["binder_seq_shared"].device
+    b, k = state_present.shape
+    if state_logits is None:
+        zeros_sample = torch.zeros(b, device=device, dtype=torch.float32)
+        zeros_state = torch.zeros(b, k, device=device, dtype=torch.float32)
+        return {
+            "ae_seq_state": zeros_state,
+            "ae_seq_sample": zeros_sample,
+            "ae_seq_cvar_sample": zeros_sample,
+            "seq_ae_consistency_sample": zeros_sample,
+        }
+
+    device = state_logits.device
+    dtype = state_logits.dtype
+    b, k, n = state_logits.shape[:3]
+    target = batch["binder_seq_shared"].to(device=device).long()
+    target_states = target[:, None, :].expand(b, k, n)
+    binder_mask = batch.get("binder_seq_mask", batch["mask"]).to(device=device).bool()
+    valid_mask = state_mask.to(device=device).bool() & binder_mask[:, None, :]
+    anchor_weights = _binder_anchor_weights(batch, valid_mask, dtype)
+
+    ce = F.cross_entropy(
+        state_logits.reshape(-1, state_logits.shape[-1]).float(),
+        target_states.reshape(-1),
+        reduction="none",
+    ).reshape(b, k, n).to(dtype)
+    ae_seq_state = (ce * anchor_weights).sum(dim=-1) / anchor_weights.sum(dim=-1).clamp_min(1.0)
+    ae_seq_state = torch.where(state_present.to(device).bool(), ae_seq_state, torch.zeros_like(ae_seq_state))
+
+    weights = _normalize_state_weights(batch, b, k, device, dtype)
+    cvar_topk = _cfg_get(cfg, "ae_seq_cvar_topk", _cfg_get(cfg, "state_seq_cvar_topk", _cfg_get(cfg, "cvar_topk", 2)))
+    if str(cvar_topk).lower() in {"auto", "none"}:
+        cvar_topk = None
+    else:
+        cvar_topk = int(cvar_topk)
+    ae_seq_mean = torch.sum(ae_seq_state * weights, dim=1)
+    ae_seq_cvar = _masked_topk_mean(ae_seq_state, state_present.to(device).bool(), cvar_topk)
+    ae_seq_sample = 0.5 * ae_seq_mean + 0.5 * ae_seq_cvar
+
+    seq_ae_consistency = torch.zeros(b, device=device, dtype=dtype)
+    state_seq_logits = nn_out.get("state_seq_logits")
+    shared_logits = nn_out.get("seq_logits_shared")
+    if state_seq_logits is not None:
+        ae_logp = F.log_softmax(state_logits.float(), dim=-1)
+        state_prob = F.softmax(state_seq_logits.float(), dim=-1).detach()
+        kl_state = F.kl_div(ae_logp, state_prob, reduction="none").sum(dim=-1).to(dtype)
+        kl_state = (kl_state * anchor_weights).sum(dim=-1) / anchor_weights.sum(dim=-1).clamp_min(1.0)
+        seq_ae_consistency = torch.sum(kl_state * weights, dim=1)
+    if shared_logits is not None:
+        ae_shared_logits = nn_out.get("ae_seq_logits_shared")
+        if ae_shared_logits is None:
+            ae_shared_logits = (state_logits * weights[:, :, None, None]).sum(dim=1)
+        ae_shared_logp = F.log_softmax(ae_shared_logits.float(), dim=-1)
+        shared_prob = F.softmax(shared_logits.float(), dim=-1).detach()
+        binder_weight = anchor_weights.sum(dim=1).clamp_min(1.0)
+        shared_kl = F.kl_div(ae_shared_logp, shared_prob, reduction="none").sum(dim=-1).to(dtype)
+        shared_kl = (shared_kl * binder_weight).sum(dim=-1) / binder_weight.sum(dim=-1).clamp_min(1.0)
+        seq_ae_consistency = 0.5 * (seq_ae_consistency + shared_kl)
+    return {
+        "ae_seq_state": ae_seq_state,
+        "ae_seq_sample": ae_seq_sample,
+        "ae_seq_cvar_sample": ae_seq_cvar,
+        "seq_ae_consistency_sample": seq_ae_consistency,
+    }
+
+
+def _flow_gate_losses(cfg: Any, nn_out: dict, batch: dict, state_present: Tensor, state_mask: Tensor) -> dict[str, Tensor]:
+    gate = nn_out.get("flow_gate")
+    device = state_mask.device
+    b, k = state_present.shape
+    if gate is None:
+        return {"flow_gate_reg_sample": torch.zeros(b, device=device), "flow_gate_anchor_sample": torch.zeros(b, device=device)}
+    gate = gate.squeeze(-1).to(device=device)
+    dtype = gate.dtype
+    valid = state_mask.to(device=device).bool() & state_present.to(device=device).bool()[:, :, None]
+    anchors = _binder_anchor_weights(batch, valid, dtype) > 1.0
+    nonanchors = valid & ~anchors
+    anchor_target = float(_cfg_get(cfg, "flow_gate_anchor_target", 0.15))
+    flex_target = float(_cfg_get(cfg, "flow_gate_flex_target", 0.45))
+    anchor_loss = ((gate - anchor_target) ** 2 * anchors.float()).sum(dim=(1, 2)) / anchors.float().sum(dim=(1, 2)).clamp_min(1.0)
+    flex_loss = ((gate - flex_target) ** 2 * nonanchors.float()).sum(dim=(1, 2)) / nonanchors.float().sum(dim=(1, 2)).clamp_min(1.0)
+    gate_valid = torch.where(valid, gate, torch.zeros_like(gate))
+    mean_gate = gate_valid.sum(dim=(1, 2)) / valid.float().sum(dim=(1, 2)).clamp_min(1.0)
+    collapse = F.relu(0.05 - mean_gate) + F.relu(mean_gate - 0.95)
+    return {"flow_gate_reg_sample": 0.5 * (anchor_loss + flex_loss) + collapse, "flow_gate_anchor_sample": anchor_loss}
+
+
 def _interface_enabled(cfg: Any) -> bool:
     if bool(_cfg_get(cfg, "use_interface_loss", False)):
         return True
@@ -494,6 +590,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_var = _weighted_variance(l_state, weights)
     l_seq = _sequence_loss(nn_out, batch)
     sequence_consensus = _state_sequence_losses(cfg, nn_out, batch, state_present, state_mask)
+    ae_sequence = _ae_sequence_losses(cfg, nn_out, batch, state_present, state_mask)
+    flow_gate_losses = _flow_gate_losses(cfg, nn_out, batch, state_present, state_mask)
     alpha = float(_cfg_get(cfg, "alpha_mean", 0.5))
     beta = float(_cfg_get(cfg, "beta_cvar", 0.4))
     gamma = float(_cfg_get(cfg, "gamma_var", 0.1))
@@ -508,6 +606,9 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         + float(_cfg_get(cfg, "lambda_state_seq", 0.15)) * sequence_consensus["state_seq_sample"]
         + float(_cfg_get(cfg, "lambda_seq_consensus", 0.05)) * sequence_consensus["seq_consensus_sample"]
         + float(_cfg_get(cfg, "lambda_anchor_disagreement", 0.03)) * sequence_consensus["anchor_disagreement_sample"]
+        + float(_cfg_get(cfg, "lambda_ae_seq", 0.0)) * ae_sequence["ae_seq_sample"]
+        + float(_cfg_get(cfg, "lambda_seq_ae_consistency", 0.0)) * ae_sequence["seq_ae_consistency_sample"]
+        + float(_cfg_get(cfg, "lambda_flow_gate_reg", 0.0)) * flow_gate_losses["flow_gate_reg_sample"]
     )
     losses = {
         "multistate_total": l_total,
@@ -515,6 +616,10 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         "multistate_state_seq_justlog": sequence_consensus["state_seq_sample"],
         "multistate_seq_consensus_justlog": sequence_consensus["seq_consensus_sample"],
         "multistate_anchor_disagreement_justlog": sequence_consensus["anchor_disagreement_sample"],
+        "multistate_ae_seq_justlog": ae_sequence["ae_seq_sample"],
+        "multistate_ae_seq_cvar_justlog": ae_sequence["ae_seq_cvar_sample"],
+        "multistate_seq_ae_consistency_justlog": ae_sequence["seq_ae_consistency_sample"],
+        "multistate_flow_gate_reg_justlog": flow_gate_losses["flow_gate_reg_sample"],
         "multistate_struct_justlog": l_struct,
         "multistate_fm_mean_justlog": torch.sum(l_fm_state * weights, dim=1),
         "multistate_contact_justlog": torch.sum(l_contact_state * weights, dim=1),
@@ -534,4 +639,6 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         losses[f"multistate_state_{state_idx}_distance_justlog"] = l_distance_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_clash_justlog"] = l_clash_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_seq_justlog"] = sequence_consensus["state_seq_state"][:, state_idx]
+        losses[f"multistate_state_{state_idx}_ae_seq_justlog"] = ae_sequence["ae_seq_state"][:, state_idx]
+        losses[f"multistate_state_{state_idx}_flow_gate_anchor_justlog"] = flow_gate_losses["flow_gate_anchor_sample"]
     return losses

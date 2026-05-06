@@ -520,6 +520,10 @@ def guided_state_specific_sample(
                 flow_scale = float(args.local_latents_flow_step_scale)
             if flow_scale != 1.0:
                 flat_next = flat_x + flow_scale * (flat_next - flat_x)
+            if dm == "bb_ca" and getattr(args, "use_learned_flow_gate", False) and "flow_gate" in nn_out:
+                gate = nn_out["flow_gate"].to(device=flat_x.device, dtype=flat_x.dtype)
+                gate = gate.reshape(b * k, n, 1).clamp(0.0, 1.0)
+                flat_next = flat_x + gate * (flat_next - flat_x)
             max_flow_disp = float(getattr(args, "max_flow_displacement_nm", 0.0))
             if dm == "bb_ca" and getattr(args, "bb_ca_max_flow_displacement_nm", None) is not None:
                 max_flow_disp = float(args.bb_ca_max_flow_displacement_nm)
@@ -632,6 +636,7 @@ def main() -> None:
     parser.add_argument("--local-latents-flow-step-scale", type=float, default=None, help="Stage10B: override flow-step-scale for local_latents only")
     parser.add_argument("--bb-ca-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for bb_ca only")
     parser.add_argument("--local-latents-max-flow-displacement-nm", type=float, default=None, help="Stage10B: override max-flow-displacement-nm for local_latents only")
+    parser.add_argument("--use-learned-flow-gate", action="store_true", default=False, help="Stage11: use nn_out['flow_gate'] as bounded bb_ca flow blend instead of a fixed scalar only")
     parser.add_argument("--enable-ca-feature", action="store_true", default=False)
     parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
     parser.add_argument("--enable-init-pose", action="store_true", default=False, help="Stage10: collate init_bb_ca_states and start bb_ca trajectories from transferred source pose")
