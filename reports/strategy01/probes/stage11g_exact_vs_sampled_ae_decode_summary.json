@@ -1,0 +1,117 @@
+{
+  "n": 48,
+  "exact_ae_identity_mean": 0.9504862428842504,
+  "sampled_ae_identity_mean": 0.44141384611828893,
+  "exact_ae_identity_min": 0.06451612903225806,
+  "sampled_ae_identity_min": 0.06666666666666667,
+  "rows": [
+    {
+      "sample_id": "1a0n_B_A",
+      "ref_seq": "PPRPLPVAPGSSKT",
+      "exact_seq": "PPRPLPVAPGSSKT",
+      "exact_id": 1.0,
+      "sampled_seq": "PPPPVPPPPGSSPT",
+      "sampled_id": 0.6428571428571429,
+      "pred_seq": "PPPPVPPPPGSSPT"
+    },
+    {
+      "sample_id": "1ai0_L_K",
+      "ref_seq": "GIVEQCCTSICSLYQLENYCN",
+      "exact_seq": "GIVEQCCTSICSLYQLENYCN",
+      "exact_id": 1.0,
+      "sampled_seq": "GLVEQCCTSICSLYQLENYCN",
+      "sampled_id": 0.9523809523809523,
+      "pred_seq": "GLVEQCCTSICSLYQLENYCN"
+    },
+    {
+      "sample_id": "1aze_A_B",
+      "ref_seq": "VPPPVPPRRR",
+      "exact_seq": "VPPPVPPRRR",
+      "exact_id": 1.0,
+      "sampled_seq": "PPVPVPPVPP",
+      "sampled_id": 0.5,
+      "pred_seq": "PPVPVPPVPP"
+    },
+    {
+      "sample_id": "1bxp_A_B",
+      "ref_seq": "MRYYESSLKSYPD",
+      "exact_seq": "MRYYESSLKSYPD",
+      "exact_id": 1.0,
+      "sampled_seq": "GSPSSSSNIPRPY",
+      "sampled_id": 0.23076923076923078,
+      "pred_seq": "GSPSSSSNIPRPY"
+    },
+    {
+      "sample_id": "1cee_A_B",
+      "ref_seq": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "exact_seq": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "exact_id": 1.0,
+      "sampled_seq": "QITSSPPPSKPPISIPSSSPSSNNPSSSSPSSSSLSSLSPLLLSLLSSNPSLGLNPNLS",
+      "sampled_id": 0.13559322033898305,
+      "pred_seq": "QITSSPPPSKPPISIPSSSPSSNNPSSSSPSSSSLSSLSPLLLSLLSSNPSLGLNPNLS"
+    },
+    {
+      "sample_id": "1cf4_A_B",
+      "ref_seq": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "exact_seq": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "exact_id": 1.0,
+      "sampled_seq": "GLGLAASGEPLPPPGLSNNIGDNDIPGREPLTVPSLLPLSSPFN",
+      "sampled_id": 0.22727272727272727,
+      "pred_seq": "GLGLAASGEPLPPPGLSNNIGDNDIPGREPLTVPSLLPLSSPFN"
+    },
+    {
+      "sample_id": "1cir_A_B",
+      "ref_seq": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "exact_seq": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "exact_id": 1.0,
+      "sampled_seq": "PPPIPEVRLFVDKLDNIAQIPDIG",
+      "sampled_id": 0.6666666666666666,
+      "pred_seq": "PPPIPEVRLFVDKLDNIAQIPDIG"
+    },
+    {
+      "sample_id": "1co0_A_B",
+      "ref_seq": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "exact_seq": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSD",
+      "exact_id": 1.0,
+      "sampled_seq": "NIPLPNNNNFSLNNLLDDLLELLIDLLDNDGALELLQLIPLSDIDNILNNLVKILDLLLNNPNIGSLNISNNSIGEEELLNLNNLNLINLNEILPFLLELLDENN",
+      "sampled_id": 0.2,
+      "pred_seq": "NIPLPNNNNFSLNNLLDDLLELLIDLLDNDGALELLQLIPLSDIDNILNNLVKILDLLLNNPNIGSLNISNNSIGEEELLNLNNLNLINLNEILPFLLELLDENN"
+    },
+    {
+      "sample_id": "1d5g_A_B",
+      "ref_seq": "FADSEADENEQVSAV",
+      "exact_seq": "FADSEADENEQVSAV",
+      "exact_id": 1.0,
+      "sampled_seq": "NSYLLPNNSAEPSSS",
+      "sampled_id": 0.06666666666666667,
+      "pred_seq": "NSYLLPNNSAEPSSS"
+    },
+    {
+      "sample_id": "1ddm_A_B",
+      "ref_seq": "GFSNMSFEDFP",
+      "exact_seq": "GFSNMSFEDFP",
+      "exact_id": 1.0,
+      "sampled_seq": "GYSNLSYPDYP",
+      "sampled_id": 0.5454545454545454,
+      "pred_seq": "GYSNLSYPDYP"
+    },
+    {
+      "sample_id": "1dpu_A_B",
+      "ref_seq": "RIQRNKAAALLRLAAR",
+      "exact_seq": "RIQRNKAAALLRLAAR",
+      "exact_id": 1.0,
+      "sampled_seq": "RSQNNAAAAAAAAAAK",
+      "sampled_id": 0.5,
+      "pred_seq": "RSQNNAAAAAAAAAAK"
+    },
+    {
+      "sample_id": "1e0a_A_B",
+      "ref_seq": "GSISLPSDFEHTIHVGFDAVTGEFTGMPEQWARLLQTSNITKSEQK",
+      "exact_seq": "GSISLPSDFEHTIHVGFDAVTGEFTGMPEQWARLLQTSNITKSEQK",
+      "exact_id": 1.0,
+      "sampled_seq": "GSISLPDSFNIEDDLEFDAASAELTGLPDALARLIISTPLATPPPP",
+      "sampled_id": 0.3695652173913043,
+      "pred_seq": "GSISLPDSFNIEDDLEFDAASAELTGLPDALARLIISTPLATPPPP"
+    }
+  ]
+}

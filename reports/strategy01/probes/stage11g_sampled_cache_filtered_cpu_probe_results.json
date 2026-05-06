@@ -1,0 +1,514 @@
+{
+  "status": "passed",
+  "run_name": "stage11g_sampled_cache_filtered_cpu_probe",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "device": "cpu",
+  "train_count": 2,
+  "val_count": 1,
+  "manifest_summary": {
+    "status": "passed",
+    "stage": "stage10_exactaug",
+    "notes": [
+      "Experimental V_exact is intentionally allowed into Stage10 training to strengthen exact interface supervision.",
+      "Exact holdout remains family/split_group separated for diagnostics; it is not a fully external benchmark once V_exact is used in training.",
+      "Variable binder/target lengths require Stage10 variable-length collate."
+    ],
+    "source_paths": {
+      "train": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_train.pt",
+      "val": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_val.pt",
+      "exact": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt"
+    },
+    "exact_train_fraction": 0.75,
+    "exact_train_groups": [
+      "06b6b82df6aa",
+      "095b2a929b3f",
+      "1088fb58162c",
+      "1199063295e3",
+      "1c8995b8b1de",
+      "233b65fe2aee",
+      "2464c4621457",
+      "2d210a7f0b34",
+      "31e9d33c070e",
+      "340ad9d1b636",
+      "3d55184ca7fe",
+      "4a683010f5ce",
+      "5082011b32ee",
+      "6a7f0302d575",
+      "74de758b9716",
+      "7e722986fb49",
+      "87f24a171107",
+      "8d2c8d621f8a",
+      "90aca2d3b3ce",
+      "94991d1021f5",
+      "956bf0c3d94a",
+      "99293b00467c",
+      "9b3ad16d60d1",
+      "a62b69154650",
+      "a95eccc78096",
+      "acdc493c2104",
+      "b755d773447a",
+      "c053b1b271b9",
+      "ccf6c760d8cd",
+      "d8a74511c002",
+      "d952e952cd15",
+      "e7e7f86a4ac0",
+      "ee265e002617",
+      "fab4c8e4ff78",
+      "fb5b6e084c18"
+    ],
+    "exact_val_groups": [
+      "02060ac11427",
+      "6d9a4910c4d4",
+      "828031e26137",
+      "9a201231192f",
+      "a1b83f6c1df0",
+      "d152cc784ade"
+    ],
+    "input_summary": {
+      "train": {
+        "count": 119,
+        "splits": {
+          "train": 119
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          8,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 22,
+          "2": 97
+        },
+        "family_count": 31
+      },
+      "val": {
+        "count": 30,
+        "splits": {
+          "val": 30
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          11,
+          89
+        ],
+        "target_len_minmax": [
+          43,
+          95
+        ],
+        "K": {
+          "3": 6,
+          "2": 24
+        },
+        "family_count": 7
+      },
+      "exact": {
+        "count": 48,
+        "splits": {
+          "val": 48
+        },
+        "source_tier": {
+          "exact_experimental": 48
+        },
+        "binder_len_minmax": [
+          7,
+          105
+        ],
+        "target_len_minmax": [
+          30,
+          184
+        ],
+        "K": {
+          "3": 48
+        },
+        "family_count": 41
+      }
+    },
+    "output_summary": {
+      "merged_train": {
+        "count": 161,
+        "splits": {
+          "train": 161
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "exact_experimental": 42,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 64,
+          "2": 97
+        },
+        "family_count": 66
+      },
+      "merged_val": {
+        "count": 36,
+        "splits": {
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "exact_experimental": 6,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          9,
+          95
+        ],
+        "target_len_minmax": [
+          30,
+          178
+        ],
+        "K": {
+          "3": 12,
+          "2": 24
+        },
+        "family_count": 13
+      },
+      "merged_all": {
+        "count": 197,
+        "splits": {
+          "train": 161,
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 138,
+          "exact_experimental": 48,
+          "T_hybrid_silver": 11
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 76,
+          "2": 121
+        },
+        "family_count": 79
+      }
+    }
+  },
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 594,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "stage10_ckpt_meta": {
+    "loaded": true,
+    "path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage10_pose_init_exactaug/runs/stage10_pose_init_exactaug_full_v2/mini_final.pt",
+    "compatible_keys": 1041,
+    "incompatible_shape_keys": [],
+    "missing_keys": [
+      "soft_sequence_feedback_projector.0.weight",
+      "soft_sequence_feedback_projector.0.bias",
+      "soft_sequence_feedback_projector.1.weight",
+      "soft_sequence_feedback_projector.1.bias",
+      "soft_sequence_feedback_projector.3.weight",
+      "soft_sequence_feedback_projector.3.bias",
+      "flow_gate_head.0.weight",
+      "flow_gate_head.0.bias",
+      "flow_gate_head.1.weight",
+      "flow_gate_head.1.bias"
+    ],
+    "unexpected_keys": []
+  },
+  "stage11_loss_cfg": {
+    "lambda_ae_seq": 1.8,
+    "lambda_seq_ae_consistency": 0.2,
+    "lambda_flow_gate_reg": 0.08,
+    "lambda_flow_gate_anchor_update": 0.25,
+    "flow_gate_anchor_target": 0.12,
+    "flow_gate_flex_target": 0.45,
+    "flow_gate_anchor_max_update_nm": 0.025,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.45,
+    "ae_seq_hard_state_gamma": 4.0,
+    "ae_ca_source": "init",
+    "noise_repeats": 2
+  },
+  "sampled_cache": {
+    "dir": "results/strategy01/stage11e_sampling48/fallback",
+    "entries": 48,
+    "t": 0.75,
+    "cache_only_samples": true
+  },
+  "probes": {
+    "ae_decoder": {
+      "status": "passed",
+      "loss_total": 7.851593971252441,
+      "losses": {
+        "multistate_total": 7.851593971252441,
+        "multistate_seq_justlog": 0.04232475161552429,
+        "multistate_state_seq_justlog": 0.16933321952819824,
+        "multistate_seq_consensus_justlog": 0.14770011603832245,
+        "multistate_anchor_disagreement_justlog": 2.8892802106383897e-07,
+        "multistate_ae_seq_justlog": 0.010535196401178837,
+        "multistate_ae_seq_cvar_justlog": 0.0107281394302845,
+        "multistate_ae_seq_hard_justlog": 0.010462706908583641,
+        "multistate_seq_ae_consistency_justlog": 0.8607548475265503,
+        "multistate_flow_gate_reg_justlog": 0.06920699775218964,
+        "multistate_flow_gate_anchor_update_justlog": 0.006491541862487793,
+        "multistate_struct_justlog": 7.596528053283691,
+        "multistate_fm_mean_justlog": 8.306148529052734,
+        "multistate_contact_justlog": 0.040214814245700836,
+        "multistate_distance_justlog": 0.004466271493583918,
+        "multistate_clash_justlog": 0.00020595296518877149,
+        "multistate_quality_proxy_justlog": 0.0032336991280317307,
+        "multistate_anchor_persistence_justlog": 0.05027084797620773,
+        "multistate_self_geometry_justlog": 0.006614582147449255,
+        "multistate_mean_justlog": 8.314712524414062,
+        "multistate_cvar_justlog": 8.53759765625,
+        "multistate_var_justlog": 0.12988634407520294,
+        "multistate_state_0_justlog": 8.359890937805176,
+        "multistate_state_0_fm_justlog": 8.35171890258789,
+        "multistate_state_0_contact_justlog": 0.0381934680044651,
+        "multistate_state_0_distance_justlog": 0.004632245749235153,
+        "multistate_state_0_clash_justlog": 0.00015129656821954995,
+        "multistate_state_0_seq_justlog": 0.16903047263622284,
+        "multistate_state_0_ae_seq_justlog": 0.010368655435740948,
+        "multistate_state_0_flow_gate_anchor_justlog": 0.13101953268051147,
+        "multistate_state_1_justlog": 8.214492797851562,
+        "multistate_state_1_fm_justlog": 8.206120491027832,
+        "multistate_state_1_contact_justlog": 0.03898650035262108,
+        "multistate_state_1_distance_justlog": 0.0049661388620734215,
+        "multistate_state_1_clash_justlog": 0.00021689938148483634,
+        "multistate_state_1_seq_justlog": 0.1709471046924591,
+        "multistate_state_1_ae_seq_justlog": 0.009926619939506054,
+        "multistate_state_1_flow_gate_anchor_justlog": 0.13101953268051147,
+        "multistate_state_2_justlog": 8.369754791259766,
+        "multistate_state_2_fm_justlog": 8.360605239868164,
+        "multistate_state_2_contact_justlog": 0.04346447438001633,
+        "multistate_state_2_distance_justlog": 0.0038004303351044655,
+        "multistate_state_2_clash_justlog": 0.0002496629022061825,
+        "multistate_state_2_seq_justlog": 0.16605529189109802,
+        "multistate_state_2_ae_seq_justlog": 0.011087349615991116,
+        "multistate_state_2_flow_gate_anchor_justlog": 0.13101953268051147
+      },
+      "exact_ae_state_identity_mean": 0.9907407760620117,
+      "sampled_clean_ae_state_identity_mean": 1.0,
+      "shared_head_identity_mean": 1.0,
+      "shapes": {
+        "seq_logits_shared": [
+          2,
+          21,
+          20
+        ],
+        "seq_logits_base_shared": [
+          2,
+          21,
+          20
+        ],
+        "state_seq_logits": [
+          2,
+          3,
+          21,
+          20
+        ],
+        "bb_ca_states": [
+          2,
+          3,
+          21,
+          3
+        ],
+        "local_latents_states": [
+          2,
+          3,
+          21,
+          8
+        ],
+        "flow_gate": [
+          2,
+          3,
+          21,
+          1
+        ],
+        "seq_feedback_tokens": [
+          2,
+          21,
+          768
+        ],
+        "seq_logits_pre_feedback": [
+          2,
+          21,
+          20
+        ],
+        "interface_quality_logits": [
+          2,
+          3,
+          5
+        ],
+        "ae_seq_logits_states": [
+          2,
+          3,
+          21,
+          20
+        ],
+        "ae_seq_logits_shared": [
+          2,
+          21,
+          20
+        ]
+      },
+      "flow_gate_mean": 0.4221958518028259,
+      "flow_gate_std": 0.1462399810552597
+    },
+    "grad_route": {
+      "status": "passed",
+      "loss_total": 12.778888702392578,
+      "losses": {
+        "multistate_total": 12.778888702392578,
+        "multistate_seq_justlog": 0.4710257351398468,
+        "multistate_state_seq_justlog": 0.6922376155853271,
+        "multistate_seq_consensus_justlog": 0.1856321096420288,
+        "multistate_anchor_disagreement_justlog": 3.6784609847018146e-07,
+        "multistate_ae_seq_justlog": 2.62031626701355,
+        "multistate_ae_seq_cvar_justlog": 2.643772602081299,
+        "multistate_ae_seq_hard_justlog": 2.6823506355285645,
+        "multistate_seq_ae_consistency_justlog": 2.945410966873169,
+        "multistate_flow_gate_reg_justlog": 0.06278152763843536,
+        "multistate_flow_gate_anchor_update_justlog": 0.007939288392663002,
+        "multistate_struct_justlog": 7.114189147949219,
+        "multistate_fm_mean_justlog": 7.761206150054932,
+        "multistate_contact_justlog": 0.06541157513856888,
+        "multistate_distance_justlog": 0.038347337394952774,
+        "multistate_clash_justlog": 0.0004884132649749517,
+        "multistate_quality_proxy_justlog": 0.003360903821885586,
+        "multistate_anchor_persistence_justlog": 0.06376972794532776,
+        "multistate_self_geometry_justlog": 0.004471403546631336,
+        "multistate_mean_justlog": 7.778215408325195,
+        "multistate_cvar_justlog": 7.980623245239258,
+        "multistate_var_justlog": 0.22712254524230957,
+        "multistate_state_0_justlog": 7.864894866943359,
+        "multistate_state_0_fm_justlog": 7.848072528839111,
+        "multistate_state_0_contact_justlog": 0.0651046484708786,
+        "multistate_state_0_distance_justlog": 0.03689967095851898,
+        "multistate_state_0_clash_justlog": 0.0008784473175182939,
+        "multistate_state_0_seq_justlog": 0.7001221179962158,
+        "multistate_state_0_ae_seq_justlog": 2.5298209190368652,
+        "multistate_state_0_flow_gate_anchor_justlog": 0.11838530004024506,
+        "multistate_state_1_justlog": 8.001039505004883,
+        "multistate_state_1_fm_justlog": 7.987801551818848,
+        "multistate_state_1_contact_justlog": 0.05028069019317627,
+        "multistate_state_1_distance_justlog": 0.030976617708802223,
+        "multistate_state_1_clash_justlog": 0.0002848501317203045,
+        "multistate_state_1_seq_justlog": 0.6826064586639404,
+        "multistate_state_1_ae_seq_justlog": 2.4348106384277344,
+        "multistate_state_1_flow_gate_anchor_justlog": 0.11838530004024506,
+        "multistate_state_2_justlog": 7.468710899353027,
+        "multistate_state_2_fm_justlog": 7.447744369506836,
+        "multistate_state_2_contact_justlog": 0.08084937930107117,
+        "multistate_state_2_distance_justlog": 0.04716572165489197,
+        "multistate_state_2_clash_justlog": 0.0003019422001671046,
+        "multistate_state_2_seq_justlog": 0.6863933801651001,
+        "multistate_state_2_ae_seq_justlog": 2.5214145183563232,
+        "multistate_state_2_flow_gate_anchor_justlog": 0.11838530004024506
+      },
+      "trainable": {
+        "phase": "mini",
+        "prefixes": [
+          "soft_sequence_feedback_projector",
+          "flow_gate_head",
+          "shared_seq_head",
+          "state_seq_head",
+          "shared_seq_consensus_gate",
+          "state_seq_condition_projector",
+          "state_condition_projector",
+          "state_token_norm",
+          "local_latents_linear",
+          "ca_linear",
+          "interface_quality_head",
+          "transformer_layers.10",
+          "transformer_layers.11",
+          "transformer_layers.12",
+          "transformer_layers.13"
+        ],
+        "trainable_params": 47920170,
+        "total_params": 339803426
+      },
+      "grad_norms": {
+        "soft_sequence_feedback_projector.1.weight": 1.072763204574585,
+        "flow_gate_head.1.weight": 0.1636536419391632,
+        "shared_seq_head.1.weight": 2.353259325027466,
+        "state_seq_head.1.weight": 2.3871097564697266,
+        "local_latents_linear.1.weight": 16.461885452270508,
+        "ca_linear.1.weight": 1.761637568473816
+      }
+    }
+  },
+  "training": {}
+}

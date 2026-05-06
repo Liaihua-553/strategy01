@@ -110,6 +110,65 @@ def normalized_state_weights(batch: dict[str, Any], dtype: torch.dtype, device: 
     return weights / denom
 
 
+def load_sampled_latent_cache(cache_dir: Path | None) -> dict[str, dict[str, torch.Tensor]]:
+    """Load sampled local-latent trajectories produced by Stage09/11 sampling.
+
+    Stage11G uses these cached trajectories to train on the model's own sampled
+    latent distribution instead of only on synthetic Gaussian corruption.  This
+    directly targets the observed failure: sampled local latents decode to a weak
+    shared binder sequence even when exact latents decode well.
+    """
+    if cache_dir is None or not cache_dir.exists():
+        return {}
+    cache: dict[str, dict[str, torch.Tensor]] = {}
+    for path in cache_dir.rglob("state_specific_outputs.pt"):
+        try:
+            payload = torch.load(path, map_location="cpu", weights_only=False)
+        except Exception:
+            continue
+        sample_id = str(payload.get("sample_id") or path.parent.name)
+        x_states = payload.get("x_states", {})
+        if "local_latents" not in x_states:
+            continue
+        entry = {k: v.squeeze(0).detach().cpu().float() for k, v in x_states.items() if torch.is_tensor(v)}
+        cache[sample_id] = entry
+    return cache
+
+
+def inject_sampled_latent_cache(
+    work_batch: dict[str, Any],
+    samples: list[dict[str, Any]],
+    sampled_cache: dict[str, dict[str, torch.Tensor]] | None,
+    cache_t: float,
+    device: torch.device,
+) -> dict[str, Any]:
+    if not sampled_cache:
+        return {"enabled": False, "matched": 0, "total": len(samples)}
+    matched = 0
+    for i, sample in enumerate(samples):
+        sid = str(sample.get("sample_id"))
+        entry = sampled_cache.get(sid)
+        if entry is None or "local_latents" not in entry:
+            continue
+        lat = entry["local_latents"].to(device=device, dtype=work_batch["x_t_states"]["local_latents"].dtype)
+        k = min(lat.shape[0], work_batch["x_t_states"]["local_latents"].shape[1])
+        n = min(lat.shape[1], work_batch["x_t_states"]["local_latents"].shape[2])
+        work_batch["x_t_states"]["local_latents"][i, :k, :n] = lat[:k, :n]
+        work_batch["t_states"]["local_latents"][i, :k] = float(cache_t)
+        if "bb_ca" in entry and "bb_ca" in work_batch["x_t_states"]:
+            # Keep bb_ca available for optional diagnostics only.  Stage11G's
+            # primary intervention is local_latents; bb_ca training remains
+            # controlled by the normal corruption/init-pose path.
+            pass
+        matched += 1
+    if matched:
+        weights = normalized_state_weights(work_batch, work_batch["x_t_states"]["local_latents"].dtype, device)
+        mask = work_batch["mask"].to(device).bool()
+        lat_states = work_batch["x_t_states"]["local_latents"]
+        work_batch["x_t"]["local_latents"] = (lat_states * weights[:, :, None, None]).sum(dim=1) * mask[:, :, None]
+    return {"enabled": True, "matched": matched, "total": len(samples), "cache_t": float(cache_t)}
+
+
 def attach_ae_sequence_logits(ae: torch.nn.Module, fm: Any, batch: dict[str, Any], nn_out: dict[str, torch.Tensor], ca_source: str = "init") -> dict[str, torch.Tensor]:
     clean_lat = state_clean_prediction(fm, batch, nn_out, "local_latents", "local_latents_states")
     clean_bb = state_clean_prediction(fm, batch, nn_out, "bb_ca", "bb_ca_states")
@@ -150,6 +209,8 @@ def forward_loss_stage11(
     seed: int | None = None,
     ae_ca_source: str = "init",
     noise_repeats: int = 1,
+    sampled_cache: dict[str, dict[str, torch.Tensor]] | None = None,
+    sampled_cache_t: float = 0.75,
 ):
     if noise_repeats > 1:
         total_accum = None
@@ -167,6 +228,8 @@ def forward_loss_stage11(
                 seed=repeat_seed,
                 ae_ca_source=ae_ca_source,
                 noise_repeats=1,
+                sampled_cache=sampled_cache,
+                sampled_cache_t=sampled_cache_t,
             )
             total_accum = total if total_accum is None else total_accum + total
             last_losses, last_nn_out, last_batch = losses, nn_out, work_batch
@@ -178,6 +241,8 @@ def forward_loss_stage11(
     batch = s10.collate_variable(samples, device)
     work_batch = s4.clone_batch(batch)
     work_batch = fm.corrupt_multistate_batch(work_batch)
+    cache_info = inject_sampled_latent_cache(work_batch, samples, sampled_cache, sampled_cache_t, device)
+    work_batch["sampled_cache_info"] = cache_info
     nn_out = model(work_batch)
     nn_out = attach_ae_sequence_logits(ae, fm, work_batch, nn_out, ca_source=ae_ca_source)
     losses = fm.compute_multistate_loss(work_batch, nn_out)
@@ -315,13 +380,15 @@ def train_loop(
     fixed_seed: int | None = None,
     ae_ca_source: str = "init",
     noise_repeats: int = 1,
+    sampled_cache: dict[str, dict[str, torch.Tensor]] | None = None,
+    sampled_cache_t: float = 0.75,
 ) -> dict[str, Any]:
     model.train()
     trainable = set_trainable_stage11(model, trainable_phase)
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
     with torch.no_grad():
-        init_total, init_losses, _, _ = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source)
+        init_total, init_losses, _, init_batch = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source, sampled_cache=sampled_cache, sampled_cache_t=sampled_cache_t)
     init_value = float(init_total.detach().cpu().item())
     history = []
     started = time.time()
@@ -338,6 +405,8 @@ def train_loop(
             seed=train_seed,
             ae_ca_source=ae_ca_source,
             noise_repeats=noise_repeats,
+            sampled_cache=sampled_cache,
+            sampled_cache_t=sampled_cache_t,
         )
         if not torch.isfinite(total):
             raise FloatingPointError(f"non-finite loss at step {step}: {total}")
@@ -354,7 +423,7 @@ def train_loop(
         opt.step()
         if step == 1 or step % eval_every == 0 or step == steps:
             with torch.no_grad():
-                eval_total, eval_losses, eval_out, _ = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source)
+                eval_total, eval_losses, eval_out, eval_batch = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source, sampled_cache=sampled_cache, sampled_cache_t=sampled_cache_t)
             row = {
                 "step": step,
                 "train_total": float(total.detach().cpu().item()),
@@ -363,13 +432,14 @@ def train_loop(
                 "eval_losses": s4.summarize_losses(eval_losses),
                 "flow_gate_mean": float(eval_out["flow_gate"].detach().mean().cpu().item()),
                 "flow_gate_std": float(eval_out["flow_gate"].detach().std().cpu().item()),
+                "sampled_cache_info": eval_batch.get("sampled_cache_info", {}),
                 "elapsed_sec": time.time() - started,
                 "cuda_max_mem_gb": torch.cuda.max_memory_allocated() / (1024**3) if device.type == "cuda" else 0.0,
             }
             print(json.dumps({"phase": phase, **row}, ensure_ascii=False), flush=True)
             history.append(row)
     with torch.no_grad():
-        final_total, final_losses, _, _ = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source)
+        final_total, final_losses, _, final_batch = forward_loss_stage11(model, ae, fm, fixed_subset, device, seed=777, ae_ca_source=ae_ca_source, sampled_cache=sampled_cache, sampled_cache_t=sampled_cache_t)
     return {
         "phase": phase,
         "steps": steps,
@@ -386,6 +456,7 @@ def train_loop(
         "trainable": trainable,
         "ae_ca_source": ae_ca_source,
         "noise_repeats": noise_repeats,
+        "sampled_cache_info": final_batch.get("sampled_cache_info", {}),
     }
 
 
@@ -414,6 +485,9 @@ def main() -> None:
     ap.add_argument("--eval-every", type=int, default=50)
     ap.add_argument("--ae-ca-source", choices=["init", "exact", "pred"], default="init")
     ap.add_argument("--noise-repeats", type=int, default=1)
+    ap.add_argument("--sampled-cache-dir", type=Path, default=None)
+    ap.add_argument("--sampled-cache-t", type=float, default=0.75)
+    ap.add_argument("--cache-only-samples", action="store_true", help="Stage11G: restrict train/val to samples with sampled latent cache entries before max-sample truncation")
     ap.add_argument("--mini-trainable-phase", default="seq_latent", choices=["seq_latent", "mini", "overfit"])
     ap.add_argument("--lambda-ae-seq", type=float, default=1.5)
     ap.add_argument("--lambda-seq-ae-consistency", type=float, default=0.15)
@@ -430,8 +504,13 @@ def main() -> None:
     s4.set_seed(args.seed)
     device = choose_device(args.device)
     samples, manifest = s10.load_dataset(args.dataset)
+    sampled_cache = load_sampled_latent_cache(args.sampled_cache_dir)
     train_samples = [s for s in samples if s.get("split") == "train"]
     val_samples = [s for s in samples if s.get("split") == "val"]
+    if args.cache_only_samples:
+        cache_ids = set(sampled_cache.keys())
+        train_samples = [s for s in train_samples if str(s.get("sample_id")) in cache_ids]
+        val_samples = [s for s in val_samples if str(s.get("sample_id")) in cache_ids]
     if args.max_train_samples > 0:
         train_samples = train_samples[: args.max_train_samples]
     if args.max_val_samples > 0:
@@ -471,6 +550,7 @@ def main() -> None:
 
     report_path = REPORT_DIR / f"{args.run_name}_results.json"
     run_dir = RUNS_DIR / args.run_name
+
     result: dict[str, Any] = {
         "status": "running",
         "run_name": args.run_name,
@@ -482,6 +562,7 @@ def main() -> None:
         "model_meta": model_meta,
         "stage10_ckpt_meta": ckpt_meta,
         "stage11_loss_cfg": loss_cfg,
+        "sampled_cache": {"dir": str(args.sampled_cache_dir) if args.sampled_cache_dir else None, "entries": len(sampled_cache), "t": args.sampled_cache_t, "cache_only_samples": bool(args.cache_only_samples)},
         "probes": {},
         "training": {},
     }
@@ -490,7 +571,7 @@ def main() -> None:
     write_json(report_path, result)
 
     if not args.skip_training:
-        result["training"]["overfit1"] = train_loop(model, ae, fm, train_samples[:1], device, "overfit1", args.overfit1_steps, 1, args.eval_every, 2e-4, run_dir, "overfit", fixed_seed=999, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
+        result["training"]["overfit1"] = train_loop(model, ae, fm, train_samples[:1], device, "overfit1", args.overfit1_steps, 1, args.eval_every, 2e-4, run_dir, "overfit", fixed_seed=999, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats, sampled_cache=sampled_cache, sampled_cache_t=args.sampled_cache_t)
         model, fm, _ = s4.build_model(device)
         load_strategy_checkpoint(model, args.stage10_ckpt)
         configure_stage11_loss(fm)
@@ -503,7 +584,7 @@ def main() -> None:
         fm.cfg_exp.loss.multistate.flow_gate_anchor_max_update_nm = args.flow_gate_anchor_max_update_nm
         fm.cfg_exp.loss.multistate.ae_seq_hard_state_alpha = args.ae_seq_hard_state_alpha
         fm.cfg_exp.loss.multistate.ae_seq_hard_state_gamma = args.ae_seq_hard_state_gamma
-        result["training"]["overfit4"] = train_loop(model, ae, fm, train_samples[: min(4, len(train_samples))], device, "overfit4", args.overfit4_steps, min(args.batch_size, 4), args.eval_every, 1e-4, run_dir, args.mini_trainable_phase, fixed_seed=1234, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
+        result["training"]["overfit4"] = train_loop(model, ae, fm, train_samples[: min(4, len(train_samples))], device, "overfit4", args.overfit4_steps, min(args.batch_size, 4), args.eval_every, 1e-4, run_dir, args.mini_trainable_phase, fixed_seed=1234, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats, sampled_cache=sampled_cache, sampled_cache_t=args.sampled_cache_t)
         model, fm, _ = s4.build_model(device)
         load_strategy_checkpoint(model, args.stage10_ckpt)
         configure_stage11_loss(fm)
@@ -516,7 +597,7 @@ def main() -> None:
         fm.cfg_exp.loss.multistate.flow_gate_anchor_max_update_nm = args.flow_gate_anchor_max_update_nm
         fm.cfg_exp.loss.multistate.ae_seq_hard_state_alpha = args.ae_seq_hard_state_alpha
         fm.cfg_exp.loss.multistate.ae_seq_hard_state_gamma = args.ae_seq_hard_state_gamma
-        result["training"]["mini"] = train_loop(model, ae, fm, train_samples, device, "mini", args.mini_steps, args.batch_size, args.eval_every, 5e-5, run_dir, args.mini_trainable_phase, fixed_seed=None, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats)
+        result["training"]["mini"] = train_loop(model, ae, fm, train_samples, device, "mini", args.mini_steps, args.batch_size, args.eval_every, 5e-5, run_dir, args.mini_trainable_phase, fixed_seed=None, ae_ca_source=args.ae_ca_source, noise_repeats=args.noise_repeats, sampled_cache=sampled_cache, sampled_cache_t=args.sampled_cache_t)
         run_dir.mkdir(parents=True, exist_ok=True)
         mini_ckpt = run_dir / "stage11_mini_final.pt"
         json_args = {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()}
@@ -534,7 +615,7 @@ def main() -> None:
         if val_samples:
             model.eval()
             with torch.no_grad():
-                val_total, val_losses, _, _ = forward_loss_stage11(model, ae, fm, val_samples[: min(args.batch_size, len(val_samples))], device, seed=888, ae_ca_source=args.ae_ca_source)
+                val_total, val_losses, _, val_batch = forward_loss_stage11(model, ae, fm, val_samples[: min(args.batch_size, len(val_samples))], device, seed=888, ae_ca_source=args.ae_ca_source, sampled_cache=sampled_cache, sampled_cache_t=args.sampled_cache_t)
             result["validation"] = {"total": float(val_total.detach().cpu().item()), "losses": s4.summarize_losses(val_losses)}
 
     result["status"] = "passed"
