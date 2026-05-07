@@ -55,6 +55,29 @@ def _require_multistate_keys(batch: dict) -> None:
             raise KeyError(f"Multistate loss requires x_1_states['{dm}']")
 
 
+def _target_state_centers(batch: dict, b: int, k: int, device: torch.device, dtype: torch.dtype) -> Tensor | None:
+    # Return target/hotspot centers [B,K,3] in the same coordinate unit as target states.
+    # Stage12 uses these centers only for the initial bb_ca noise distribution.
+    # They are derived from target conformations, not from source complexes or
+    # binder labels, so they preserve target-only de novo generation.
+    if "x_target_states" not in batch or "target_mask_states" not in batch:
+        return None
+    x_target = batch["x_target_states"].to(device=device, dtype=dtype)
+    target_mask = batch["target_mask_states"].to(device=device).bool()
+    if x_target.ndim != 5 or x_target.shape[:2] != (b, k):
+        return None
+    ca = x_target[..., 1, :]
+    ca_mask = target_mask[..., 1]
+    hotspot = batch.get("target_hotspot_mask_states")
+    if hotspot is not None:
+        hotspot = hotspot.to(device=device).bool() & ca_mask
+        use_mask = torch.where(hotspot.any(dim=-1, keepdim=True), hotspot, ca_mask)
+    else:
+        use_mask = ca_mask
+    denom = use_mask.float().sum(dim=-1, keepdim=True).clamp_min(1.0)
+    return (ca * use_mask[..., None].float()).sum(dim=2) / denom
+
+
 def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
     """Create state-wise noisy samples and a single weighted binder input."""
     _require_multistate_keys(batch)
@@ -75,10 +98,16 @@ def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
     else:
         state_mask = state_mask.to(device=device).bool()
     state_weights = _normalize_state_weights(batch, b, k, device, dtype)
+    multistate_cfg = _multistate_cfg(flow_matcher)
+    de_novo_mode = bool(_cfg_get(multistate_cfg, "de_novo_multistate", False) or batch.get("de_novo_multistate_mode", False))
+    if de_novo_mode and "init_bb_ca_states" in batch:
+        raise ValueError("de_novo_multistate forbids init_bb_ca_states; use repair/refinement mode instead")
+    batch["de_novo_multistate_mode"] = de_novo_mode
+    target_centers = _target_state_centers(batch, b, k, device, dtype) if de_novo_mode else None
 
-    # Use one shared corruption path per sample across all states.  The model sees
-    # a single binder x_t plus state-conditioned heads; independent per-state noise
-    # would create hidden random variables that the state heads cannot infer.
+    # Stage12 keeps state-wise x_t/t/x_0 as first-class tensors. Legacy weighted
+    # averages are still written below for old interfaces, but primary Stage12
+    # losses and probes must read x_*_states.
     base_shape = (b,)
     t_base = flow_matcher.sample_t(shape=base_shape, device=device)
     t = {dm: t_base[dm][:, None].expand(b, k).contiguous() for dm in flow_matcher.data_modes}
@@ -92,9 +121,23 @@ def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
         # makes B1 a pose-initialized multistate refinement model: one shared
         # sequence is still learned, but each target state starts from a
         # biologically interpretable source-interface transfer.
-        if data_mode == "bb_ca" and "init_bb_ca_states" in batch:
+        if data_mode == "bb_ca" and de_novo_mode:
+            x_0_base = flow_matcher.base_flow_matchers[data_mode].sample_noise(
+                n=n,
+                shape=base_shape,
+                device=device,
+                mask=base_mask,
+                training=flow_matcher.training,
+            )
+            x_0 = x_0_base[:, None, :, :].expand(b, k, n, x_0_base.shape[-1]).contiguous()
+            if target_centers is not None:
+                placement_noise_scale = float(_cfg_get(multistate_cfg, "target_center_noise_scale_nm", 0.20))
+                placement_noise = torch.randn(b, k, 1, 3, device=device, dtype=x_1.dtype) * placement_noise_scale
+                x_0 = x_0 + target_centers[:, :, None, :].to(dtype=x_1.dtype) + placement_noise
+            x_0 = x_0 * state_mask[..., None]
+        elif data_mode == "bb_ca" and "init_bb_ca_states" in batch:
             init = batch["init_bb_ca_states"].to(device=device, dtype=x_1.dtype)
-            noise_scale = float(_cfg_get(_multistate_cfg(flow_matcher), "init_pose_noise_scale_nm", 0.02))
+            noise_scale = float(_cfg_get(multistate_cfg, "init_pose_noise_scale_nm", 0.02))
             x_0 = (init + torch.randn_like(init) * noise_scale) * state_mask[..., None]
         else:
             x_0_base = flow_matcher.base_flow_matchers[data_mode].sample_noise(
@@ -105,6 +148,9 @@ def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
                 training=flow_matcher.training,
             )
             x_0 = x_0_base[:, None, :, :].expand(b, k, n, x_0_base.shape[-1]).contiguous()
+            if data_mode == "local_latents" and de_novo_mode:
+                residual_scale = float(_cfg_get(multistate_cfg, "latent_state_residual_noise_scale", 0.05))
+                x_0 = x_0 + torch.randn_like(x_0) * residual_scale
             x_0 = x_0 * state_mask[..., None]
         x_t = flow_matcher.base_flow_matchers[data_mode].interpolate(
             x_0=x_0,
@@ -123,6 +169,7 @@ def corrupt_multistate_batch(flow_matcher: Any, batch: dict) -> dict:
     batch["x_0"] = {dm: torch.sum(x_0_states[dm] * state_weights[:, :, None, None], dim=1) for dm in flow_matcher.data_modes}
     batch["x_t"] = {dm: torch.sum(x_t_states[dm] * state_weights[:, :, None, None], dim=1) for dm in flow_matcher.data_modes}
     batch["t"] = {dm: torch.sum(t[dm] * state_weights, dim=1) for dm in flow_matcher.data_modes}
+    batch["stage12_primary_state_tensors"] = bool(de_novo_mode)
     if "x_sc" not in batch:
         batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in flow_matcher.data_modes}
     return batch

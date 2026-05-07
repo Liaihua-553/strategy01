@@ -1,0 +1,21 @@
+{
+  "stage": "stage12_de_novo_multistate_sampling",
+  "status": "dry_run_passed",
+  "full_product_space_flow_required": {
+    "bb_ca": true,
+    "local_latents": true
+  },
+  "forbidden_inputs": [
+    "init_bb_ca_states",
+    "source_complex",
+    "binder_seq_shared_as_feature"
+  ],
+  "primary_outputs": [
+    "shared_sequence.fasta",
+    "state_specific_complex_0..K.pdb"
+  ],
+  "legacy_average_outputs": "debug_only_not_scientific_output",
+  "nsteps": 64,
+  "target_ensemble_manifest": null,
+  "checkpoint": null
+}

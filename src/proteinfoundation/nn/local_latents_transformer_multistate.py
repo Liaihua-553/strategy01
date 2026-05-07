@@ -129,6 +129,36 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, 1),
             nn.Sigmoid(),
         )
+        # MODIFIED 2026-05-07 Stage12:
+        # A single AE decoder does not by itself force K state-specific latents
+        # to decode to one sequence. Stage12 therefore adds an explicit shared
+        # sequence token path: state-specific binder tokens for the same residue
+        # attend across conformational states, produce one shared sequence
+        # representation, and feed that representation back into every state's
+        # bb_ca/local-latent flow heads.
+        self.cross_state_shared_seq_attention = nn.MultiheadAttention(
+            embed_dim=self.token_dim,
+            num_heads=kwargs["nheads"],
+            dropout=kwargs.get("dropout", 0.0),
+            batch_first=True,
+        )
+        self.shared_seq_token_norm = nn.LayerNorm(self.token_dim)
+        self.shared_seq_token_update = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
+        self.shared_seq_to_state_projector = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
+        self.shared_seq_token_head = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, 20, bias=False),
+        )
         # MODIFIED 2026-05-06 Stage11:
         # Feed the model's own robust shared sequence distribution back into
         # the state-specific structure/latent heads.  The input is a soft AA
@@ -180,6 +210,25 @@ class LocalLatentsTransformerMultistate(nn.Module):
 
     def forward(self, input: dict) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
         mask = input["mask"]
+        # MODIFIED 2026-05-07 Stage12:
+        # In de_novo_multistate mode the model must start from target-only
+        # conditioning. Pose/source fields are valid for repair baselines but
+        # would change the scientific task here into inverse folding or pose
+        # refinement, so fail loudly when they appear.
+        if bool(input.get("de_novo_multistate_mode", False)):
+            forbidden = [
+                "init_bb_ca_states",
+                "source_bb_ca_states",
+                "source_complex_paths",
+                "source_interface_contact_labels",
+                "source_interface_distance_labels",
+            ]
+            leaked = [key for key in forbidden if key in input]
+            if leaked:
+                raise ValueError(
+                    "de_novo_multistate mode is target-only and forbids source/pose inputs: "
+                    f"{leaked}"
+                )
         c = self.cond_factory(input)
         c = self.transition_c_2(self.transition_c_1(c, mask), mask)
 
@@ -217,12 +266,40 @@ class LocalLatentsTransformerMultistate(nn.Module):
             init_tokens = init_tokens * mask[:, None, :, None] * target_bundle["state_present_mask"][:, :, None, None]
             state_tokens = self.state_token_norm(state_tokens + init_tokens)
             state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.5 * init_tokens)
+        state_weights = target_bundle["target_state_weights"].float() * target_bundle["state_present_mask"].float()
+        state_weights = state_weights / state_weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
+
+        # Stage12 cross-state shared sequence tokens. For each binder residue,
+        # attend over its K state-specific tokens, then pool back to one token.
+        # This is the key difference from post-hoc K-state sequence voting: the
+        # shared token is injected back before bb_ca/local_latents readout.
+        state_present_bool = target_bundle["state_present_mask"].bool()
+        state_tokens_by_residue = state_tokens.permute(0, 2, 1, 3).reshape(batch_size * nbinder, nstates, self.token_dim)
+        state_key_padding = ~state_present_bool[:, None, :].expand(batch_size, nbinder, nstates).reshape(
+            batch_size * nbinder, nstates
+        )
+        attended_by_residue, _ = self.cross_state_shared_seq_attention(
+            state_tokens_by_residue,
+            state_tokens_by_residue,
+            state_tokens_by_residue,
+            key_padding_mask=state_key_padding,
+            need_weights=False,
+        )
+        attended_states = attended_by_residue.reshape(batch_size, nbinder, nstates, self.token_dim).permute(0, 2, 1, 3)
+        state_weight_view = state_weights[:, :, None, None]
+        shared_seq_tokens_seed = (state_tokens * state_weight_view).sum(dim=1)
+        shared_seq_tokens_attn = (attended_states * state_weight_view).sum(dim=1)
+        shared_seq_tokens = self.shared_seq_token_norm(
+            shared_seq_tokens_seed + self.shared_seq_token_update(shared_seq_tokens_attn)
+        ) * mask[..., None]
+        shared_seq_token_logits = self.shared_seq_token_head(shared_seq_tokens) * mask[..., None]
+        shared_seq_state_feedback = self.shared_seq_to_state_projector(shared_seq_tokens) * mask[..., None]
+        state_tokens = self.state_token_norm(state_tokens + shared_seq_state_feedback[:, None, :, :])
+        state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.5 * shared_seq_state_feedback[:, None, :, :])
+
         flat_state_tokens = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_mask = mask[:, None, :].expand(-1, nstates, -1).reshape(batch_size * nstates, nbinder)
-
-        state_weights = target_bundle["target_state_weights"].float() * target_bundle["state_present_mask"].float()
-        state_weights = state_weights / state_weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
 
         state_binder_summary = (state_tokens * mask[:, None, :, None]).sum(dim=2) / mask.float().sum(dim=1).clamp_min(1.0)[:, None, None]
         interface_quality_logits = self.interface_quality_head(
@@ -248,7 +325,7 @@ class LocalLatentsTransformerMultistate(nn.Module):
         state_seq_logits_pre = state_seq_logits_pre * state_present_mask
         consensus_logits_pre = (state_seq_logits_pre * robust_state_weights[:, :, None, None]).sum(dim=1)
         consensus_gate_pre = self.shared_seq_consensus_gate(seqs)
-        shared_seq_logits_pre = (base_shared_seq_logits + consensus_gate_pre * consensus_logits_pre) * mask[..., None]
+        shared_seq_logits_pre = (base_shared_seq_logits + shared_seq_token_logits + consensus_gate_pre * consensus_logits_pre) * mask[..., None]
         shared_seq_soft = torch.softmax(shared_seq_logits_pre.float(), dim=-1).to(dtype=seqs.dtype) * mask[..., None]
         seq_feedback_tokens = self.soft_sequence_feedback_projector(shared_seq_soft) * mask[..., None]
         state_tokens = self.state_token_norm(state_tokens + 0.25 * seq_feedback_tokens[:, None, :, :])
@@ -275,13 +352,15 @@ class LocalLatentsTransformerMultistate(nn.Module):
         shared_bb_ca = (bb_ca_states * state_weight_view).sum(dim=1) * mask[..., None]
         consensus_logits = (state_seq_logits * robust_state_weights[:, :, None, None]).sum(dim=1)
         consensus_gate = self.shared_seq_consensus_gate(seqs)
-        shared_seq_logits = (base_shared_seq_logits + consensus_gate * consensus_logits) * mask[..., None]
+        shared_seq_logits = (base_shared_seq_logits + shared_seq_token_logits + consensus_gate * consensus_logits) * mask[..., None]
 
         return {
             "bb_ca": {self.output_param["bb_ca"]: shared_bb_ca},
             "local_latents": {self.output_param["local_latents"]: shared_local_latents},
             "seq_logits_shared": shared_seq_logits,
             "seq_logits_base_shared": base_shared_seq_logits,
+            "seq_logits_shared_tokens": shared_seq_token_logits,
+            "shared_seq_tokens": shared_seq_tokens,
             "state_seq_logits": state_seq_logits,
             "bb_ca_states": bb_ca_states,
             "local_latents_states": local_latents_states,
@@ -300,6 +379,8 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "sampling_state_weights": state_weights,
                 "sequence_consensus_state_weights": robust_state_weights,
                 "sequence_consensus_gate_mean": consensus_gate.detach().mean(),
+                "stage12_shared_sequence_token_norm_mean": shared_seq_tokens.detach().norm(dim=-1).mean(),
+                "stage12_shared_sequence_token_logits_norm_mean": shared_seq_token_logits.detach().norm(dim=-1).mean(),
                 "cross_state_attention_mean": target_bundle["cross_state_attention_mean"],
                 "sequence_feedback_norm_mean": seq_feedback_tokens.detach().norm(dim=-1).mean(),
                 "flow_gate_mean": flow_gate.detach().mean(),

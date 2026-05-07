@@ -1,0 +1,24 @@
+{
+  "stage": "stage12_de_novo_multistate_training",
+  "status": "dry_run_passed",
+  "contract": {
+    "target_only_model_inputs": true,
+    "forbidden_model_input_keys": [
+      "init_bb_ca_states",
+      "source_bb_ca_states",
+      "source_complex_paths",
+      "source_interface_contact_labels",
+      "source_interface_distance_labels"
+    ],
+    "true_binder_sequence_allowed_only_as_loss_label": true,
+    "primary_generated_outputs": [
+      "shared_sequence.fasta",
+      "state_specific_complexes/*.pdb",
+      "bb_ca_states",
+      "local_latents_states"
+    ]
+  },
+  "config": "configs/training_local_latents_multistate_stage12_denovo.yaml",
+  "train_manifest": null,
+  "val_manifest": null
+}
