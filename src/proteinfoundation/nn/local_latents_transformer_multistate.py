@@ -200,6 +200,26 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.GELU(),
             nn.Linear(self.token_dim, self.token_dim),
         )
+        # MODIFIED 2026-05-08 Stage12B:
+        # The coupled de-novo multistate model must condition each state's
+        # denoising head on that state's current flow variables, not only on a
+        # shared binder token plus state bias. These projectors inject
+        # x_t_states['bb_ca'] and x_t_states['local_latents'] into the
+        # state-specific tokens. They are generated/noisy flow variables, not
+        # source poses or true labels, so they preserve the target-only
+        # de-novo contract while making K state trajectories first-class.
+        self.state_xt_bb_ca_projector = nn.Sequential(
+            nn.LayerNorm(3),
+            nn.Linear(3, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
+        self.state_xt_latent_projector = nn.Sequential(
+            nn.LayerNorm(self.latent_dim),
+            nn.Linear(self.latent_dim, self.token_dim),
+            nn.GELU(),
+            nn.Linear(self.token_dim, self.token_dim),
+        )
         # MODIFIED 2026-04-19: Stage04 adds a light quality-proxy head.
         # It learns offline complex-confidence labels such as iPAE/pLDDT/ipTM
         # proxies without calling an external predictor during backpropagation.
@@ -254,6 +274,29 @@ class LocalLatentsTransformerMultistate(nn.Module):
         state_tokens = self.state_token_norm(seqs[:, None, :, :] + state_bias)
         state_seq_bias = self.state_seq_condition_projector(target_bundle["state_summary_tokens"])[:, :, None, :]
         state_seq_tokens = self.state_token_norm(seqs[:, None, :, :] + state_seq_bias)
+        x_t_states = input.get("x_t_states")
+        if x_t_states is not None:
+            xt_update = 0.0
+            if "bb_ca" in x_t_states:
+                xt_bb = x_t_states["bb_ca"].to(device=seqs.device, dtype=seqs.dtype)
+                if xt_bb.shape[:3] != (batch_size, nstates, nbinder):
+                    raise ValueError(
+                        f"x_t_states['bb_ca'] shape {tuple(xt_bb.shape)} is incompatible with "
+                        f"(B,K,Nb)=({batch_size},{nstates},{nbinder})"
+                    )
+                xt_update = xt_update + self.state_xt_bb_ca_projector(xt_bb)
+            if "local_latents" in x_t_states:
+                xt_lat = x_t_states["local_latents"].to(device=seqs.device, dtype=seqs.dtype)
+                if xt_lat.shape[:3] != (batch_size, nstates, nbinder):
+                    raise ValueError(
+                        f"x_t_states['local_latents'] shape {tuple(xt_lat.shape)} is incompatible with "
+                        f"(B,K,Nb)=({batch_size},{nstates},{nbinder})"
+                    )
+                xt_update = xt_update + self.state_xt_latent_projector(xt_lat)
+            if not isinstance(xt_update, float):
+                xt_update = xt_update * mask[:, None, :, None] * target_bundle["state_present_mask"][:, :, None, None]
+                state_tokens = self.state_token_norm(state_tokens + xt_update)
+                state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.5 * xt_update)
         init_pose = input.get("init_bb_ca_states")
         if init_pose is not None:
             init_pose = init_pose.to(device=seqs.device, dtype=seqs.dtype)

@@ -111,3 +111,73 @@ probe 日志中出现以下 warning：
 2. 检查 sampled latent decode identity 是否从 Stage11G 的 `0.4414` 上升，而不是复现 `0.2183` 的退化。
 3. 若 overfit 通过，再跑 48 exact diagnostic 的 B1 Stage12 de novo sampling。
 4. B0/B1/B2 正式比较必须使用 `bb_ca_states[k]` 与 state-specific complex 输出，不能使用 legacy weighted-average `bb_ca/local_latents`。
+
+## Stage12B 执行记录：warning 清理、de novo 契约、state-wise flow 接入与 GPU 验证
+
+### 1. warning 与 no-leak 处理结论
+
+- `no-leak guard` 不是 bug，而是 Stage12 target-only de novo 主线的科学契约。`de_novo_multistate_mode=True` 时继续禁止 `init_bb_ca_states/source_*`，否则任务会退化为 source-pose repair 或 inverse folding。
+- probe 字段已改成 `expected_no_leak_guard_passed`，避免把预期报错误读为失败。
+- repair/refinement baseline 没被破坏：`de_novo_multistate_mode=False` 时 `init_bb_ca_states` 正常通过，probe 字段 `repair_mode_allows_init_pose=true`。
+- `torch nested tensor` warning 已通过 `TransformerEncoder(..., enable_nested_tensor=False)` 消除。该修复只清理 PyTorch 性能 warning，不改变 `norm_first=True` 的数学结构。
+- 剩余 warning 分类：`CCD_MIRROR_PATH/PDB_MIRROR_PATH` 未设置只影响需要本地 PDB/CCD mirror 的工具，不影响本阶段 tensor 训练；optional CA/residue feature 返回零是 de novo no-leak 设定下的预期行为；未出现 `Traceback/OOM/NaN/nested tensor`。
+
+### 2. 发现并修正的科学实现问题
+
+代码审查发现，Stage12 原实现虽然在 loss 中保存了 `x_t_states`，但 `LocalLatentsTransformerMultistate` 的 state tokens 主要来自共享 binder token + state bias，没有显式读取每个 state 的当前 noisy `bb_ca/local_latents`。这会让所谓 K 条 state-specific trajectories 实际上退化为同一 binder token 的 K 个 state-biased readout，不完全符合“多条复合物结构 flow 共同优化一个共享 binder 序列”的科学目标。
+
+已修正：新增 `state_xt_bb_ca_projector` 与 `state_xt_latent_projector`，把 `x_t_states['bb_ca']` 和 `x_t_states['local_latents']` 投影进 state tokens/state sequence tokens。它们是训练/采样中的 noisy flow variables，不是 source pose 或真实标签，因此不破坏 target-only de novo 契约。
+
+同时在采样器中新增显式开关：`--de-novo-multistate-mode --pass-x-t-states`。默认不改变 Stage09/10 repair baseline；Stage12 采样时才把 state-wise flow variables 传入模型。
+
+### 3. CPU probe 与 GPU 训练结果
+
+CPU 级验证：`py_compile`、shape probe、state permutation、no-leak negative test、repair-mode positive test、state-wise corruption、CPU train smoke 均通过。`nested tensor` warning 未再出现。
+
+接入 `x_t_states` 前的 GPU 结果：
+
+- `overfit1`: steps=80, batch=1, drop=0.4993, final_total=13.6114, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.9333333373069763}`, mem=7.388GB, step_time=0.407s
+- `overfit4`: steps=120, batch=4, drop=0.6229, final_total=9.2269, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.7833333015441895}`, mem=7.395GB, step_time=0.402s
+- `pilot`: steps=200, batch=4, drop=0.3007, final_total=17.7935, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.7916666865348816}`, mem=7.395GB, step_time=0.269s
+- final validation: total=36.6954, identity=`{'shared_identity_mean': 0.5568181872367859, 'ae_state_identity_mean': 0.5}`
+
+接入 `x_t_states` 后的 GPU 结果：
+
+- `overfit1`: steps=80, batch=1, drop=0.7203, final_total=8.1112, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.9000000357627869}`, mem=7.409GB, step_time=0.448s
+- `overfit4`: steps=120, batch=4, drop=0.8522, final_total=4.0744, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.7749999761581421}`, mem=7.416GB, step_time=0.395s
+- `pilot`: steps=200, batch=4, drop=0.3359, final_total=18.8602, final_identity=`{'shared_identity_mean': 1.0, 'ae_state_identity_mean': 0.7833333015441895}`, mem=7.416GB, step_time=0.280s
+- final validation: total=36.8909, identity=`{'shared_identity_mean': 0.6136363744735718, 'ae_state_identity_mean': 0.4848484992980957}`
+
+关键变化：`x_t_states` 接入后，final validation 的 `shared_identity_mean` 从 `0.5568` 提升到 `0.6136`，首次超过 Stage12 机制阈值 `0.60`。但 `ae_state_identity_mean` 仍只有 `0.4848`，说明 shared head 已改善，state-specific local latent 到 AE decoder 的序列一致性仍不足。
+
+### 4. Stage12E de novo sampling smoke 结果
+
+已跑 8 个 V_exact sample 的 target-only de novo sampling smoke。该流程不使用 source pose/init，不启用 oracle guidance，只输入 target ensemble，并打开 `--de-novo-multistate-mode --pass-x-t-states`。
+
+- sampling sample_count=8, elapsed_sec=18.84, mean_sec_per_sample=2.355
+- mean sequence identity to reference=0.0605
+- exact benchmark B1 state_count_ok=24
+- B1 contact-F1 mean=0.1118, worst=0.0000, best=0.3317
+- B1 direct interface RMSD mean=25.0421 A
+- B1 contact persistence mean=0.1168
+- B1 clash_rate=0.6250
+
+结论：Stage12B 的训练链路和 state-wise flow 接线已经更正确，但自由 de novo rollout 仍未达到科学目标。训练/验证 corruption 条件下 sequence identity 能提升，不代表从纯噪声采样时 sequence/geometry 已进入正确 manifold。当前主要瓶颈是 **training-sampling distribution mismatch**：模型在 teacher-forced interpolant 上能学，但 free rollout 的 sampled local latent / bb_ca state 仍偏离真实多状态复合物 manifold。
+
+### 5. 报错与修复记录
+
+- `1948723` 长时间 pending：原因是 `gu02` 只剩 6 个 idle CPU，而脚本申请 8 CPU；修复为 `cpus-per-task=4` 后 `1948724` 正常运行。
+- `1948726` sampling smoke 报 `ModuleNotFoundError: No module named torch` 和 `Permission denied`：原因是 sbatch 文件生成时 `$PY` 被提前展开为空，导致脚本直接用系统 Python 执行 `.py` 文件；修复为本地生成 sbatch 后 scp，并保留 `$PY` 变量。
+- 第二次提交 sbatch 报 `Batch script contains DOS line breaks`：原因是 Windows CRLF；修复为远程 `perl -pi -e 's/\r$//'` 转 LF 后提交，`1948727` 正常完成。
+- 报告追加曾出现中文乱码：原因是本地临时脚本用 ASCII 写入中文；修复为 UTF-8 Markdown 片段重写本节。
+
+### 6. 下一步必须解决的问题
+
+Stage12C 不应继续单纯加训练步数。下一步应实现 sampled-condition replay / rollout replay：用模型自身从 pure-noise rollout 产生的中间 `x_t_states` 作为训练条件，再对同一 shared sequence、state-specific geometry、AE-decoded logits 反传。目标是让训练分布覆盖真实采样分布，避免 Stage12B 出现“corruption 验证 identity 上升，但 de novo sampling identity 只有 0.0605”的错配。
+
+建议优先级：
+
+1. 在训练中加入 short-rollout replay batch：每个 batch 混合 teacher-forced corruption 与 4-8 step self-generated states。
+2. 对 replay states 加强 `L_ae_seq_state`、state-shared KL、interface/contact/clash loss，但保持 clash 在最终选择中 hard fail。
+3. 采样时继续使用 `x_t_states`，并记录 per-step shared identity proxy、flow gate、state disagreement，定位 sequence 是在哪个 denoising 阶段崩坏。
+4. 只有当 8-sample de novo smoke 的 sequence identity 和 clash/contact 同时改善后，再跑 48 exact benchmark。

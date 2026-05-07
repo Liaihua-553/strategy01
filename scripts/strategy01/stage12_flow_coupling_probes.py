@@ -114,12 +114,19 @@ def main():
 
     leaked_batch = dict(batch)
     leaked_batch["init_bb_ca_states"] = torch.zeros(args.batch_size, args.nstates, args.binder_len, 3)
-    no_leak_guard = False
+    expected_no_leak_guard_passed = False
     try:
         model(leaked_batch)
     except ValueError as exc:
-        no_leak_guard = "de_novo_multistate" in str(exc)
-    assert no_leak_guard, "de_novo_multistate no-source guard did not fire"
+        expected_no_leak_guard_passed = "de_novo_multistate" in str(exc)
+    assert expected_no_leak_guard_passed, "de_novo_multistate no-source guard did not fire"
+
+    repair_batch = dict(batch)
+    repair_batch["de_novo_multistate_mode"] = False
+    repair_batch["init_bb_ca_states"] = torch.zeros(args.batch_size, args.nstates, args.binder_len, 3)
+    with torch.no_grad():
+        repair_out = model(repair_batch)
+    assert list(repair_out["bb_ca_states"].shape) == [args.batch_size, args.nstates, args.binder_len, 3]
 
     perm = torch.tensor(list(reversed(range(args.nstates))), dtype=torch.long)
     with torch.no_grad():
@@ -152,7 +159,8 @@ def main():
         "status": "passed",
         "forward_shapes": summarize_forward(out),
         "state_permutation_max_abs_delta": perm_delta,
-        "no_leak_guard_passed": no_leak_guard,
+        "expected_no_leak_guard_passed": expected_no_leak_guard_passed,
+        "repair_mode_allows_init_pose": True,
         "corrupt_multistate": {
             "stage12_primary_state_tensors": bool(loss_batch["stage12_primary_state_tensors"]),
             "bb_ca_state_delta_mean": float(

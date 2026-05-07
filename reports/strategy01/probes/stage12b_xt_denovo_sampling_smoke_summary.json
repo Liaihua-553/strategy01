@@ -1,0 +1,304 @@
+{
+  "status": "passed",
+  "oracle_warning": "Sampling-time guidance currently uses V_exact experimental contacts as anchors. This validates mechanics only; it is not a fair production benchmark until anchors are non-oracle.",
+  "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+  "ckpt": "ckpts/stage12_de_novo_multistate/runs/stage12b_xt_denovo_pilot/stage12_pilot_final.pt",
+  "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke",
+  "nsteps": 24,
+  "settings": {
+    "ckpt": "ckpts/stage12_de_novo_multistate/runs/stage12b_xt_denovo_pilot/stage12_pilot_final.pt",
+    "autoencoder_ckpt": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt",
+    "sequence_source": "shared_head",
+    "sequence_hybrid_ae_weight": 0.5,
+    "dataset": "data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt",
+    "sampling_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/pipeline/model_sampling.yaml",
+    "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke",
+    "report": "reports/strategy01/probes/stage12b_xt_denovo_sampling_smoke_summary.json",
+    "split": "any",
+    "sample_id": [],
+    "max_samples": 8,
+    "nsteps": 24,
+    "device": "cuda",
+    "seed": 5,
+    "anchor_source": "oracle",
+    "guidance_start_fraction": 2.0,
+    "guidance_inner_steps": 1,
+    "guidance_lr": 0.015,
+    "contact_cutoff_nm": 1.0,
+    "clash_cutoff_nm": 0.28,
+    "shell_max_nm": 1.2,
+    "max_anchor_pairs": 128,
+    "clash_weight": 30.0,
+    "clash_loss_mode": "mean",
+    "clash_max_weight": 4.0,
+    "shell_weight": 0.1,
+    "tether_weight": 0.002,
+    "overcontact_weight": 0.02,
+    "contact_temperature_nm": 0.06,
+    "hard_min_dist_nm": 0.28,
+    "min_dist_improvement_nm": 0.005,
+    "f1_drop_tolerance": 0.02,
+    "anchor_loss_tolerance": 0.25,
+    "f1_gain_for_anchor_worsen": 0.02,
+    "max_guidance_displacement_nm": 0.25,
+    "flow_step_scale": 1.0,
+    "max_flow_displacement_nm": 0.0,
+    "bb_ca_flow_step_scale": null,
+    "local_latents_flow_step_scale": null,
+    "bb_ca_max_flow_displacement_nm": null,
+    "local_latents_max_flow_displacement_nm": null,
+    "use_learned_flow_gate": false,
+    "gate_safe_accept": true,
+    "gate_f1_drop_tolerance": 0.01,
+    "de_novo_multistate_mode": true,
+    "pass_x_t_states": true,
+    "enable_ca_feature": false,
+    "enable_init_pose": false,
+    "safe_accept": true
+  },
+  "sample_count": 8,
+  "elapsed_sec": 18.839460372924805,
+  "mean_sec_per_sample": 2.354932725429535,
+  "rows": [
+    {
+      "status": "passed",
+      "sample_index": 0,
+      "sample_id": "1a0n_B_A",
+      "split": "val",
+      "target_id": "1a0n",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "KSSSSSKSLINNPP",
+      "reference_sequence": "PPRPLPVAPGSSKT",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.619760274887085
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7308775186538696
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.6607155203819275
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1a0n_B_A",
+      "elapsed_sec": 2.223301887512207
+    },
+    {
+      "status": "passed",
+      "sample_index": 1,
+      "sample_id": "1ai0_L_K",
+      "split": "val",
+      "target_id": "1ai0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "AAAAPPPPPPPPLTPPPPPKP",
+      "reference_sequence": "GIVEQCCTSICSLYQLENYCN",
+      "sequence_identity_to_reference": 0.047619047619047616,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.9162649512290955
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.9830576181411743
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.9944785833358765
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1ai0_L_K",
+      "elapsed_sec": 2.1401493549346924
+    },
+    {
+      "status": "passed",
+      "sample_index": 2,
+      "sample_id": "1aze_A_B",
+      "split": "val",
+      "target_id": "1aze",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "PRASKPPPPK",
+      "reference_sequence": "VPPPVPPRRR",
+      "sequence_identity_to_reference": 0.2,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.5537261366844177
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.4369186460971832
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.5391178131103516
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1aze_A_B",
+      "elapsed_sec": 2.0162463188171387
+    },
+    {
+      "status": "passed",
+      "sample_index": 3,
+      "sample_id": "1bxp_A_B",
+      "split": "val",
+      "target_id": "1bxp",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "AASAAAARAAAKA",
+      "reference_sequence": "MRYYESSLKSYPD",
+      "sequence_identity_to_reference": 0.0,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 0.6096047759056091
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 0.7605409026145935
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 0.591513991355896
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1bxp_A_B",
+      "elapsed_sec": 2.026090621948242
+    },
+    {
+      "status": "passed",
+      "sample_index": 4,
+      "sample_id": "1cee_A_B",
+      "split": "val",
+      "target_id": "1cee",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "PPPPPPAPPPPPPPPPPPPPPPPPSPPSPPPPSPPPSPPPPPPSPPPSPPPLDAAAPPP",
+      "reference_sequence": "KKKISKADIGAPSGFKHVSHVGWDPQNGFDVNNLDPDLRSLFSRAGISEAQLTDAETSK",
+      "sequence_identity_to_reference": 0.1016949152542373,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.3907558917999268
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.7321053743362427
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.7024917602539062
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1cee_A_B",
+      "elapsed_sec": 2.022040605545044
+    },
+    {
+      "status": "passed",
+      "sample_index": 5,
+      "sample_id": "1cf4_A_B",
+      "split": "val",
+      "target_id": "1cf4",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "KPPPKKSKKPPPKNNPPPDDAASPPPSPPPPPPYYNSNPPPPPP",
+      "reference_sequence": "GSGLSAQDISQPLQNSFIHTGHGDSDPRHCWGFPDRIDELYLGN",
+      "sequence_identity_to_reference": 0.045454545454545456,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.025722622871399
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0145341157913208
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0111230611801147
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1cf4_A_B",
+      "elapsed_sec": 1.9935493469238281
+    },
+    {
+      "status": "passed",
+      "sample_index": 6,
+      "sample_id": "1cir_A_B",
+      "split": "val",
+      "target_id": "1cir",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "KSLPPPKSPKRNNAASPPTKPPPP",
+      "reference_sequence": "EYRIDRVRLFVDKLDNIAQVPRVG",
+      "sequence_identity_to_reference": 0.041666666666666664,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.1980587244033813
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.0781102180480957
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.0486083030700684
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1cir_A_B",
+      "elapsed_sec": 1.9884710311889648
+    },
+    {
+      "status": "passed",
+      "sample_index": 7,
+      "sample_id": "1co0_A_B",
+      "split": "val",
+      "target_id": "1co0",
+      "nsteps": 24,
+      "valid_states": 3,
+      "sequence_source": "shared_head",
+      "pred_sequence": "TPPPSPPPPPPLLLPPPPNPNNPTPLLPLLAALAPAPAAAALAALDPAAPAPPPPGLNPLENLNPPPPNNYLYLAPPPGPLDPPLNIELLNPPPELDPPPSPPKT",
+      "reference_sequence": "QSPYSAAMAEQRHQEWLRFVDLLKNAYQNDLHLPLLNLMLTPDEREALGTRVRIVEELLRGEMSQRELKNELGAGIATITRGSNSLKAAPVELRQWLEEVLLKSDWW",
+      "sequence_identity_to_reference": 0.047619047619047616,
+      "state_summaries": [
+        {
+          "state_index": 0,
+          "ca_rmsd_to_exact_label_nm": 1.584153413772583
+        },
+        {
+          "state_index": 1,
+          "ca_rmsd_to_exact_label_nm": 1.5016474723815918
+        },
+        {
+          "state_index": 2,
+          "ca_rmsd_to_exact_label_nm": 1.5505162477493286
+        }
+      ],
+      "guidance_trace_tail": [],
+      "out_dir": "results/strategy01/stage12b_xt_denovo_sampling_smoke/1co0_A_B",
+      "elapsed_sec": 2.003096342086792
+    }
+  ]
+}

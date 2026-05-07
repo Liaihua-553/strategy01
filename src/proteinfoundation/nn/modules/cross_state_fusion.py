@@ -160,7 +160,12 @@ class GlobalResidueRefinement(nn.Module):
             norm_first=True,
             activation="gelu",
         )
-        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=nlayers)
+        # MODIFIED 2026-05-07 Stage12B:
+        # PyTorch warns when enable_nested_tensor=True is requested with
+        # norm_first=True, because that path cannot actually use nested tensors.
+        # Disable the nested-tensor optimization explicitly to keep logs clean
+        # without changing the refinement math.
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=nlayers, enable_nested_tensor=False)
 
     def forward(self, residue_repr: torch.Tensor, residue_mask: torch.Tensor) -> torch.Tensor:
         key_padding_mask = ~residue_mask.bool()

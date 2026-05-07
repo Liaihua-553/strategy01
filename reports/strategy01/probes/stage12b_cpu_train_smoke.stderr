@@ -1,0 +1,23 @@
+Environment variable CCD_MIRROR_PATH not set. Will not be able to use function requiring this variable. To set it you may:
+  (1) add the line 'export VAR_NAME=path/to/variable' to your .bashrc or .zshrc file
+  (2) set it in your current shell with 'export VAR_NAME=path/to/variable'
+  (3) write it to a .env file in the root of the atomworks.io repository
+Environment variable PDB_MIRROR_PATH not set. Will not be able to use function requiring this variable. To set it you may:
+  (1) add the line 'export VAR_NAME=path/to/variable' to your .bashrc or .zshrc file
+  (2) set it in your current shell with 'export VAR_NAME=path/to/variable'
+  (3) write it to a .env file in the root of the atomworks.io repository
+2026-05-07 22:30:03.351 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:04.335 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:06.155 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:147 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersSeqFeat
+2026-05-07 22:30:06.155 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:199 - use_residue_type_feature disabled or not in batch, returning zeros for OptionalResidueTypeSeqFeat
+2026-05-07 22:30:06.157 | WARNING  | proteinfoundation.nn.feature_factory.pair_feats:forward:152 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersPairwiseDistancesPairFeat
+2026-05-07 22:30:17.742 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:18.731 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:19.941 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:147 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersSeqFeat
+2026-05-07 22:30:19.942 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:199 - use_residue_type_feature disabled or not in batch, returning zeros for OptionalResidueTypeSeqFeat
+2026-05-07 22:30:19.943 | WARNING  | proteinfoundation.nn.feature_factory.pair_feats:forward:152 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersPairwiseDistancesPairFeat
+2026-05-07 22:30:31.103 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:32.179 | INFO     | proteinfoundation.nn.feature_factory.feature_factory:__init__:181 - No features requested
+2026-05-07 22:30:33.596 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:147 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersSeqFeat
+2026-05-07 22:30:33.597 | WARNING  | proteinfoundation.nn.feature_factory.seq_feats:forward:199 - use_residue_type_feature disabled or not in batch, returning zeros for OptionalResidueTypeSeqFeat
+2026-05-07 22:30:33.599 | WARNING  | proteinfoundation.nn.feature_factory.pair_feats:forward:152 - use_ca_coors_nm_feature disabled or not in batch, returning zeros for OptionalCaCoorsNanometersPairwiseDistancesPairFeat

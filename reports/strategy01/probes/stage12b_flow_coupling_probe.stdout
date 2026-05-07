@@ -130,12 +130,12 @@
       "flow_gate_std": []
     }
   },
-  "state_permutation_max_abs_delta": 9.5367431640625e-07,
+  "state_permutation_max_abs_delta": 8.344650268554688e-07,
   "expected_no_leak_guard_passed": true,
   "repair_mode_allows_init_pose": true,
   "corrupt_multistate": {
     "stage12_primary_state_tensors": true,
-    "bb_ca_state_delta_mean": 0.5251034498214722,
-    "local_latents_state_delta_mean": 0.5634645223617554
+    "bb_ca_state_delta_mean": 0.5882300734519958,
+    "local_latents_state_delta_mean": 0.5318065285682678
   }
 }

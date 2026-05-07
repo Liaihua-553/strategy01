@@ -622,6 +622,16 @@ def guided_state_specific_sample(
     guidance_trace: list[dict[str, Any]] = []
     for step in range(nsteps):
         batch["x_t"] = s7.weighted_average_states(x_states, weights, mask)
+        # MODIFIED 2026-05-08 Stage12B:
+        # Stage12 de-novo multistate flow needs each state's current noisy
+        # bb_ca/local-latent trajectory as a first-class model input. Keep this
+        # behind explicit flags so older Stage09/10 repair baselines retain
+        # their original weighted-average sampling behavior.
+        if getattr(args, "pass_x_t_states", False) or getattr(args, "de_novo_multistate_mode", False):
+            batch["x_t_states"] = x_states
+            batch["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+        if getattr(args, "de_novo_multistate_mode", False):
+            batch["de_novo_multistate_mode"] = True
         set_sampling_optional_features(batch, args)
         batch["t"] = {dm: ts[dm][step].expand(b).to(device) for dm in fm.data_modes}
         batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in fm.data_modes}
@@ -790,6 +800,8 @@ def main() -> None:
     parser.add_argument("--gate-safe-accept", action="store_true", default=True, help="Stage11E: reject learned-gate model flow updates that damage source-anchor contact/clash geometry")
     parser.add_argument("--unsafe-no-gate-safe-accept", dest="gate_safe_accept", action="store_false")
     parser.add_argument("--gate-f1-drop-tolerance", type=float, default=0.01)
+    parser.add_argument("--de-novo-multistate-mode", action="store_true", default=False, help="Stage12: enforce target-only de-novo contract during sampling")
+    parser.add_argument("--pass-x-t-states", action="store_true", default=False, help="Stage12: pass state-wise current flow variables to the multistate model")
     parser.add_argument("--enable-ca-feature", action="store_true", default=False)
     parser.add_argument("--disable-ca-feature", dest="enable_ca_feature", action="store_false")
     parser.add_argument("--enable-init-pose", action="store_true", default=False, help="Stage10: collate init_bb_ca_states and start bb_ca trajectories from transferred source pose")
