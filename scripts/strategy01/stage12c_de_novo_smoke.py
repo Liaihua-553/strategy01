@@ -63,6 +63,7 @@ def rollout_final(
     nsteps: int,
     seed: int,
     local_latents_stop_t: float | None = None,
+    target_shell_max_center_distance_nm: float = 0.0,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -140,7 +141,10 @@ def rollout_final(
                     mask=flat_mask,
                     simulation_step_params=sampling_cfg[dm]["simulation_step_params"],
                 )
-                updated[dm] = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
+                state_next = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
+                if dm == "bb_ca" and target_shell_max_center_distance_nm > 0.0:
+                    state_next, _ = s12.project_bb_ca_to_target_shell(work, state_next, state_mask, target_shell_max_center_distance_nm)
+                updated[dm] = state_next
             x_states = updated
         final = s12.make_de_novo_batch(batch)
         final["x_0_states"] = work["x_0_states"]
@@ -185,6 +189,12 @@ def parse_args():
     )
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=1207)
+    parser.add_argument(
+        "--target-shell-max-center-distance-nm",
+        type=float,
+        default=0.0,
+        help="Target-only diagnostic guidance: rigidly translate binder states back inside this target/hotspot center shell.",
+    )
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
     return parser.parse_args()
 
@@ -237,8 +247,10 @@ def main() -> None:
         args.nsteps,
         args.seed,
         local_latents_stop_t=args.local_latents_stop_t,
+        target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
+    result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm
     result.update(smoke)
     result["status"] = "passed"
     write_json(args.report_json, result)

@@ -1,0 +1,56 @@
+# Stage12 diagnostic sampling config.
+#
+# Purpose:
+# - Use deterministic vector-field ODE updates instead of stochastic score/noise
+#   sampling while the coupled multistate de-novo model is still low-data
+#   fine-tuned.
+# - Keep the original bb_ca/local_latents schedules so this isolates the effect
+#   of stochastic score correction/noise.
+
+args:
+  nsteps: 128
+  self_cond: false
+  guidance_w: 1.0
+  ag_ratio: 0.0
+  ag_ckpt_path: null
+  save_trajectory_every: 0
+  fold_cond: false
+
+model:
+  bb_ca:
+    schedule:
+      mode: log
+      p: 2.0
+    gt:
+      mode: 1/t
+      p: 1.0
+      clamp_val: null
+    simulation_step_params:
+      sampling_mode: vf
+      sc_scale_noise: 0.0
+      sc_scale_score: 1.0
+      t_lim_ode: 0.98
+      t_lim_ode_below: 0.02
+      tsr_k: 1.0
+      tsr_sigma: 1.0
+      center_every_step: false
+
+  local_latents:
+    schedule:
+      mode: power
+      p: 2.0
+    gt:
+      mode: tan
+      p: 1.0
+      clamp_val: null
+    simulation_step_params:
+      sampling_mode: vf
+      sc_scale_noise: 0.0
+      sc_scale_score: 1.0
+      t_lim_ode: 0.98
+      t_lim_ode_below: 0.02
+      tsr_k: 1.0
+      tsr_sigma: 1.0
+      center_every_step: false
+
+n_recycle: 0

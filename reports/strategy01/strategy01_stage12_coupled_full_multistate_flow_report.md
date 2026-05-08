@@ -293,3 +293,130 @@ Stage12E 应直接做 AE latent manifold 修复，而不是继续扩大训练或
 2. 把 `latent_sequence_repair_projector` 升级为 decoder-consistent projection head，以 AE-decoded CE 和 state-shared KL 为主监督。
 3. 将 `local_latents_stop_t` 从诊断参数变成训练-采样一致的 bounded latent schedule，再逐步放宽终点。
 4. 进入 48 exact benchmark 前，必须同时看到 shared identity、AE-state identity、contact/distance 三者改善。
+
+## Stage12E-I 结果补充：replay 修复有效，但 free de novo 仍未达到科学目标
+
+### 新增代码改动
+
+- `scripts/strategy01/stage11_flow_sequence_training.py`
+  - 修复 Stage12 新增模块没有进入训练的问题。此前 `set_trainable_stage11()` 的 trainable prefix 没覆盖 `cross_state_shared_seq_attention`、`shared_seq_token_update`、`latent_sequence_repair_projector`、`state_xt_*_projector` 等 Stage12 关键模块，导致部分新结构虽然前向接通，但 pilot 中没有真正更新。
+  - `grad_probe()` 同步加入这些模块的梯度检查，避免再次出现“模型结构存在但未训练”的假阳性。
+- `scripts/strategy01/stage12_de_novo_multistate_training.py`
+  - 新增 online replay cache refresh：`--replay-cache-refresh-every`。训练过程中用当前模型周期性重建 replay cache，避免永远拟合旧模型产生的固定 off-policy 状态。
+  - 新增 safe replay：`--replay-safe-max-bb-ca-distance-nm`、`--replay-safe-max-local-latents-distance`、`--replay-safe-fallback-max-blend`。如果模型自产生的 replay 状态离 clean label 过远，就自动增加 teacher blend，把 replay 拉回可学习范围，并记录 `effective_teacher_blend`。
+  - 新增 target-only shell projection：`target_anchor_center()` 和 `project_bb_ca_to_target_shell()`。它只使用 target/hotspot CA 中心，不使用真实 binder pose；作用是限制 binder 全局平移跑飞，同时保持 binder 内部几何不变。
+- `scripts/strategy01/stage12c_de_novo_smoke.py`
+  - 新增 `--target-shell-max-center-distance-nm`，用于检查 target-only shell projection 是否能改善自由 rollout。
+- `configs/strategy01/stage12_sampling_vf_ode.yaml`
+  - 新增 deterministic vector-field ODE 采样配置，用于区分随机采样噪声与模型向量场本身的问题。
+
+### Stage12E/F/G/H/I 关键实验结果
+
+| 阶段 | 设置 | 训练/诊断结论 | de novo smoke 结果 | 判断 |
+|---|---|---|---|---|
+| Stage12E | 修复 trainable prefix，确认 Stage12 模块真实可训练 | 修复了“新模块未训练”的代码问题 | 后续实验可归因于真实训练，而不是 frozen 新头 | 必要修复 |
+| Stage12F | 从 Stage12E 继续，固定 replay cache，偏 pure replay | n16 smoke shared identity `0.2727`、AE-state identity `0.2045`；vf n128 shared `0.1989`、AE `0.1458` | 比 Stage12D/旧 Stage12C 明显好，但 n128 仍低 | fixed replay 有收益，但容易过拟合固定 cache |
+| Stage12G | online replay cache refresh，每 150 steps 用当前模型刷新 replay | pure replay 最终 shared identity 约 `0.275`、AE identity 约 `0.050`；raw pure replay `bb_ca` 离 clean 约 `14.1 nm` | n16 shared `0.0966`、AE `0.0322`，contact/distance loss 大幅变差 | 当前模型自产 replay 太 off-manifold，直接在线刷新有害 |
+| Stage12H | safe online replay，把离 clean 过远的 replay 动态 blend 回安全范围 | 训练 replay shared identity 接近 `1.0`，AE identity 约 `0.7667`；validation replay shared `0.5682`、AE `0.5606`；但 `effective_teacher_blend` 约 `0.738` | n16 shared `0.1761`、AE `0.0682`，contact/distance 仍差 | safe replay 让训练分布可学，但它本质上仍是 repair/curriculum，不是 free de novo |
+| Stage12H-shell | 只在 inference 加 target shell，未重训 | target shell 半径 `4.0 nm` 覆盖真实数据 p90 约 `3.01 nm`、max 约 `3.59 nm`，科学上可接受 | n16 shared `0.1761`、AE `0.0720`，几乎不变 | 只限制全局位置不能修复 latent/sequence manifold |
+| Stage12I | replay 训练中加入 target shell，safe max `bb_ca=4.0 nm` | validation shared `0.5909`、AE `0.4659`；validation replay shared `0.5000`、AE `0.5909`；raw pure `bb_ca` 仍约 `13.04 nm`，需要 `effective_teacher_blend=0.693` 才回到 `4.0 nm` | n16 shared `0.1932`、AE `0.0587`；vf n128 shared `0.0795`，反而退化 | 训练内 shell 有轻微帮助，但自由 target-only rollout 仍不成立 |
+
+说明：
+
+- 表中的 identity 是机制诊断指标，不是最终生物学胜负指标。它衡量模型生成的共享序列或 AE state decoded sequence 与监督 binder sequence 的一致性。
+- `contact loss` / `distance loss` 越低越好。Stage12G/H/I 的 free de novo smoke 中这些指标变大，说明即使 shared readout 偶尔改善，state-specific complex 几何仍没有形成正确界面。
+- `effective_teacher_blend` 是关键证据。Stage12H/I 要靠 `0.69-0.74` 的 clean-pose blend 才能让 replay 可学，说明模型自产的 pure rollout 仍远离真实复合物流形。
+
+### 警告和报错处理
+
+- `stage12g` 第一次 smoke 提交使用了错误 CLI 参数 `--ckpt/--output`，正确参数是 `--checkpoint/--report-json`。这是运行包装错误，不是模型错误；已修正并重跑成功。
+- 远程包装脚本中曾出现 heredoc 结束符残留导致的 `NameError: name 'PY' is not defined`。该错误发生在指标提取脚本结束后，不影响已生成的模型结果；后续改为上传独立 `.py` 文件执行。
+- `CCD_MIRROR_PATH` / `PDB_MIRROR_PATH` 未设置仍不影响本阶段，因为训练和 smoke 都使用已 tensorized 的数据。
+- optional CA/residue feature disabled warning 是 de novo no-leak 契约的一部分，不是错误。真实 binder 坐标和 residue type 不能作为 target-only 输入。
+
+### 当前结论
+
+Stage12 到目前为止还没有实现最终科学目标。原因已经比较明确：
+
+1. `AE decoder` 不是主要瓶颈。exact latent 解码 identity 之前已达到约 `0.95`，说明 AE 能从正确 latent 还原序列。
+2. 单纯加强 replay 或训练更久不是充分解。safe replay 能在带 blend 的训练分布上得到好指标，但自由 target-only rollout 仍然差。
+3. 当前最大问题是 full `bb_ca` de novo 轨迹没有可靠继承原始 Complexa 的 target-conditioned placement 先验。pure rollout 的 binder `bb_ca` 会跑到距离 clean 约 `11-14 nm` 的状态，远超真实数据 target/binder center 距离范围。
+4. 因此继续在 `161/36` 小数据上调 replay 权重，只会把模型训练成“从坏 rollout 修回 clean label 的 repair 模型”，不等于目标所需的 target-only de novo multistate binder generator。
+
+### 下一步：Stage13 应先恢复/验证原始 single-state de novo 能力
+
+Stage13 不应继续盲目加 Stage12 replay 步数。下一步应先回答一个基础问题：Strategy01 多状态架构是否仍保留原始 Proteina-Complexa 的单状态 target-only de novo 能力。
+
+建议执行顺序：
+
+1. **B0-native / Strategy01 K=1 de novo 审计**
+   - 用同一批 target 的 `K=1` 条件，分别跑 benchmark baseline Complexa 和 Strategy01 当前模型。
+   - 只输入 target，不输入 source pose、不输入 binder sequence、不输入真实 binder optional CA/residue type。
+   - 记录 `bb_ca` placement、target/binder center distance、contact proxy、AE decoded sequence identity、clash。
+   - 如果 Strategy01 K=1 已明显差于 baseline，说明多状态改造破坏了原始 de novo trunk，必须先修 checkpoint splice / input feature / sampling schedule。
+2. **single-state de novo warmup**
+   - 在原 Complexa 可复用数据或当前 exact/hybrid 样本的 `K=1` 展开版上恢复 `bb_ca + local_latents` full flow。
+   - 目标不是多状态胜负，而是确认模型能从 target-only noise 生成合理单状态 binder pose。
+3. **K=2 near-state curriculum**
+   - 只有 K=1 de novo 过关后，再进入 K=2 相近构象训练。
+   - 用 shared sequence head 和 cross-state coupling，让两个 state 的 flow 共享序列信号，但不要一开始上 K=3 fully free。
+4. **K=2/3 true multistate fine-tune**
+   - 最后再回到真实多状态功能构象，加入 CVaR/worst-state、interface、clash hard-fail 策略。
+
+这个方向更贴合科学目标：先保证 Complexa 原本“从 target 条件生成 binder pose/backbone/latent/sequence”的能力没有丢，再把它升级成多状态共享序列生成器。否则现在直接训练 Stage12 的 K-state product flow，本质上是在小数据上重训一个还没有 placement 先验的新生成器，成功概率低。
+
+## Stage13 启动：K=1 单状态 de novo 审计
+
+### 新增脚本
+
+- `scripts/strategy01/stage13_single_state_de_novo_audit.py`
+  - 把现有多状态样本切成 K=1 target-only 条件。
+  - 复用 Stage12 的 full `bb_ca + local_latents` de novo rollout。
+  - 禁止 source pose、真实 binder optional CA feature、真实 residue type feature 进入模型输入。
+  - 真实 binder sequence 和 complex tensors 只作为评估 label。
+
+这个审计的科学意义是：如果 Strategy01 在 K=1 条件下都不能从 target-only 噪声生成合理 binder，那么继续优化 K=3 cross-state coupling 没有意义；应先恢复原始 Complexa 的单状态 de novo 生成先验。
+
+### 首次 smoke 结果
+
+运行命令由 SLURM job `1970750` 执行，checkpoint 为：
+
+`ckpts/stage12_de_novo_multistate/runs/stage12i_shell_safe_online_replay_from_stage12f/stage12_pilot_final.pt`
+
+设置：
+
+- split: `val`
+- source samples: `4`
+- sliced single-state cases: `10`
+- nsteps: `16`
+- target shell: `4.0 nm`
+
+结果：
+
+| 指标 | 数值 | 解释 |
+|---|---:|---|
+| shared identity | `0.1364` | 共享序列 readout 与 label 的一致性仍低 |
+| AE-state identity | `0.0864` | state-specific latent 经 AE decoder 后序列更差 |
+| contact loss | `3.9953` | target-binder 界面没有形成正确接触 |
+| distance loss | `10.1159` | 复合物几何仍远离 label |
+| clash loss | `0.0` | target shell 可以避免明显硬冲突，但不等于形成正确结合 |
+
+结论：当前 Stage12I 模型在 K=1 target-only de novo 条件下也失败。因此失败不是“多状态太难”单一原因，而是当前 Strategy01 full de novo 路径本身还没有恢复原始 Complexa 的单状态生成能力。Stage13 下一步应直接做 baseline/native generation 对齐，而不是继续调 K=3 replay。
+
+### Stage13 下一步执行点
+
+1. 找到 benchmark baseline 仓可跑原论文生成入口，选同一批 target 做 `B0-native-static`。
+2. 在 Strategy01 中构造严格同条件的 `K=1 target-only` 生成入口，禁用所有 source-pose/true-binder 输入。
+3. 对比 baseline native 与 Strategy01 K=1 的：
+   - target/binder center distance
+   - interface contact proxy
+   - AE decoded sequence identity
+   - severe clash hard-fail rate
+   - sampling schedule 与 checkpoint loaded/missing 参数
+4. 若 Strategy01 明显差于 baseline，优先修：
+   - checkpoint splice 是否把原始 full flow trunk 正确载入；
+   - multistate wrapper 是否破坏原始 single-state feature schema；
+   - `bb_ca` translation noise / target-centered initialization 是否和原 Complexa 训练分布一致；
+   - sampling schedule 是否使用了与原模型不一致的 ODE/stop-t 设置。
+
+只有 K=1 baseline 对齐后，才继续 K=2/K=3 多状态共享序列训练。

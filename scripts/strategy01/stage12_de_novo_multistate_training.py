@@ -146,6 +146,63 @@ def add_weighted_legacy_fields(batch: dict[str, Any], weights: torch.Tensor) -> 
     batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in batch["x_t"]}
 
 
+def target_anchor_center(batch: dict[str, Any], device: torch.device) -> torch.Tensor | None:
+    """Return target-state anchor centers using hotspot residues when present.
+
+    The center is target-only information.  It is allowed in de-novo mode and is
+    used only to prevent global bb_ca translation runaway during rollout/replay.
+    """
+    x_target = batch.get("x_target_states")
+    target_mask = batch.get("target_mask_states")
+    if x_target is None or target_mask is None:
+        return None
+    ca = x_target.to(device=device)[..., 1, :]
+    ca_mask = target_mask.to(device=device).bool()[..., 1]
+    hotspot = batch.get("target_hotspot_mask_states")
+    if hotspot is not None:
+        hotspot_mask = hotspot.to(device=device).bool() & ca_mask
+        use_mask = torch.where(hotspot_mask.any(dim=-1, keepdim=True), hotspot_mask, ca_mask)
+    else:
+        use_mask = ca_mask
+    denom = use_mask.float().sum(dim=2, keepdim=True).clamp_min(1.0)
+    return (ca * use_mask[..., None].float()).sum(dim=2) / denom
+
+
+def project_bb_ca_to_target_shell(
+    batch: dict[str, Any],
+    bb_ca: torch.Tensor,
+    state_mask: torch.Tensor,
+    max_center_distance_nm: float,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Bound global binder translation without using clean binder pose.
+
+    This moves each state-specific binder as a rigid translation only when its
+    center is farther than the target/hotspot shell.  Internal binder geometry is
+    unchanged; the projection is target-only and therefore compatible with the
+    Stage12 de-novo contract.
+    """
+    if max_center_distance_nm <= 0.0:
+        return bb_ca, {"enabled": False}
+    centers = target_anchor_center(batch, bb_ca.device)
+    if centers is None:
+        return bb_ca, {"enabled": False, "reason": "missing_target_states"}
+    mask = state_mask.to(device=bb_ca.device).bool()
+    binder_center = (bb_ca * mask[..., None].float()).sum(dim=2) / mask.float().sum(dim=2, keepdim=True).clamp_min(1.0)
+    vec = binder_center - centers
+    dist = vec.norm(dim=-1).clamp_min(1e-6)
+    scale = (float(max_center_distance_nm) / dist).clamp(max=1.0)
+    projected_center = centers + vec * scale[..., None]
+    shift = (projected_center - binder_center)[:, :, None, :]
+    projected = (bb_ca + shift) * mask[..., None].float()
+    moved = (dist > float(max_center_distance_nm)) & batch["state_present_mask"].to(device=bb_ca.device).bool()
+    return projected, {
+        "enabled": True,
+        "max_center_distance_nm": float(max_center_distance_nm),
+        "pre_center_distance_mean_nm": float(dist[batch["state_present_mask"].to(device=bb_ca.device).bool()].mean().detach().cpu().item()),
+        "moved_fraction": float(moved.float().mean().detach().cpu().item()),
+    }
+
+
 def build_replay_condition_batch(
     model: torch.nn.Module,
     fm: Any,
@@ -156,6 +213,10 @@ def build_replay_condition_batch(
     collect_fraction: float,
     max_loss_t: float,
     teacher_blend: float = 0.0,
+    safe_max_bb_ca_distance_nm: float = 0.0,
+    safe_max_local_latents_distance: float = 0.0,
+    safe_fallback_max_blend: float = 0.85,
+    target_shell_max_center_distance_nm: float = 0.0,
     seed: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate a target-only short rollout and return its intermediate state as a training condition."""
@@ -206,15 +267,30 @@ def build_replay_condition_batch(
                     mask=flat_mask,
                     simulation_step_params=sampling_cfg[dm]["simulation_step_params"],
                 )
-                updated[dm] = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
+                state_next = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
+                if dm == "bb_ca" and target_shell_max_center_distance_nm > 0.0:
+                    state_next, _ = project_bb_ca_to_target_shell(work, state_next, state_mask, target_shell_max_center_distance_nm)
+                updated[dm] = state_next
             x_states = updated
     model.train(was_training)
+    raw_bb_distance = float((x_states["bb_ca"] - work["x_1_states"]["bb_ca"]).abs().mean().detach().cpu().item())
+    raw_latent_distance = float((x_states["local_latents"] - work["x_1_states"]["local_latents"]).abs().mean().detach().cpu().item())
+    teacher_blend = max(0.0, min(float(teacher_blend), 0.95))
+    effective_teacher_blend = teacher_blend
+    required_blends: list[float] = []
+    if safe_max_bb_ca_distance_nm > 0.0 and raw_bb_distance > safe_max_bb_ca_distance_nm:
+        required_blends.append(1.0 - safe_max_bb_ca_distance_nm / max(raw_bb_distance, 1e-6))
+    if safe_max_local_latents_distance > 0.0 and raw_latent_distance > safe_max_local_latents_distance:
+        required_blends.append(1.0 - safe_max_local_latents_distance / max(raw_latent_distance, 1e-6))
+    if required_blends:
+        safe_fallback_max_blend = max(0.0, min(float(safe_fallback_max_blend), 0.95))
+        effective_teacher_blend = max(teacher_blend, min(max(required_blends), safe_fallback_max_blend))
+
     replay = make_de_novo_batch(batch)
     replay["x_0_states"] = x_start
-    teacher_blend = max(0.0, min(float(teacher_blend), 0.95))
-    if teacher_blend > 0.0:
+    if effective_teacher_blend > 0.0:
         replay["x_t_states"] = {
-            dm: ((1.0 - teacher_blend) * value + teacher_blend * work["x_1_states"][dm]).detach()
+            dm: ((1.0 - effective_teacher_blend) * value + effective_teacher_blend * work["x_1_states"][dm]).detach()
             for dm, value in x_states.items()
         }
     else:
@@ -234,8 +310,15 @@ def build_replay_condition_batch(
         "bb_ca_replay_delta_nm": float((replay["x_t_states"]["bb_ca"] - x_start["bb_ca"]).abs().mean().detach().cpu().item()),
         "local_latents_replay_delta": float((replay["x_t_states"]["local_latents"] - x_start["local_latents"]).abs().mean().detach().cpu().item()),
         "teacher_blend": teacher_blend,
+        "effective_teacher_blend": effective_teacher_blend,
+        "safe_replay_adjusted": bool(effective_teacher_blend > teacher_blend + 1e-6),
+        "safe_max_bb_ca_distance_nm": float(safe_max_bb_ca_distance_nm),
+        "safe_max_local_latents_distance": float(safe_max_local_latents_distance),
+        "raw_bb_ca_distance_to_clean_nm": raw_bb_distance,
+        "raw_local_latents_distance_to_clean": raw_latent_distance,
         "bb_ca_distance_to_clean_nm": float((replay["x_t_states"]["bb_ca"] - work["x_1_states"]["bb_ca"]).abs().mean().detach().cpu().item()),
         "local_latents_distance_to_clean": float((replay["x_t_states"]["local_latents"] - work["x_1_states"]["local_latents"]).abs().mean().detach().cpu().item()),
+        "target_shell_max_center_distance_nm": float(target_shell_max_center_distance_nm),
     }
     return replay, diagnostics
 
@@ -279,6 +362,7 @@ def build_fixed_replay_cache(
     args: argparse.Namespace,
     sampling_cfg: dict[str, Any],
     batch_size: int,
+    refresh_index: int = 0,
 ) -> dict[str, list[dict[str, Any]]]:
     """Precompute replay conditions so training sees a stable sampled distribution.
 
@@ -309,7 +393,11 @@ def build_fixed_replay_cache(
                 collect_fraction=args.replay_collect_fraction,
                 max_loss_t=args.replay_max_loss_t,
                 teacher_blend=blend,
-                seed=9301 + batch_idx * 101 + int(blend * 1000),
+                safe_max_bb_ca_distance_nm=args.replay_safe_max_bb_ca_distance_nm,
+                safe_max_local_latents_distance=args.replay_safe_max_local_latents_distance,
+                safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
+                target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
+                seed=9301 + refresh_index * 1000003 + batch_idx * 101 + int(blend * 1000),
             )
             cache[level_name].append(
                 {
@@ -361,6 +449,10 @@ def forward_loss_stage12(
             collect_fraction=args.replay_collect_fraction,
             max_loss_t=args.replay_max_loss_t,
             teacher_blend=args.replay_teacher_blend,
+            safe_max_bb_ca_distance_nm=args.replay_safe_max_bb_ca_distance_nm,
+            safe_max_local_latents_distance=args.replay_safe_max_local_latents_distance,
+            safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
+            target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
             seed=seed,
         )
     elif replay_cache_entry is None:
@@ -423,8 +515,9 @@ def run_loop(
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
     replay_cache: dict[str, list[dict[str, Any]]] = {}
+    replay_cache_refresh_count = 0
     if args.enable_replay and args.enable_fixed_replay_cache:
-        replay_cache = build_fixed_replay_cache(model, fm, samples, device, args, sampling_cfg, batch_size)
+        replay_cache = build_fixed_replay_cache(model, fm, samples, device, args, sampling_cfg, batch_size, replay_cache_refresh_count)
     started = time.time()
     with torch.no_grad():
         initial, initial_losses, initial_out, initial_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, seed=1207)
@@ -436,6 +529,25 @@ def run_loop(
     history = []
     for step in range(1, steps + 1):
         subset = [samples[((step - 1) * batch_size + i) % len(samples)] for i in range(batch_size)]
+        refresh_every = int(getattr(args, "replay_cache_refresh_every", 0) or 0)
+        if (
+            args.enable_replay
+            and args.enable_fixed_replay_cache
+            and refresh_every > 0
+            and step > int(args.replay_warmup_steps)
+            and (step - int(args.replay_warmup_steps)) % refresh_every == 0
+        ):
+            replay_cache_refresh_count += 1
+            replay_cache = build_fixed_replay_cache(
+                model,
+                fm,
+                samples,
+                device,
+                args,
+                sampling_cfg,
+                batch_size,
+                replay_cache_refresh_count,
+            )
         use_replay = bool(
             args.enable_replay
             and step > int(args.replay_warmup_steps)
@@ -503,6 +615,7 @@ def run_loop(
                 "identity": identity_metrics(ev_out, ev_batch),
                 "replay_identity": ev_replay_identity,
                 "replay_diagnostics": ev_replay_diag,
+                "replay_cache_refresh_count": replay_cache_refresh_count,
                 "cuda_max_mem_gb": torch.cuda.max_memory_allocated() / (1024**3) if device.type == "cuda" else 0.0,
                 "elapsed_sec": time.time() - started,
             }
@@ -556,6 +669,8 @@ def run_loop(
             "levels": {key: len(value) for key, value in replay_cache.items()},
             "level_spec": args.replay_cache_levels,
             "curriculum_switches": args.replay_curriculum_switches,
+            "refresh_every": int(getattr(args, "replay_cache_refresh_every", 0) or 0),
+            "refresh_count": replay_cache_refresh_count,
         },
         "elapsed_sec": time.time() - started,
         "step_time_sec": (time.time() - started) / max(steps, 1),
@@ -606,6 +721,10 @@ def parse_args():
     parser.add_argument("--replay-collect-fraction", type=float, default=0.60)
     parser.add_argument("--replay-max-loss-t", type=float, default=0.75)
     parser.add_argument("--replay-teacher-blend", type=float, default=0.0)
+    parser.add_argument("--replay-safe-max-bb-ca-distance-nm", type=float, default=0.0)
+    parser.add_argument("--replay-safe-max-local-latents-distance", type=float, default=0.0)
+    parser.add_argument("--replay-safe-fallback-max-blend", type=float, default=0.85)
+    parser.add_argument("--replay-target-shell-max-center-distance-nm", type=float, default=0.0)
     parser.add_argument("--replay-extra-ae-seq-weight", type=float, default=0.75)
     parser.add_argument("--replay-extra-seq-ae-consistency-weight", type=float, default=0.25)
     parser.add_argument("--replay-extra-contact-weight", type=float, default=0.10)
@@ -613,6 +732,12 @@ def parse_args():
     parser.add_argument("--replay-extra-clash-weight", type=float, default=0.10)
     parser.add_argument("--enable-fixed-replay-cache", action="store_true", default=False)
     parser.add_argument("--replay-cache-batches", type=int, default=4)
+    parser.add_argument(
+        "--replay-cache-refresh-every",
+        type=int,
+        default=0,
+        help="If >0, rebuild the fixed replay cache every N training steps using the current model; this implements an online DAgger-style replay curriculum.",
+    )
     parser.add_argument(
         "--replay-cache-levels",
         type=str,
@@ -671,8 +796,13 @@ def main():
         "warmup_steps": args.replay_warmup_steps,
         "max_loss_t": args.replay_max_loss_t,
         "teacher_blend": args.replay_teacher_blend,
+        "safe_max_bb_ca_distance_nm": args.replay_safe_max_bb_ca_distance_nm,
+        "safe_max_local_latents_distance": args.replay_safe_max_local_latents_distance,
+        "safe_fallback_max_blend": args.replay_safe_fallback_max_blend,
+        "target_shell_max_center_distance_nm": args.replay_target_shell_max_center_distance_nm,
         "fixed_cache_enabled": bool(args.enable_fixed_replay_cache),
         "fixed_cache_batches": args.replay_cache_batches,
+        "fixed_cache_refresh_every": args.replay_cache_refresh_every,
         "fixed_cache_levels": args.replay_cache_levels,
         "fixed_cache_curriculum_switches": args.replay_curriculum_switches,
         "sampling_config": str(args.sampling_config),
