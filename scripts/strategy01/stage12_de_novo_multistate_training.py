@@ -31,7 +31,8 @@ import scripts.strategy01.stage11_flow_sequence_training as s11  # noqa: E402
 
 DEFAULT_DATASET = REPO / "data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt"
 DEFAULT_INIT_CKPT = REPO / "ckpts/stage10_pose_init_exactaug/runs/stage10_pose_init_exactaug_full_v2/mini_final.pt"
-DEFAULT_AE_CKPT = REPO / "ckpts/stage03_multistate_loss/complexa_ae_init_readonly_copy.ckpt"
+DEFAULT_AE_CKPT = REPO / "ckpts/complexa_ae.ckpt"
+DEFAULT_SAMPLING_CONFIG = REPO / "configs/pipeline/model_sampling.yaml"
 REPORT_DIR = REPO / "reports/strategy01/probes"
 RUNS_DIR = REPO / "ckpts/stage12_de_novo_multistate/runs"
 
@@ -82,8 +83,137 @@ def make_de_novo_batch(batch: dict[str, Any]) -> dict[str, Any]:
     work = s4.clone_batch(batch)
     for key in FORBIDDEN_MODEL_INPUT_KEYS:
         work.pop(key, None)
+    if bool(work.get("use_ca_coors_nm_feature", False)):
+        raise ValueError("de_novo_multistate forbids real optional CA coordinate features")
+    if bool(work.get("use_residue_type_feature", False)):
+        raise ValueError("de_novo_multistate forbids real optional residue-type features")
     work["de_novo_multistate_mode"] = True
     return work
+
+
+def normalize_state_weights(batch: dict[str, Any], device: torch.device) -> torch.Tensor:
+    present = batch["state_present_mask"].to(device=device).bool()
+    weights = batch.get("target_state_weights")
+    if weights is None:
+        weights = torch.ones_like(present, dtype=torch.float32, device=device)
+    else:
+        weights = weights.to(device=device, dtype=torch.float32)
+    weights = weights * present.float()
+    denom = weights.sum(dim=1, keepdim=True)
+    fallback = present.float() / present.float().sum(dim=1, keepdim=True).clamp_min(1.0)
+    return torch.where(denom > 1e-8, weights / denom.clamp_min(1e-8), fallback)
+
+
+def weighted_average_states(states: dict[str, torch.Tensor], weights: torch.Tensor) -> dict[str, torch.Tensor]:
+    return {dm: torch.sum(value * weights[:, :, None, None].to(dtype=value.dtype), dim=1) for dm, value in states.items()}
+
+
+def load_sampling_cfg(path: Path) -> dict[str, Any]:
+    from omegaconf import OmegaConf as _OmegaConf
+
+    return _OmegaConf.to_container(_OmegaConf.load(path).model, resolve=True)
+
+
+def add_weighted_legacy_fields(batch: dict[str, Any], weights: torch.Tensor) -> None:
+    batch["x_1"] = weighted_average_states(batch["x_1_states"], weights)
+    batch["x_0"] = weighted_average_states(batch["x_0_states"], weights)
+    batch["x_t"] = weighted_average_states(batch["x_t_states"], weights)
+    batch["t"] = {dm: torch.sum(batch["t_states"][dm] * weights, dim=1) for dm in batch["t_states"]}
+    batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in batch["x_t"]}
+
+
+def build_replay_condition_batch(
+    model: torch.nn.Module,
+    fm: Any,
+    batch: dict[str, Any],
+    device: torch.device,
+    sampling_cfg: dict[str, Any],
+    rollout_steps: int,
+    collect_fraction: float,
+    max_loss_t: float,
+    teacher_blend: float = 0.0,
+    seed: int | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Generate a target-only short rollout and return its intermediate state as a training condition."""
+    if seed is not None:
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+    work = make_de_novo_batch(batch)
+    work = fm.corrupt_multistate_batch(work)
+    state_mask = work["state_mask"].to(device=device).bool()
+    b, k, n = state_mask.shape
+    weights = normalize_state_weights(work, device)
+    x_states = {dm: value.detach().clone() for dm, value in work["x_0_states"].items()}
+    x_start = {dm: value.detach().clone() for dm, value in x_states.items()}
+    rollout_steps = max(2, int(rollout_steps))
+    collect_step = int(round(float(collect_fraction) * rollout_steps))
+    collect_step = min(max(1, collect_step), rollout_steps - 1)
+    ts, gt = fm.sample_schedule(nsteps=rollout_steps, sampling_model_args=sampling_cfg)
+    ts = {dm: value.to(device) for dm, value in ts.items()}
+    gt = {dm: value.to(device) for dm, value in gt.items()}
+    was_training = model.training
+    model.eval()
+    with torch.no_grad():
+        for step in range(collect_step):
+            work["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
+            work["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+            add_weighted_legacy_fields(work, weights)
+            work["de_novo_multistate_mode"] = True
+            nn_out = model(work)
+            updated: dict[str, torch.Tensor] = {}
+            for dm in fm.data_modes:
+                flat_x = x_states[dm].reshape(b * k, n, x_states[dm].shape[-1])
+                flat_mask = state_mask.reshape(b * k, n)
+                flat_t = ts[dm][step].expand(b * k).to(device)
+                dt = ts[dm][step + 1] - ts[dm][step]
+                param = fm.cfg_exp.nn.output_parameterization[dm]
+                flat_nn = {param: nn_out[f"{dm}_states"].reshape(b * k, n, x_states[dm].shape[-1])}
+                base = fm.base_flow_matchers[dm]
+                flat_nn = base.nn_out_add_clean_sample_prediction(flat_x, flat_t, flat_mask, flat_nn)
+                flat_nn = base.nn_out_add_simulation_tensor(flat_x, flat_t, flat_mask, flat_nn)
+                flat_nn = base.nn_out_add_guided_simulation_tensor(flat_nn, None, None, guidance_w=1.0, ag_ratio=0.0)
+                flat_next = base.simulation_step(
+                    x_t=flat_x,
+                    nn_out=flat_nn,
+                    t=flat_t,
+                    dt=dt,
+                    gt=gt[dm][step],
+                    mask=flat_mask,
+                    simulation_step_params=sampling_cfg[dm]["simulation_step_params"],
+                )
+                updated[dm] = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
+            x_states = updated
+    model.train(was_training)
+    replay = make_de_novo_batch(batch)
+    replay["x_0_states"] = x_start
+    teacher_blend = max(0.0, min(float(teacher_blend), 0.95))
+    if teacher_blend > 0.0:
+        replay["x_t_states"] = {
+            dm: ((1.0 - teacher_blend) * value + teacher_blend * work["x_1_states"][dm]).detach()
+            for dm, value in x_states.items()
+        }
+    else:
+        replay["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
+    replay["t_states"] = {dm: ts[dm][collect_step].expand(b, k).to(device) for dm in fm.data_modes}
+    if max_loss_t > 0.0:
+        replay["t_states"] = {dm: torch.clamp(value, max=float(max_loss_t)) for dm, value in replay["t_states"].items()}
+    replay["state_mask"] = state_mask
+    replay["stage12_primary_state_tensors"] = True
+    replay["stage12_replay_condition"] = True
+    add_weighted_legacy_fields(replay, weights)
+    diagnostics = {
+        "rollout_steps": rollout_steps,
+        "collect_step": collect_step,
+        "collect_t_raw": {dm: float(ts[dm][collect_step].detach().cpu().item()) for dm in fm.data_modes},
+        "collect_t_loss": {dm: float(replay["t_states"][dm][0, 0].detach().cpu().item()) for dm in fm.data_modes},
+        "bb_ca_replay_delta_nm": float((replay["x_t_states"]["bb_ca"] - x_start["bb_ca"]).abs().mean().detach().cpu().item()),
+        "local_latents_replay_delta": float((replay["x_t_states"]["local_latents"] - x_start["local_latents"]).abs().mean().detach().cpu().item()),
+        "teacher_blend": teacher_blend,
+        "bb_ca_distance_to_clean_nm": float((replay["x_t_states"]["bb_ca"] - work["x_1_states"]["bb_ca"]).abs().mean().detach().cpu().item()),
+        "local_latents_distance_to_clean": float((replay["x_t_states"]["local_latents"] - work["x_1_states"]["local_latents"]).abs().mean().detach().cpu().item()),
+    }
+    return replay, diagnostics
 
 
 def forward_loss_stage12(
@@ -92,6 +222,9 @@ def forward_loss_stage12(
     fm: Any,
     samples: list[dict[str, Any]],
     device: torch.device,
+    args: argparse.Namespace | None = None,
+    sampling_cfg: dict[str, Any] | None = None,
+    replay: bool = False,
     seed: int | None = None,
 ) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, Any]]:
     if seed is not None:
@@ -99,12 +232,42 @@ def forward_loss_stage12(
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
     batch = s10.collate_variable(samples, device)
-    work_batch = make_de_novo_batch(batch)
-    work_batch = fm.corrupt_multistate_batch(work_batch)
+    replay_diag: dict[str, Any] = {}
+    if replay:
+        if args is None or sampling_cfg is None:
+            raise ValueError("Stage12 replay requires args and sampling_cfg")
+        work_batch, replay_diag = build_replay_condition_batch(
+            model,
+            fm,
+            batch,
+            device,
+            sampling_cfg,
+            rollout_steps=args.replay_rollout_steps,
+            collect_fraction=args.replay_collect_fraction,
+            max_loss_t=args.replay_max_loss_t,
+            teacher_blend=args.replay_teacher_blend,
+            seed=seed,
+        )
+    else:
+        work_batch = make_de_novo_batch(batch)
+        work_batch = fm.corrupt_multistate_batch(work_batch)
     nn_out = model(work_batch)
     nn_out = s11.attach_ae_sequence_logits(ae, fm, work_batch, nn_out, ca_source="pred")
     losses = fm.compute_multistate_loss(work_batch, nn_out)
-    return losses["multistate_total"].mean(), losses, nn_out, work_batch
+    total = losses["multistate_total"].mean()
+    if replay and args is not None:
+        replay_extra = (
+            float(args.replay_extra_ae_seq_weight) * losses["multistate_ae_seq_justlog"]
+            + float(args.replay_extra_seq_ae_consistency_weight) * losses["multistate_seq_ae_consistency_justlog"]
+            + float(args.replay_extra_contact_weight) * losses["multistate_contact_justlog"]
+            + float(args.replay_extra_distance_weight) * losses["multistate_distance_justlog"]
+            + float(args.replay_extra_clash_weight) * losses["multistate_clash_justlog"]
+        )
+        losses["stage12_replay_extra_justlog"] = replay_extra
+        losses["stage12_replay_total_justlog"] = losses["multistate_total"] + replay_extra
+        total = total + replay_extra.mean()
+        work_batch["stage12_replay_diagnostics"] = replay_diag
+    return total, losses, nn_out, work_batch
 
 
 def identity_metrics(nn_out: dict[str, torch.Tensor], batch: dict[str, Any]) -> dict[str, float]:
@@ -137,6 +300,8 @@ def run_loop(
     batch_size: int,
     lr: float,
     eval_every: int,
+    args: argparse.Namespace,
+    sampling_cfg: dict[str, Any],
 ) -> dict[str, Any]:
     model.train()
     trainable = set_trainable(model, phase)
@@ -144,12 +309,24 @@ def run_loop(
     fixed_subset = samples[: min(batch_size, len(samples))]
     started = time.time()
     with torch.no_grad():
-        initial, initial_losses, initial_out, initial_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, seed=1207)
+        initial, initial_losses, initial_out, initial_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, seed=1207)
+        replay_initial = None
+        if args.enable_replay:
+            replay_initial, replay_initial_losses, replay_initial_out, replay_initial_batch = forward_loss_stage12(
+                model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, replay=True, seed=2207
+            )
     history = []
     for step in range(1, steps + 1):
         subset = [samples[((step - 1) * batch_size + i) % len(samples)] for i in range(batch_size)]
+        use_replay = bool(
+            args.enable_replay
+            and step > int(args.replay_warmup_steps)
+            and ((step * 37) % 100) < int(100 * float(args.replay_mix_prob))
+        )
         opt.zero_grad(set_to_none=True)
-        total, losses, _, _ = forward_loss_stage12(model, ae, fm, subset, device, seed=step * 977)
+        total, losses, _, train_batch = forward_loss_stage12(
+            model, ae, fm, subset, device, args=args, sampling_cfg=sampling_cfg, replay=use_replay, seed=step * 977
+        )
         if not torch.isfinite(total):
             raise FloatingPointError(f"non-finite Stage12 loss at step {step}: {total}")
         total.backward()
@@ -157,21 +334,40 @@ def run_loop(
         opt.step()
         if step == 1 or step % eval_every == 0 or step == steps:
             with torch.no_grad():
-                ev_total, ev_losses, ev_out, ev_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, seed=1207)
+                ev_total, ev_losses, ev_out, ev_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, seed=1207)
+                ev_replay_total = None
+                ev_replay_identity = None
+                ev_replay_diag = None
+                if args.enable_replay:
+                    ev_replay_total, ev_replay_losses, ev_replay_out, ev_replay_batch = forward_loss_stage12(
+                        model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, replay=True, seed=2207
+                    )
+                    ev_replay_identity = identity_metrics(ev_replay_out, ev_replay_batch)
+                    ev_replay_diag = ev_replay_batch.get("stage12_replay_diagnostics")
             row = {
                 "step": step,
+                "train_condition": "replay" if use_replay else "teacher_forced",
                 "train_total": float(total.detach().cpu().item()),
                 "eval_total": float(ev_total.detach().cpu().item()),
+                "eval_replay_total": float(ev_replay_total.detach().cpu().item()) if ev_replay_total is not None else None,
                 "train_losses": s4.summarize_losses(losses),
                 "eval_losses": s4.summarize_losses(ev_losses),
                 "identity": identity_metrics(ev_out, ev_batch),
+                "replay_identity": ev_replay_identity,
+                "replay_diagnostics": ev_replay_diag,
                 "cuda_max_mem_gb": torch.cuda.max_memory_allocated() / (1024**3) if device.type == "cuda" else 0.0,
                 "elapsed_sec": time.time() - started,
             }
             print(json.dumps({"phase": phase, **row}, ensure_ascii=False), flush=True)
             history.append(row)
     with torch.no_grad():
-        final, final_losses, final_out, final_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, seed=1207)
+        final, final_losses, final_out, final_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, seed=1207)
+        replay_final = None
+        replay_final_losses = replay_final_out = replay_final_batch = None
+        if args.enable_replay:
+            replay_final, replay_final_losses, replay_final_out, replay_final_batch = forward_loss_stage12(
+                model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, replay=True, seed=2207
+            )
     initial_value = float(initial.detach().cpu().item())
     final_value = float(final.detach().cpu().item())
     return {
@@ -185,6 +381,11 @@ def run_loop(
         "final_losses": s4.summarize_losses(final_losses),
         "initial_identity": identity_metrics(initial_out, initial_batch),
         "final_identity": identity_metrics(final_out, final_batch),
+        "replay_initial_total": float(replay_initial.detach().cpu().item()) if replay_initial is not None else None,
+        "replay_final_total": float(replay_final.detach().cpu().item()) if replay_final is not None else None,
+        "replay_final_losses": s4.summarize_losses(replay_final_losses) if replay_final_losses is not None else None,
+        "replay_final_identity": identity_metrics(replay_final_out, replay_final_batch) if replay_final_out is not None else None,
+        "replay_final_diagnostics": replay_final_batch.get("stage12_replay_diagnostics") if replay_final_batch is not None else None,
         "history": history,
         "trainable": trainable,
         "elapsed_sec": time.time() - started,
@@ -228,6 +429,19 @@ def parse_args():
     parser.add_argument("--latent-state-residual-noise-scale", type=float, default=0.05)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-training", action="store_true")
+    parser.add_argument("--sampling-config", type=Path, default=DEFAULT_SAMPLING_CONFIG)
+    parser.add_argument("--enable-replay", action="store_true", default=False)
+    parser.add_argument("--replay-mix-prob", type=float, default=0.20)
+    parser.add_argument("--replay-warmup-steps", type=int, default=60)
+    parser.add_argument("--replay-rollout-steps", type=int, default=6)
+    parser.add_argument("--replay-collect-fraction", type=float, default=0.60)
+    parser.add_argument("--replay-max-loss-t", type=float, default=0.75)
+    parser.add_argument("--replay-teacher-blend", type=float, default=0.0)
+    parser.add_argument("--replay-extra-ae-seq-weight", type=float, default=0.75)
+    parser.add_argument("--replay-extra-seq-ae-consistency-weight", type=float, default=0.25)
+    parser.add_argument("--replay-extra-contact-weight", type=float, default=0.10)
+    parser.add_argument("--replay-extra-distance-weight", type=float, default=0.05)
+    parser.add_argument("--replay-extra-clash-weight", type=float, default=0.10)
     return parser.parse_args()
 
 
@@ -264,23 +478,53 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return
     model, fm, ae, model_meta, ckpt_meta, loss_cfg = build_model_stack(device, args)
+    sampling_cfg = load_sampling_cfg(args.sampling_config)
     result.update({"model_meta": model_meta, "init_ckpt_meta": ckpt_meta, "stage12_loss_cfg": loss_cfg})
+    result["stage12c_replay"] = {
+        "enabled": bool(args.enable_replay),
+        "mix_prob": args.replay_mix_prob,
+        "rollout_steps": args.replay_rollout_steps,
+        "collect_fraction": args.replay_collect_fraction,
+        "warmup_steps": args.replay_warmup_steps,
+        "max_loss_t": args.replay_max_loss_t,
+        "teacher_blend": args.replay_teacher_blend,
+        "sampling_config": str(args.sampling_config),
+        "extra_weights": {
+            "ae_seq": args.replay_extra_ae_seq_weight,
+            "seq_ae_consistency": args.replay_extra_seq_ae_consistency_weight,
+            "contact": args.replay_extra_contact_weight,
+            "distance": args.replay_extra_distance_weight,
+            "clash": args.replay_extra_clash_weight,
+        },
+    }
     with torch.no_grad():
-        probe_total, probe_losses, probe_out, probe_batch = forward_loss_stage12(model, ae, fm, train_samples[: min(2, len(train_samples))], device)
+        probe_total, probe_losses, probe_out, probe_batch = forward_loss_stage12(model, ae, fm, train_samples[: min(2, len(train_samples))], device, args=args, sampling_cfg=sampling_cfg)
+        replay_probe = None
+        if args.enable_replay:
+            replay_probe_total, replay_probe_losses, replay_probe_out, replay_probe_batch = forward_loss_stage12(
+                model, ae, fm, train_samples[: min(2, len(train_samples))], device, args=args, sampling_cfg=sampling_cfg, replay=True
+            )
+            replay_probe = {
+                "total": float(replay_probe_total.detach().cpu().item()),
+                "losses": s4.summarize_losses(replay_probe_losses),
+                "identity": identity_metrics(replay_probe_out, replay_probe_batch),
+                "diagnostics": replay_probe_batch.get("stage12_replay_diagnostics"),
+            }
     result["probes"] = {
         "initial_total": float(probe_total.detach().cpu().item()),
         "losses": s4.summarize_losses(probe_losses),
         "identity": identity_metrics(probe_out, probe_batch),
+        "replay": replay_probe,
     }
     write_json(report_path, result)
     if not args.skip_training:
-        result["training"]["overfit1"] = run_loop(model, ae, fm, train_samples[:1], device, "overfit", args.overfit1_steps, 1, 2e-4, args.eval_every)
+        result["training"]["overfit1"] = run_loop(model, ae, fm, train_samples[:1], device, "overfit", args.overfit1_steps, 1, 2e-4, args.eval_every, args, sampling_cfg)
         model, fm, ae, _, _, _ = build_model_stack(device, args)
-        result["training"]["overfit4"] = run_loop(model, ae, fm, train_samples[: min(4, len(train_samples))], device, "overfit", args.overfit4_steps, min(4, args.batch_size), 1e-4, args.eval_every)
+        result["training"]["overfit4"] = run_loop(model, ae, fm, train_samples[: min(4, len(train_samples))], device, "overfit", args.overfit4_steps, min(4, args.batch_size), 1e-4, args.eval_every, args, sampling_cfg)
         model, fm, ae, _, _, _ = build_model_stack(device, args)
         batch_size = min(args.batch_size, len(train_samples))
         try:
-            result["training"]["pilot"] = run_loop(model, ae, fm, train_samples, device, "pilot", args.pilot_steps, batch_size, 5e-5, args.eval_every)
+            result["training"]["pilot"] = run_loop(model, ae, fm, train_samples, device, "pilot", args.pilot_steps, batch_size, 5e-5, args.eval_every, args, sampling_cfg)
         except RuntimeError as exc:
             if "out of memory" not in str(exc).lower() or batch_size <= 1:
                 raise
@@ -288,18 +532,38 @@ def main():
             batch_size = 2 if batch_size > 2 else 1
             result.setdefault("fallbacks", []).append({"reason": "oom", "retry_batch_size": batch_size})
             model, fm, ae, _, _, _ = build_model_stack(device, args)
-            result["training"]["pilot"] = run_loop(model, ae, fm, train_samples, device, "pilot", args.pilot_steps, batch_size, 5e-5, args.eval_every)
+            result["training"]["pilot"] = run_loop(model, ae, fm, train_samples, device, "pilot", args.pilot_steps, batch_size, 5e-5, args.eval_every, args, sampling_cfg)
         run_dir.mkdir(parents=True, exist_ok=True)
         ckpt_path = run_dir / "stage12_pilot_final.pt"
         torch.save({"model_state_dict": model.state_dict(), "args": vars(args), "run_name": args.run_name}, ckpt_path)
         result["checkpoint_path"] = str(ckpt_path)
         if val_samples:
             with torch.no_grad():
-                val_total, val_losses, val_out, val_batch = forward_loss_stage12(model, ae, fm, val_samples[: min(batch_size, len(val_samples))], device, seed=888)
+                val_total, val_losses, val_out, val_batch = forward_loss_stage12(model, ae, fm, val_samples[: min(batch_size, len(val_samples))], device, args=args, sampling_cfg=sampling_cfg, seed=888)
+                val_replay = None
+                if args.enable_replay:
+                    val_replay_total, val_replay_losses, val_replay_out, val_replay_batch = forward_loss_stage12(
+                        model,
+                        ae,
+                        fm,
+                        val_samples[: min(batch_size, len(val_samples))],
+                        device,
+                        args=args,
+                        sampling_cfg=sampling_cfg,
+                        replay=True,
+                        seed=889,
+                    )
+                    val_replay = {
+                        "total": float(val_replay_total.detach().cpu().item()),
+                        "losses": s4.summarize_losses(val_replay_losses),
+                        "identity": identity_metrics(val_replay_out, val_replay_batch),
+                        "diagnostics": val_replay_batch.get("stage12_replay_diagnostics"),
+                    }
             result["validation"] = {
                 "total": float(val_total.detach().cpu().item()),
                 "losses": s4.summarize_losses(val_losses),
                 "identity": identity_metrics(val_out, val_batch),
+                "replay": val_replay,
             }
     result["status"] = "passed"
     write_json(report_path, result)

@@ -181,3 +181,62 @@ Stage12C 不应继续单纯加训练步数。下一步应实现 sampled-conditio
 2. 对 replay states 加强 `L_ae_seq_state`、state-shared KL、interface/contact/clash loss，但保持 clash 在最终选择中 hard fail。
 3. 采样时继续使用 `x_t_states`，并记录 per-step shared identity proxy、flow gate、state disagreement，定位 sequence 是在哪个 denoising 阶段崩坏。
 4. 只有当 8-sample de novo smoke 的 sequence identity 和 clash/contact 同时改善后，再跑 48 exact benchmark。
+
+
+## Stage12C：short-rollout / sampled-condition replay 闭环结果（更新于 2026-05-08 19:20:52）
+
+### 本阶段要解决的问题
+Stage12B 已经完成了 coupled full multistate product-space flow 的架构接线，但自由 de novo sampling 仍然失败：模型训练主要覆盖 teacher-forced interpolant，未覆盖自己 rollout 后产生的 off-manifold `x_t_states`。因此 Stage12C 增加 `short-rollout replay`，目标是让训练直接看到模型自产生的中间状态，再用同一真实 `x_1_states`、shared binder sequence 和 interface labels 反传。
+
+### 代码改动
+- `scripts/strategy01/stage12_de_novo_multistate_training.py`
+  - 新增 `build_replay_condition_batch()`，从 target-only noise 出发调用当前模型 rollout，收集中间 `x_t_states/t_states` 作为 replay 训练条件。
+  - 新增 `--enable-replay`、`--replay-mix-prob`、`--replay-warmup-steps`、`--replay-rollout-steps`、`--replay-collect-fraction`、`--replay-max-loss-t`、`--replay-teacher-blend` 与 replay extra loss 权重。
+  - 修正 v1 中 replay 调度公式，避免前 200 step 几乎没有 replay 训练。
+  - v4 新增 `teacher_blend`，把 rollout 中间状态向 clean target 轻度混合，使 replay 从完全 off-manifold 转为 near-manifold curriculum。
+  - validation 额外输出 `validation.replay`，不再只看 teacher-forced validation。
+- `src/proteinfoundation/nn/local_latents_transformer_multistate.py`
+  - 保留 no-leak guard，并新增 optional real CA / residue-type feature 禁止逻辑，确保 `de_novo_multistate_mode=True` 下不输入真实 binder 坐标或真实 binder residue type。
+- `scripts/strategy01/stage12_flow_coupling_probes.py`
+  - 增加 optional feature no-leak negative tests；预期报错被记录为 guard passed。
+- `scripts/strategy01/stage12_exact_benchmark.py`
+  - 增加 legacy average misuse guard。主评估若试图读取 weighted-average `bb_ca/local_latents` 会直接失败，必须使用 `bb_ca_states[k]/local_latents_states[k]`。
+- `scripts/strategy01/stage12c_de_novo_smoke.py`
+  - 新增真实 target-only de novo rollout smoke：从噪声完整 rollout，最终只用 state-specific outputs 评估 shared sequence identity、AE-state identity 和 multistate loss。
+
+### Warning / error 处理
+- `torch nested tensor` warning 在 Stage12B 已通过显式禁用 nested tensor 消除，不影响 Stage12C。
+- `use_ca_coors_nm_feature disabled` / `use_residue_type_feature disabled` warning 在 Stage12C 仍出现。这个 warning 对本阶段不是错误，而是 no-leak 契约的预期现象：真实 binder CA 和真实 residue type 不能作为 de novo 输入。它可能限制绝对性能，但不导致结果无效。
+- 运行脚本曾因 `stage12_flow_coupling_probes.py` 参数误用失败一次：该脚本没有 `--device/--run-name` 参数。根因是把训练脚本 CLI 误套到 probe 脚本；已按真实 `--report-json` 参数重跑并通过。
+- Slurm 作业 `1956470` 申请 8 CPU 导致在 `gu02` 上因 CPU 不足 pending；已取消并改为 2 CPU + 1 A100 的 `1957169` 成功运行。根因是 `gu02` 当时有 A100 空闲但 CPU 剩余不足。
+
+### CPU / contract gates
+- `py_compile` 覆盖 Stage12 training、flow probe、exact benchmark、multistate transformer。
+- no-leak guard 通过：`init_bb_ca_states/source_*` 和 optional real CA / residue-type feature 在 `de_novo_multistate_mode=True` 下会触发预期失败。
+- repair mode 未删除；`de_novo_multistate_mode=False` 仍可作为 pose repair baseline。
+- benchmark legacy-average negative test 通过：`prediction_source=legacy_average` 会报错，避免把平均结构误作科学主输出。
+
+### GPU 训练结果
+| run | 关键设置 | overfit1 drop | overfit4 drop | pilot drop | validation shared identity | validation AE-state identity | validation replay shared identity | validation replay AE-state identity |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| v3 | replay 0.20, warmup 60, clamp 0.75 | 0.790 | 0.887 | 0.339 | 0.330 | 0.511 | 未记录 | 未记录 |
+| v4 | replay 0.10, warmup 100, teacher_blend 0.35 | 0.794 | 0.893 | 0.361 | 0.386 | 0.511 | 0.159 | 0.341 |
+
+解释：v4 比 v3 的 teacher-forced validation shared identity 从约 0.330 提升到 0.386，说明 near-manifold replay curriculum 有正作用。但 validation replay shared identity 只有 0.159，说明模型仍未学会对 unseen target 的自产生 off-manifold 中间状态做可靠恢复。
+
+### 真实 de novo smoke
+| checkpoint | nsteps | val samples | shared identity | AE-state identity | contact loss | distance loss | clash loss | AE seq loss |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Stage12C-v4 | 16 | 8 | 0.176 | 0.098 | 0.504 | 0.698 | 0.010 | 14.368 |
+| Stage12C-v4 | 64 | 8 | 0.091 | 0.049 | 0.477 | 0.667 | 0.010 | 16.927 |
+
+Stage12B 的 8-sample de novo shared identity 约 0.0605。Stage12C-v4 的 16-step smoke 提升到 0.176，是实质进步，但没有达到计划 gate `>=0.20`。64-step 反而下降到 0.091，说明失败不是采样步数不足，而是完整 rollout 过程中 `local_latents_states` 仍逐步离开 AE/sequence-compatible manifold。
+
+### 是否达到科学目标
+没有。Stage12C 证明了 short-rollout replay 是正确方向的一部分，但目前只做到“训练子集和近邻 replay 可学”，还没有做到“target-only de novo 输入 K 个 target states 后稳定生成一个共享 binder 序列和 K 个合理复合物”。因此不能进入正式 B0/B1/B2 胜负比较，也不能扩大数据规模宣称成功。
+
+### 下一步修正方向
+1. 从 on-the-fly replay 切到固定 replay-cache curriculum：先生成 easy/medium/hard 三档 replay cache，使 validation replay 分布固定可比，而不是每次随当前模型漂移。
+2. 对 `local_latents_states` 增加 AE-manifold projection / latent norm regularization / sequence-compatible latent repair，目标是降低 de novo smoke 的 `multistate_ae_seq_justlog`。
+3. 将 shared sequence feedback 更早接入 denoising step，而不只在 readout 后约束；当前 `state_seq_disagreement` 很低但 shared entropy 仍高，说明 state branches 没有真正给 shared sequence 提供强判别信息。
+4. 在进入 48 exact benchmark 前，必须先让 8-sample de novo smoke 过 gate：shared identity `>=0.20`，且 contact/clash 不退化。

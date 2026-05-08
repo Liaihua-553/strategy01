@@ -1,0 +1,22 @@
+{
+  "stage": "stage12_exact_benchmark",
+  "status": "dry_run_passed",
+  "systems": {
+    "B0_static_native": "single-state Complexa-native generation/refold baseline",
+    "B0_static_transfer_relax": "source-pose transfer/repair baseline, not de-novo B1",
+    "B1_stage12_de_novo": "target-only coupled full multistate product-space flow",
+    "B2_exact": "experimental complex geometry and true binder sequence upper bound"
+  },
+  "hard_failures": [
+    "severe_clash"
+  ],
+  "metrics": [
+    "shared_sequence_identity",
+    "contact_F1",
+    "contact_persistence",
+    "worst_interface_RMSD",
+    "clash_rate"
+  ],
+  "prediction_source": "state_specific",
+  "forbidden_main_eval_output": "legacy weighted-average bb_ca/local_latents"
+}

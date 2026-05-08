@@ -249,6 +249,14 @@ class LocalLatentsTransformerMultistate(nn.Module):
                     "de_novo_multistate mode is target-only and forbids source/pose inputs: "
                     f"{leaked}"
                 )
+            # Stage12C: optional CA/residue-type features are valid for repair
+            # baselines but leak true binder geometry/sequence in target-only
+            # de-novo mode. Self-conditioning must use x_t_states, not these
+            # baseline optional feature switches.
+            if bool(input.get("use_ca_coors_nm_feature", False)):
+                raise ValueError("de_novo_multistate mode forbids optional CA coordinate features")
+            if bool(input.get("use_residue_type_feature", False)):
+                raise ValueError("de_novo_multistate mode forbids optional residue-type features")
         c = self.cond_factory(input)
         c = self.transition_c_2(self.transition_c_1(c, mask), mask)
 

@@ -21,6 +21,13 @@ STAGE_DIR = REPO_ROOT / "ckpts" / "stage04_real_complex_interface_loss"
 RUNS_DIR = STAGE_DIR / "runs"
 STAGE_COMPLEXA = REPO_ROOT / "ckpts" / "stage03_multistate_loss" / "complexa_init_readonly_copy.ckpt"
 STAGE_AE = REPO_ROOT / "ckpts" / "stage03_multistate_loss" / "complexa_ae_init_readonly_copy.ckpt"
+# Stage12C compatibility: the current benchmark-base strategy repo keeps the
+# verified checkpoint copies at ckpts/complexa*.ckpt. Use them as read-only
+# fallback when the older stage03 copy directory is absent.
+if not STAGE_COMPLEXA.exists():
+    STAGE_COMPLEXA = REPO_ROOT / "ckpts" / "complexa.ckpt"
+if not STAGE_AE.exists():
+    STAGE_AE = REPO_ROOT / "ckpts" / "complexa_ae.ckpt"
 NN_CONFIG = REPO_ROOT / "configs" / "nn" / "local_latents_score_nn_160M_multistate.yaml"
 TRAIN_CONFIG = REPO_ROOT / "configs" / "training_local_latents_multistate_stage04_probe.yaml"
 

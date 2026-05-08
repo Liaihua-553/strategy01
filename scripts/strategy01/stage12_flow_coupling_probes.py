@@ -91,7 +91,12 @@ def main():
     device = torch.device("cpu")
     torch.manual_seed(1207)
 
-    _, checkpoint_nn_cfg, latent_dim = load_checkpoint_artifacts(cfg.baseline_ckpt_path)
+    ckpt_path = Path(str(cfg.baseline_ckpt_path))
+    ckpt_fallback_used = False
+    if not ckpt_path.exists():
+        ckpt_path = REPO / "ckpts/complexa.ckpt"
+        ckpt_fallback_used = True
+    _, checkpoint_nn_cfg, latent_dim = load_checkpoint_artifacts(ckpt_path)
     nn_cfg = OmegaConf.to_container(OmegaConf.load(cfg.nn_config_path), resolve=True)
     nn_cfg["feats_seq"] = deepcopy(checkpoint_nn_cfg["feats_seq"])
     nn_cfg["feats_pair_repr"] = deepcopy(checkpoint_nn_cfg["feats_pair_repr"])
@@ -120,6 +125,26 @@ def main():
     except ValueError as exc:
         expected_no_leak_guard_passed = "de_novo_multistate" in str(exc)
     assert expected_no_leak_guard_passed, "de_novo_multistate no-source guard did not fire"
+
+    expected_optional_ca_guard_passed = False
+    optional_ca_batch = dict(batch)
+    optional_ca_batch["use_ca_coors_nm_feature"] = True
+    optional_ca_batch["ca_coors_nm"] = torch.zeros(args.batch_size, args.binder_len, 3)
+    try:
+        model(optional_ca_batch)
+    except ValueError as exc:
+        expected_optional_ca_guard_passed = "optional CA" in str(exc)
+    assert expected_optional_ca_guard_passed, "de_novo_multistate optional CA no-leak guard did not fire"
+
+    expected_optional_residue_guard_passed = False
+    optional_residue_batch = dict(batch)
+    optional_residue_batch["use_residue_type_feature"] = True
+    optional_residue_batch["residue_type"] = torch.zeros(args.batch_size, args.binder_len, dtype=torch.long)
+    try:
+        model(optional_residue_batch)
+    except ValueError as exc:
+        expected_optional_residue_guard_passed = "residue-type" in str(exc)
+    assert expected_optional_residue_guard_passed, "de_novo_multistate optional residue no-leak guard did not fire"
 
     repair_batch = dict(batch)
     repair_batch["de_novo_multistate_mode"] = False
@@ -157,9 +182,13 @@ def main():
     results = {
         "stage": "stage12_flow_coupling_probe",
         "status": "passed",
+        "checkpoint_path": str(ckpt_path),
+        "checkpoint_fallback_used": ckpt_fallback_used,
         "forward_shapes": summarize_forward(out),
         "state_permutation_max_abs_delta": perm_delta,
         "expected_no_leak_guard_passed": expected_no_leak_guard_passed,
+        "expected_optional_ca_guard_passed": expected_optional_ca_guard_passed,
+        "expected_optional_residue_guard_passed": expected_optional_residue_guard_passed,
         "repair_mode_allows_init_pose": True,
         "corrupt_multistate": {
             "stage12_primary_state_tensors": bool(loss_batch["stage12_primary_state_tensors"]),

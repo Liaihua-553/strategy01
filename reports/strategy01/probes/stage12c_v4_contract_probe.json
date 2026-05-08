@@ -1,0 +1,145 @@
+{
+  "stage": "stage12_flow_coupling_probe",
+  "status": "passed",
+  "checkpoint_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/complexa.ckpt",
+  "checkpoint_fallback_used": true,
+  "forward_shapes": {
+    "bb_ca": {
+      "v": [
+        2,
+        32,
+        3
+      ]
+    },
+    "local_latents": {
+      "v": [
+        2,
+        32,
+        8
+      ]
+    },
+    "seq_logits_shared": [
+      2,
+      32,
+      20
+    ],
+    "seq_logits_base_shared": [
+      2,
+      32,
+      20
+    ],
+    "seq_logits_shared_tokens": [
+      2,
+      32,
+      20
+    ],
+    "shared_seq_tokens": [
+      2,
+      32,
+      768
+    ],
+    "state_seq_logits": [
+      2,
+      3,
+      32,
+      20
+    ],
+    "bb_ca_states": [
+      2,
+      3,
+      32,
+      3
+    ],
+    "local_latents_states": [
+      2,
+      3,
+      32,
+      8
+    ],
+    "flow_gate": [
+      2,
+      3,
+      32,
+      1
+    ],
+    "seq_feedback_tokens": [
+      2,
+      32,
+      768
+    ],
+    "seq_logits_pre_feedback": [
+      2,
+      32,
+      20
+    ],
+    "interface_quality_logits": [
+      2,
+      3,
+      5
+    ],
+    "arch_debug": {
+      "ensemble_target_memory": [
+        2,
+        64,
+        768
+      ],
+      "ensemble_target_mask": [
+        2,
+        64
+      ],
+      "state_summary_tokens": [
+        2,
+        3,
+        768
+      ],
+      "state_target_tokens": [
+        2,
+        3,
+        64,
+        768
+      ],
+      "state_target_mask": [
+        2,
+        3,
+        64
+      ],
+      "target_state_weights": [
+        2,
+        3
+      ],
+      "target_state_roles": [
+        2,
+        3
+      ],
+      "sampling_state_weights": [
+        2,
+        3
+      ],
+      "sequence_consensus_state_weights": [
+        2,
+        3
+      ],
+      "sequence_consensus_gate_mean": [],
+      "stage12_shared_sequence_token_norm_mean": [],
+      "stage12_shared_sequence_token_logits_norm_mean": [],
+      "cross_state_attention_mean": [
+        2,
+        64,
+        3
+      ],
+      "sequence_feedback_norm_mean": [],
+      "flow_gate_mean": [],
+      "flow_gate_std": []
+    }
+  },
+  "state_permutation_max_abs_delta": 9.5367431640625e-07,
+  "expected_no_leak_guard_passed": true,
+  "expected_optional_ca_guard_passed": true,
+  "expected_optional_residue_guard_passed": true,
+  "repair_mode_allows_init_pose": true,
+  "corrupt_multistate": {
+    "stage12_primary_state_tensors": true,
+    "bb_ca_state_delta_mean": 0.5251034498214722,
+    "local_latents_state_delta_mean": 0.5634645223617554
+  }
+}
