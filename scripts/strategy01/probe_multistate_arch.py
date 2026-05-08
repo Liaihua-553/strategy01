@@ -12,12 +12,12 @@ from proteinfoundation.utils.pdb_utils import load_target_from_pdb
 
 
 def infer_latent_dim_from_ckpt(ckpt_path: str) -> int:
-    ckpt = torch.load(ckpt_path, map_location="cpu")
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     return int(ckpt["state_dict"]["nn.local_latents_linear.1.weight"].shape[0])
 
 
 def load_checkpoint_artifacts(ckpt_path: str) -> tuple[dict, dict, int]:
-    ckpt = torch.load(ckpt_path, map_location="cpu")
+    ckpt = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     latent_dim = int(ckpt["state_dict"]["nn.local_latents_linear.1.weight"].shape[0])
     nn_cfg = deepcopy(ckpt["hyper_parameters"]["cfg_exp"]["nn"])
     return ckpt, nn_cfg, latent_dim

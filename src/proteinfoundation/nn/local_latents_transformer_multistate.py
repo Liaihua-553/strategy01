@@ -171,6 +171,21 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.GELU(),
             nn.Linear(self.token_dim, self.token_dim),
         )
+        # MODIFIED 2026-05-08 Stage12D:
+        # The Stage12C short-rollout probes showed that sampled local latents
+        # drift away from the frozen AE sequence manifold.  This light residual
+        # repair path lets the shared sequence signal directly adjust the
+        # state-specific local latent readout, instead of hoping the final
+        # sequence head alone can fix an off-manifold z.
+        self.latent_sequence_repair_projector = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, self.latent_dim, bias=False),
+        )
+        self.latent_sequence_repair_gate = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, 1),
+            nn.Sigmoid(),
+        )
         self.flow_gate_head = nn.Sequential(
             nn.LayerNorm(self.token_dim),
             nn.Linear(self.token_dim, 1),
@@ -348,6 +363,17 @@ class LocalLatentsTransformerMultistate(nn.Module):
         state_tokens = self.state_token_norm(state_tokens + shared_seq_state_feedback[:, None, :, :])
         state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.5 * shared_seq_state_feedback[:, None, :, :])
 
+        # Stage12D: inject a token-only shared sequence signal before the first
+        # state sequence readout.  Stage12C already fed back the post-consensus
+        # soft sequence, but only after state logits had been computed once.
+        # This earlier feedback makes the flow heads sequence-aware even when
+        # sampled x_t states are still far from the training interpolant.
+        early_shared_seq_logits = (base_shared_seq_logits + shared_seq_token_logits) * mask[..., None]
+        early_shared_seq_soft = torch.softmax(early_shared_seq_logits.float(), dim=-1).to(dtype=seqs.dtype) * mask[..., None]
+        early_seq_feedback_tokens = self.soft_sequence_feedback_projector(early_shared_seq_soft) * mask[..., None]
+        state_tokens = self.state_token_norm(state_tokens + 0.15 * early_seq_feedback_tokens[:, None, :, :])
+        state_seq_tokens = self.state_token_norm(state_seq_tokens + 0.25 * early_seq_feedback_tokens[:, None, :, :])
+
         flat_state_tokens = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_mask = mask[:, None, :].expand(-1, nstates, -1).reshape(batch_size * nstates, nbinder)
@@ -384,7 +410,12 @@ class LocalLatentsTransformerMultistate(nn.Module):
 
         flat_state_tokens = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
         flat_state_seq_tokens = state_seq_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
-        flat_local_latents = self.local_latents_linear(flat_state_tokens) * flat_state_mask[..., None]
+        flat_local_latents_base = self.local_latents_linear(flat_state_tokens)
+        flat_latent_repair = self.latent_sequence_repair_projector(flat_state_seq_tokens)
+        flat_latent_repair_gate = self.latent_sequence_repair_gate(flat_state_seq_tokens)
+        flat_local_latents = (
+            flat_local_latents_base + 0.25 * flat_latent_repair_gate * flat_latent_repair
+        ) * flat_state_mask[..., None]
         flat_bb_ca = self.ca_linear(flat_state_tokens) * flat_state_mask[..., None]
         flat_state_seq_logits = self.state_seq_head(flat_state_seq_tokens) * flat_state_mask[..., None]
         flat_flow_gate = self.flow_gate_head(flat_state_tokens) * flat_state_mask[..., None]
@@ -416,7 +447,10 @@ class LocalLatentsTransformerMultistate(nn.Module):
             "bb_ca_states": bb_ca_states,
             "local_latents_states": local_latents_states,
             "flow_gate": flow_gate,
+            "latent_sequence_repair_gate": flat_latent_repair_gate.reshape(batch_size, nstates, nbinder, 1)
+            * state_present_mask,
             "seq_feedback_tokens": seq_feedback_tokens,
+            "early_seq_feedback_tokens": early_seq_feedback_tokens,
             "seq_logits_pre_feedback": shared_seq_logits_pre,
             "interface_quality_logits": interface_quality_logits,
             "arch_debug": {
@@ -434,6 +468,9 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "stage12_shared_sequence_token_logits_norm_mean": shared_seq_token_logits.detach().norm(dim=-1).mean(),
                 "cross_state_attention_mean": target_bundle["cross_state_attention_mean"],
                 "sequence_feedback_norm_mean": seq_feedback_tokens.detach().norm(dim=-1).mean(),
+                "early_sequence_feedback_norm_mean": early_seq_feedback_tokens.detach().norm(dim=-1).mean(),
+                "latent_sequence_repair_gate_mean": flat_latent_repair_gate.detach().mean(),
+                "latent_sequence_repair_norm_mean": flat_latent_repair.detach().norm(dim=-1).mean(),
                 "flow_gate_mean": flow_gate.detach().mean(),
                 "flow_gate_std": flow_gate.detach().std(),
             },

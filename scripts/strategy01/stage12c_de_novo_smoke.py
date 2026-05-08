@@ -62,6 +62,7 @@ def rollout_final(
     sampling_cfg: dict[str, Any],
     nsteps: int,
     seed: int,
+    local_latents_stop_t: float | None = None,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -87,16 +88,39 @@ def rollout_final(
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
             if step in {0, schedule_steps // 2, schedule_steps - 1}:
+                diag_out = s11.attach_ae_sequence_logits(ae, fm, work, dict(nn_out), ca_source="pred")
+                diag_identity = s12.identity_metrics(diag_out, work)
+                arch_debug = nn_out.get("arch_debug", {})
                 diagnostics.append(
                     {
                         "step": step,
                         "t": {dm: float(ts[dm][step].detach().cpu().item()) for dm in fm.data_modes},
                         "shared_entropy": sequence_entropy(nn_out["seq_logits_shared"], work["binder_seq_mask"]),
                         "state_seq_disagreement": state_seq_disagreement(nn_out["state_seq_logits"], work["state_mask"]),
+                        "identity": diag_identity,
+                        "early_sequence_feedback_norm_mean": float(
+                            arch_debug.get("early_sequence_feedback_norm_mean", torch.tensor(0.0)).detach().cpu().item()
+                        ),
+                        "sequence_feedback_norm_mean": float(
+                            arch_debug.get("sequence_feedback_norm_mean", torch.tensor(0.0)).detach().cpu().item()
+                        ),
+                        "latent_sequence_repair_gate_mean": float(
+                            arch_debug.get("latent_sequence_repair_gate_mean", torch.tensor(0.0)).detach().cpu().item()
+                        ),
+                        "latent_sequence_repair_norm_mean": float(
+                            arch_debug.get("latent_sequence_repair_norm_mean", torch.tensor(0.0)).detach().cpu().item()
+                        ),
                     }
                 )
             updated: dict[str, torch.Tensor] = {}
             for dm in fm.data_modes:
+                if (
+                    local_latents_stop_t is not None
+                    and dm == "local_latents"
+                    and float(ts[dm][step].detach().cpu().item()) >= float(local_latents_stop_t)
+                ):
+                    updated[dm] = x_states[dm].detach()
+                    continue
                 flat_x = x_states[dm].reshape(b * k, n, x_states[dm].shape[-1])
                 flat_mask = state_mask.reshape(b * k, n)
                 flat_t = ts[dm][step].expand(b * k).to(device)
@@ -122,7 +146,11 @@ def rollout_final(
         final["x_0_states"] = work["x_0_states"]
         final["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
         final["t_states"] = {
-            dm: torch.clamp(ts[dm][-1].expand(b, k).to(device), max=0.95) for dm in fm.data_modes
+            dm: torch.clamp(
+                ts[dm][-1].expand(b, k).to(device),
+                max=min(0.95, float(local_latents_stop_t)) if (dm == "local_latents" and local_latents_stop_t is not None) else 0.95,
+            )
+            for dm in fm.data_modes
         }
         final["state_mask"] = state_mask
         final["stage12_primary_state_tensors"] = True
@@ -149,6 +177,12 @@ def parse_args():
     parser.add_argument("--split", choices=["train", "val"], default="val")
     parser.add_argument("--max-samples", type=int, default=8)
     parser.add_argument("--nsteps", type=int, default=16)
+    parser.add_argument(
+        "--local-latents-stop-t",
+        type=float,
+        default=None,
+        help="Optional sampling diagnostic: stop local_latents updates after this t while bb_ca keeps flowing.",
+    )
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=1207)
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
@@ -193,7 +227,18 @@ def main() -> None:
             "legacy_average_outputs": "not used for main smoke evaluation",
         },
     }
-    smoke = rollout_final(model, ae, fm, selected, device, sampling_cfg, args.nsteps, args.seed)
+    smoke = rollout_final(
+        model,
+        ae,
+        fm,
+        selected,
+        device,
+        sampling_cfg,
+        args.nsteps,
+        args.seed,
+        local_latents_stop_t=args.local_latents_stop_t,
+    )
+    result["local_latents_stop_t"] = args.local_latents_stop_t
     result.update(smoke)
     result["status"] = "passed"
     write_json(args.report_json, result)

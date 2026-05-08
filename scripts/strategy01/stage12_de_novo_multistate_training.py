@@ -50,6 +50,30 @@ def write_json(path: Path, obj: Any) -> None:
     path.write_text(json.dumps(s4.jsonable(obj), ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def tensor_tree_to_device(obj: Any, device: torch.device) -> Any:
+    if torch.is_tensor(obj):
+        return obj.to(device=device)
+    if isinstance(obj, dict):
+        return {key: tensor_tree_to_device(value, device) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [tensor_tree_to_device(value, device) for value in obj]
+    if isinstance(obj, tuple):
+        return tuple(tensor_tree_to_device(value, device) for value in obj)
+    return obj
+
+
+def detach_tensor_tree_to_cpu(obj: Any) -> Any:
+    if torch.is_tensor(obj):
+        return obj.detach().cpu()
+    if isinstance(obj, dict):
+        return {key: detach_tensor_tree_to_cpu(value) for key, value in obj.items()}
+    if isinstance(obj, list):
+        return [detach_tensor_tree_to_cpu(value) for value in obj]
+    if isinstance(obj, tuple):
+        return tuple(detach_tensor_tree_to_cpu(value) for value in obj)
+    return obj
+
+
 def choose_device(requested: str) -> torch.device:
     if requested == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -216,6 +240,89 @@ def build_replay_condition_batch(
     return replay, diagnostics
 
 
+def parse_replay_cache_levels(levels: str) -> list[tuple[str, float]]:
+    parsed: list[tuple[str, float]] = []
+    for item in str(levels).split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if ":" in item:
+            name, value = item.split(":", 1)
+        else:
+            name, value = f"level{len(parsed)}", item
+        blend = max(0.0, min(float(value), 0.95))
+        parsed.append((name.strip() or f"level{len(parsed)}", blend))
+    if not parsed:
+        parsed = [("medium", 0.35)]
+    return parsed
+
+
+def choose_replay_cache_level(args: argparse.Namespace, step: int, total_steps: int) -> str | None:
+    levels = parse_replay_cache_levels(args.replay_cache_levels)
+    if len(levels) == 1:
+        return levels[0][0]
+    switches = [float(x) for x in str(args.replay_curriculum_switches).split(",") if str(x).strip()]
+    progress = step / max(float(total_steps), 1.0)
+    idx = 0
+    for switch in switches:
+        if progress >= switch:
+            idx += 1
+    idx = min(idx, len(levels) - 1)
+    return levels[idx][0]
+
+
+def build_fixed_replay_cache(
+    model: torch.nn.Module,
+    fm: Any,
+    samples: list[dict[str, Any]],
+    device: torch.device,
+    args: argparse.Namespace,
+    sampling_cfg: dict[str, Any],
+    batch_size: int,
+) -> dict[str, list[dict[str, Any]]]:
+    """Precompute replay conditions so training sees a stable sampled distribution.
+
+    Stage12C generated replay states online.  That proved the plumbing worked,
+    but the replay distribution changed with the model and seed, making it hard
+    to distinguish genuine latent-manifold improvement from rollout noise.
+    Stage12D fixes a small cache per phase and schedules easy/medium/hard
+    blends over it.
+    """
+    if not samples:
+        return {}
+    cache: dict[str, list[dict[str, Any]]] = {}
+    levels = parse_replay_cache_levels(args.replay_cache_levels)
+    nbatches = max(1, min(int(args.replay_cache_batches), (len(samples) + batch_size - 1) // max(batch_size, 1)))
+    for level_name, blend in levels:
+        cache[level_name] = []
+        for batch_idx in range(nbatches):
+            start = (batch_idx * batch_size) % len(samples)
+            subset = [samples[(start + i) % len(samples)] for i in range(batch_size)]
+            collated = s10.collate_variable(subset, device)
+            replay_batch, diagnostics = build_replay_condition_batch(
+                model,
+                fm,
+                collated,
+                device,
+                sampling_cfg,
+                rollout_steps=args.replay_rollout_steps,
+                collect_fraction=args.replay_collect_fraction,
+                max_loss_t=args.replay_max_loss_t,
+                teacher_blend=blend,
+                seed=9301 + batch_idx * 101 + int(blend * 1000),
+            )
+            cache[level_name].append(
+                {
+                    "batch": detach_tensor_tree_to_cpu(replay_batch),
+                    "diagnostics": diagnostics,
+                    "level": level_name,
+                    "teacher_blend": blend,
+                    "sample_indices": list(range(start, start + len(subset))),
+                }
+            )
+    return cache
+
+
 def forward_loss_stage12(
     model: torch.nn.Module,
     ae: torch.nn.Module,
@@ -226,14 +333,22 @@ def forward_loss_stage12(
     sampling_cfg: dict[str, Any] | None = None,
     replay: bool = False,
     seed: int | None = None,
+    replay_cache_entry: dict[str, Any] | None = None,
 ) -> tuple[torch.Tensor, dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, Any]]:
     if seed is not None:
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
-    batch = s10.collate_variable(samples, device)
     replay_diag: dict[str, Any] = {}
-    if replay:
+    if replay_cache_entry is not None:
+        work_batch = tensor_tree_to_device(replay_cache_entry["batch"], device)
+        replay_diag = dict(replay_cache_entry.get("diagnostics", {}))
+        replay_diag["fixed_cache_level"] = replay_cache_entry.get("level")
+        replay_diag["fixed_cache_teacher_blend"] = replay_cache_entry.get("teacher_blend")
+        replay_diag["fixed_cache_sample_indices"] = replay_cache_entry.get("sample_indices")
+    else:
+        batch = s10.collate_variable(samples, device)
+    if replay and replay_cache_entry is None:
         if args is None or sampling_cfg is None:
             raise ValueError("Stage12 replay requires args and sampling_cfg")
         work_batch, replay_diag = build_replay_condition_batch(
@@ -248,7 +363,7 @@ def forward_loss_stage12(
             teacher_blend=args.replay_teacher_blend,
             seed=seed,
         )
-    else:
+    elif replay_cache_entry is None:
         work_batch = make_de_novo_batch(batch)
         work_batch = fm.corrupt_multistate_batch(work_batch)
     nn_out = model(work_batch)
@@ -307,6 +422,9 @@ def run_loop(
     trainable = set_trainable(model, phase)
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
+    replay_cache: dict[str, list[dict[str, Any]]] = {}
+    if args.enable_replay and args.enable_fixed_replay_cache:
+        replay_cache = build_fixed_replay_cache(model, fm, samples, device, args, sampling_cfg, batch_size)
     started = time.time()
     with torch.no_grad():
         initial, initial_losses, initial_out, initial_batch = forward_loss_stage12(model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, seed=1207)
@@ -323,9 +441,24 @@ def run_loop(
             and step > int(args.replay_warmup_steps)
             and ((step * 37) % 100) < int(100 * float(args.replay_mix_prob))
         )
+        replay_cache_entry = None
+        if use_replay and replay_cache:
+            level = choose_replay_cache_level(args, step, steps)
+            level_entries = replay_cache.get(level or "", [])
+            if level_entries:
+                replay_cache_entry = level_entries[(step // max(args.eval_every, 1)) % len(level_entries)]
         opt.zero_grad(set_to_none=True)
         total, losses, _, train_batch = forward_loss_stage12(
-            model, ae, fm, subset, device, args=args, sampling_cfg=sampling_cfg, replay=use_replay, seed=step * 977
+            model,
+            ae,
+            fm,
+            subset,
+            device,
+            args=args,
+            sampling_cfg=sampling_cfg,
+            replay=use_replay,
+            seed=step * 977,
+            replay_cache_entry=replay_cache_entry,
         )
         if not torch.isfinite(total):
             raise FloatingPointError(f"non-finite Stage12 loss at step {step}: {total}")
@@ -339,8 +472,23 @@ def run_loop(
                 ev_replay_identity = None
                 ev_replay_diag = None
                 if args.enable_replay:
+                    eval_cache_entry = None
+                    if replay_cache:
+                        level = choose_replay_cache_level(args, step, steps)
+                        entries = replay_cache.get(level or "", [])
+                        if entries:
+                            eval_cache_entry = entries[0]
                     ev_replay_total, ev_replay_losses, ev_replay_out, ev_replay_batch = forward_loss_stage12(
-                        model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, replay=True, seed=2207
+                        model,
+                        ae,
+                        fm,
+                        fixed_subset,
+                        device,
+                        args=args,
+                        sampling_cfg=sampling_cfg,
+                        replay=True,
+                        seed=2207,
+                        replay_cache_entry=eval_cache_entry,
                     )
                     ev_replay_identity = identity_metrics(ev_replay_out, ev_replay_batch)
                     ev_replay_diag = ev_replay_batch.get("stage12_replay_diagnostics")
@@ -365,8 +513,23 @@ def run_loop(
         replay_final = None
         replay_final_losses = replay_final_out = replay_final_batch = None
         if args.enable_replay:
+            final_cache_entry = None
+            if replay_cache:
+                final_level = parse_replay_cache_levels(args.replay_cache_levels)[-1][0]
+                entries = replay_cache.get(final_level, [])
+                if entries:
+                    final_cache_entry = entries[0]
             replay_final, replay_final_losses, replay_final_out, replay_final_batch = forward_loss_stage12(
-                model, ae, fm, fixed_subset, device, args=args, sampling_cfg=sampling_cfg, replay=True, seed=2207
+                model,
+                ae,
+                fm,
+                fixed_subset,
+                device,
+                args=args,
+                sampling_cfg=sampling_cfg,
+                replay=True,
+                seed=2207,
+                replay_cache_entry=final_cache_entry,
             )
     initial_value = float(initial.detach().cpu().item())
     final_value = float(final.detach().cpu().item())
@@ -388,6 +551,12 @@ def run_loop(
         "replay_final_diagnostics": replay_final_batch.get("stage12_replay_diagnostics") if replay_final_batch is not None else None,
         "history": history,
         "trainable": trainable,
+        "fixed_replay_cache": {
+            "enabled": bool(args.enable_replay and args.enable_fixed_replay_cache),
+            "levels": {key: len(value) for key, value in replay_cache.items()},
+            "level_spec": args.replay_cache_levels,
+            "curriculum_switches": args.replay_curriculum_switches,
+        },
         "elapsed_sec": time.time() - started,
         "step_time_sec": (time.time() - started) / max(steps, 1),
         "cuda_max_mem_gb": torch.cuda.max_memory_allocated() / (1024**3) if device.type == "cuda" else 0.0,
@@ -442,6 +611,20 @@ def parse_args():
     parser.add_argument("--replay-extra-contact-weight", type=float, default=0.10)
     parser.add_argument("--replay-extra-distance-weight", type=float, default=0.05)
     parser.add_argument("--replay-extra-clash-weight", type=float, default=0.10)
+    parser.add_argument("--enable-fixed-replay-cache", action="store_true", default=False)
+    parser.add_argument("--replay-cache-batches", type=int, default=4)
+    parser.add_argument(
+        "--replay-cache-levels",
+        type=str,
+        default="easy:0.65,medium:0.35,hard:0.10",
+        help="Comma-separated replay curriculum levels as name:teacher_blend.",
+    )
+    parser.add_argument(
+        "--replay-curriculum-switches",
+        type=str,
+        default="0.40,0.75",
+        help="Progress fractions where replay cache switches to the next difficulty level.",
+    )
     return parser.parse_args()
 
 
@@ -488,6 +671,10 @@ def main():
         "warmup_steps": args.replay_warmup_steps,
         "max_loss_t": args.replay_max_loss_t,
         "teacher_blend": args.replay_teacher_blend,
+        "fixed_cache_enabled": bool(args.enable_fixed_replay_cache),
+        "fixed_cache_batches": args.replay_cache_batches,
+        "fixed_cache_levels": args.replay_cache_levels,
+        "fixed_cache_curriculum_switches": args.replay_curriculum_switches,
         "sampling_config": str(args.sampling_config),
         "extra_weights": {
             "ae_seq": args.replay_extra_ae_seq_weight,
@@ -542,6 +729,23 @@ def main():
                 val_total, val_losses, val_out, val_batch = forward_loss_stage12(model, ae, fm, val_samples[: min(batch_size, len(val_samples))], device, args=args, sampling_cfg=sampling_cfg, seed=888)
                 val_replay = None
                 if args.enable_replay:
+                    val_cache = None
+                    if args.enable_fixed_replay_cache:
+                        val_cache = build_fixed_replay_cache(
+                            model,
+                            fm,
+                            val_samples[: min(batch_size, len(val_samples))],
+                            device,
+                            args,
+                            sampling_cfg,
+                            min(batch_size, len(val_samples)),
+                        )
+                    val_cache_entry = None
+                    if val_cache:
+                        final_level = parse_replay_cache_levels(args.replay_cache_levels)[-1][0]
+                        entries = val_cache.get(final_level, [])
+                        if entries:
+                            val_cache_entry = entries[0]
                     val_replay_total, val_replay_losses, val_replay_out, val_replay_batch = forward_loss_stage12(
                         model,
                         ae,
@@ -552,6 +756,7 @@ def main():
                         sampling_cfg=sampling_cfg,
                         replay=True,
                         seed=889,
+                        replay_cache_entry=val_cache_entry,
                     )
                     val_replay = {
                         "total": float(val_replay_total.detach().cpu().item()),

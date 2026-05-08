@@ -240,3 +240,56 @@ Stage12B 的 8-sample de novo shared identity 约 0.0605。Stage12C-v4 的 16-st
 2. 对 `local_latents_states` 增加 AE-manifold projection / latent norm regularization / sequence-compatible latent repair，目标是降低 de novo smoke 的 `multistate_ae_seq_justlog`。
 3. 将 shared sequence feedback 更早接入 denoising step，而不只在 readout 后约束；当前 `state_seq_disagreement` 很低但 shared entropy 仍高，说明 state branches 没有真正给 shared sequence 提供强判别信息。
 4. 在进入 48 exact benchmark 前，必须先让 8-sample de novo smoke 过 gate：shared identity `>=0.20`，且 contact/clash 不退化。
+
+## Stage12D：固定 replay-cache、latent-sequence repair 与 local-latent stop-t 诊断（更新于 2026-05-08）
+
+### 本阶段要解决的问题
+Stage12C 的关键失败不是 AE decoder 失效，而是自由 rollout 后 `local_latents_states` 偏离冻结 AE 的 sequence-compatible latent manifold。Stage12D 围绕这个问题做三个最小闭环：
+
+1. 固定 replay-cache curriculum：把 replay 条件固定成 easy/medium/hard 三档，避免在线 replay 每步漂移。
+2. latent-sequence repair：让 shared sequence token 直接修正 `local_latents_states` readout。
+3. local-latent stop-t 诊断：验证采样后段 `local_latents` 继续推到训练未覆盖的高 `t` 区域时，是否导致序列流形损坏。
+
+### 代码改动
+- `scripts/strategy01/stage12_de_novo_multistate_training.py`
+  - 新增 `build_fixed_replay_cache()`，支持 `--enable-fixed-replay-cache`、`--replay-cache-batches`、`--replay-cache-levels`、`--replay-curriculum-switches`。
+  - `forward_loss_stage12()` 支持 `replay_cache_entry`，训练可以直接使用固定 replay batch。
+  - `run_loop()` 按训练进度从 easy/medium/hard cache 中取 replay 条件，并记录 `fixed_cache_level`、`fixed_cache_teacher_blend`。
+- `src/proteinfoundation/nn/local_latents_transformer_multistate.py`
+  - 新增 `latent_sequence_repair_projector` 和 `latent_sequence_repair_gate`。
+  - `local_latents_states = local_latents_base + 0.25 * gate * repair`，使 shared sequence 信号直接作用到 AE decoder 所读的 latent。
+  - 新增 early shared sequence feedback，让 sequence signal 在第一次 state sequence readout 前就影响 state tokens。
+- `scripts/strategy01/stage12c_de_novo_smoke.py`
+  - 每个关键 timestep 记录 `shared_identity_mean`、`ae_state_identity_mean`、feedback norm、latent repair gate。
+  - 新增 `--local-latents-stop-t` 诊断参数，测试 `local_latents` 末端过冲。
+- `scripts/strategy01/probe_multistate_arch.py`
+  - 显式 `torch.load(..., weights_only=False)`，消除 PyTorch FutureWarning。
+
+### Warning / error 处理
+- `torch.load weights_only` FutureWarning：已修复。
+- `stage12c_de_novo_smoke.py` 首次提交误用 `--init-ckpt/--run-name`：这是 CLI 错误，不是模型错误；已改为 `--checkpoint/--report-json` 并重跑成功。
+- `CCD_MIRROR_PATH` / `PDB_MIRROR_PATH` 未设置：当前使用已 tensorized 数据，不调用 PDB/CCD mirror，不影响 Stage12D 结果。
+- optional CA/residue feature disabled warnings：这是 no-leak 预期行为，不影响结果有效性。
+
+### 训练与 smoke 结果
+| 实验 | 关键设置 | shared identity | AE-state identity | contact loss | distance loss | clash loss | 结论 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Stage12C-v4 16-step | online replay + blend 0.35 | 0.176 | 0.098 | 0.504 | 0.698 | 0.010 | 旧最好 de novo smoke |
+| Stage12D fixed-cache 16-step | hard=0.10 | 0.165 | 0.100 | 0.621 | 0.756 | 0.013 | hard replay 过早，未改善 |
+| Stage12D fixed-cache 64-step | hard=0.10 | 0.125 | 0.112 | 0.537 | 0.628 | 0.013 | 长 rollout 仍退化 |
+| Stage12D soft-cache 16-step | hard=0.35 | 0.148 | 0.087 | 0.570 | 0.754 | 0.012 | 软 cache 未改善 |
+| Stage12D stop-t 0.75, 16-step | local_latents stop at 0.75 | 0.193 | 0.100 | 0.622 | 0.756 | 0.013 | 接近 sequence gate |
+| Stage12D stop-t 0.65, 16-step | local_latents stop at 0.65 | 0.227 | 0.087 | 0.623 | 0.755 | 0.013 | shared readout 过 0.20，但 AE latent 仍差 |
+
+### 关键诊断
+`local_latents_stop_t=0.65` 首次把 8-sample shared identity 提到 `0.227`，超过 Stage12C 计划中的 `0.20` sequence gate。但 AE-state identity 仍只有 `0.087`，contact/distance 没同步改善。这说明 stop-t 主要救了 shared readout，并没有让每个 state-specific `local_latents_states` 真正回到 AE 可解码的共享序列流形。
+
+因此 Stage12D 仍未达到科学目标。当前模型还不是可靠的 target-only 多状态 binder 生成器；它只证明了 `local_latents` 末端过冲是一个真实瓶颈。
+
+### 下一步
+Stage12E 应直接做 AE latent manifold 修复，而不是继续扩大训练或盲目调 replay 权重：
+
+1. 加入 clean latent global statistics / norm / drift regularization，限制 sampled `local_latents_states` 远离训练分布。
+2. 把 `latent_sequence_repair_projector` 升级为 decoder-consistent projection head，以 AE-decoded CE 和 state-shared KL 为主监督。
+3. 将 `local_latents_stop_t` 从诊断参数变成训练-采样一致的 bounded latent schedule，再逐步放宽终点。
+4. 进入 48 exact benchmark 前，必须同时看到 shared identity、AE-state identity、contact/distance 三者改善。

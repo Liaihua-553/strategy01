@@ -1,0 +1,415 @@
+{
+  "stage": "stage12c_de_novo_smoke",
+  "status": "passed",
+  "checkpoint": "ckpts/stage12_de_novo_multistate/runs/stage12d_fixed_cache_latent_repair_gated/stage12_pilot_final.pt",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "split": "val",
+  "sample_count": 8,
+  "manifest_summary": {
+    "status": "passed",
+    "stage": "stage10_exactaug",
+    "notes": [
+      "Experimental V_exact is intentionally allowed into Stage10 training to strengthen exact interface supervision.",
+      "Exact holdout remains family/split_group separated for diagnostics; it is not a fully external benchmark once V_exact is used in training.",
+      "Variable binder/target lengths require Stage10 variable-length collate."
+    ],
+    "source_paths": {
+      "train": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_train.pt",
+      "val": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_val.pt",
+      "exact": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt"
+    },
+    "exact_train_fraction": 0.75,
+    "exact_train_groups": [
+      "06b6b82df6aa",
+      "095b2a929b3f",
+      "1088fb58162c",
+      "1199063295e3",
+      "1c8995b8b1de",
+      "233b65fe2aee",
+      "2464c4621457",
+      "2d210a7f0b34",
+      "31e9d33c070e",
+      "340ad9d1b636",
+      "3d55184ca7fe",
+      "4a683010f5ce",
+      "5082011b32ee",
+      "6a7f0302d575",
+      "74de758b9716",
+      "7e722986fb49",
+      "87f24a171107",
+      "8d2c8d621f8a",
+      "90aca2d3b3ce",
+      "94991d1021f5",
+      "956bf0c3d94a",
+      "99293b00467c",
+      "9b3ad16d60d1",
+      "a62b69154650",
+      "a95eccc78096",
+      "acdc493c2104",
+      "b755d773447a",
+      "c053b1b271b9",
+      "ccf6c760d8cd",
+      "d8a74511c002",
+      "d952e952cd15",
+      "e7e7f86a4ac0",
+      "ee265e002617",
+      "fab4c8e4ff78",
+      "fb5b6e084c18"
+    ],
+    "exact_val_groups": [
+      "02060ac11427",
+      "6d9a4910c4d4",
+      "828031e26137",
+      "9a201231192f",
+      "a1b83f6c1df0",
+      "d152cc784ade"
+    ],
+    "input_summary": {
+      "train": {
+        "count": 119,
+        "splits": {
+          "train": 119
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          8,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 22,
+          "2": 97
+        },
+        "family_count": 31
+      },
+      "val": {
+        "count": 30,
+        "splits": {
+          "val": 30
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          11,
+          89
+        ],
+        "target_len_minmax": [
+          43,
+          95
+        ],
+        "K": {
+          "3": 6,
+          "2": 24
+        },
+        "family_count": 7
+      },
+      "exact": {
+        "count": 48,
+        "splits": {
+          "val": 48
+        },
+        "source_tier": {
+          "exact_experimental": 48
+        },
+        "binder_len_minmax": [
+          7,
+          105
+        ],
+        "target_len_minmax": [
+          30,
+          184
+        ],
+        "K": {
+          "3": 48
+        },
+        "family_count": 41
+      }
+    },
+    "output_summary": {
+      "merged_train": {
+        "count": 161,
+        "splits": {
+          "train": 161
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "exact_experimental": 42,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 64,
+          "2": 97
+        },
+        "family_count": 66
+      },
+      "merged_val": {
+        "count": 36,
+        "splits": {
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "exact_experimental": 6,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          9,
+          95
+        ],
+        "target_len_minmax": [
+          30,
+          178
+        ],
+        "K": {
+          "3": 12,
+          "2": 24
+        },
+        "family_count": 13
+      },
+      "merged_all": {
+        "count": 197,
+        "splits": {
+          "train": 161,
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 138,
+          "exact_experimental": 48,
+          "T_hybrid_silver": 11
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 76,
+          "2": 121
+        },
+        "family_count": 79
+      }
+    }
+  },
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 634,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "checkpoint_meta": {
+    "loaded": true,
+    "path": "ckpts/stage12_de_novo_multistate/runs/stage12d_fixed_cache_latent_repair_gated/stage12_pilot_final.pt",
+    "compatible_keys": 1091,
+    "incompatible_shape_keys": [],
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "loss_cfg": {
+    "de_novo_multistate": true,
+    "target_center_noise_scale_nm": 0.2,
+    "latent_state_residual_noise_scale": 0.05,
+    "lambda_ae_seq": 1.5,
+    "lambda_seq_ae_consistency": 0.15,
+    "lambda_flow_gate_reg": 0.03,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.0,
+    "ae_seq_hard_state_gamma": 0.0
+  },
+  "contract": {
+    "de_novo_multistate_mode": true,
+    "forbidden_inputs": [
+      "init_bb_ca_states",
+      "source_bb_ca_states",
+      "source_complex_paths",
+      "source_interface_contact_labels",
+      "source_interface_distance_labels",
+      "optional_real_ca_feature",
+      "optional_real_residue_type_feature"
+    ],
+    "primary_outputs": [
+      "bb_ca_states",
+      "local_latents_states",
+      "shared_seq_logits"
+    ],
+    "legacy_average_outputs": "not used for main smoke evaluation"
+  },
+  "local_latents_stop_t": 0.65,
+  "losses": {
+    "multistate_total": 10251.6025390625,
+    "multistate_seq_justlog": 3.448317050933838,
+    "multistate_state_seq_justlog": 3.056364059448242,
+    "multistate_seq_consensus_justlog": 0.27754274010658264,
+    "multistate_anchor_disagreement_justlog": 7.505981193389744e-05,
+    "multistate_ae_seq_justlog": 13.746695518493652,
+    "multistate_ae_seq_cvar_justlog": 13.768383979797363,
+    "multistate_ae_seq_hard_justlog": 13.768383979797363,
+    "multistate_seq_ae_consistency_justlog": 7.893501281738281,
+    "multistate_flow_gate_reg_justlog": 0.0248139426112175,
+    "multistate_flow_gate_anchor_update_justlog": 0.0,
+    "multistate_struct_justlog": 10227.5712890625,
+    "multistate_fm_mean_justlog": 2222.5166015625,
+    "multistate_contact_justlog": 0.6225911974906921,
+    "multistate_distance_justlog": 0.75469970703125,
+    "multistate_clash_justlog": 0.013217363506555557,
+    "multistate_quality_proxy_justlog": 0.014354230836033821,
+    "multistate_anchor_persistence_justlog": 0.5163652300834656,
+    "multistate_self_geometry_justlog": 0.10571947693824768,
+    "multistate_mean_justlog": 2222.717529296875,
+    "multistate_cvar_justlog": 2256.521240234375,
+    "multistate_var_justlog": 82119.1328125,
+    "multistate_state_0_justlog": 2219.122802734375,
+    "multistate_state_0_fm_justlog": 2218.925537109375,
+    "multistate_state_0_contact_justlog": 0.6198480725288391,
+    "multistate_state_0_distance_justlog": 0.7238449454307556,
+    "multistate_state_0_clash_justlog": 0.01401398703455925,
+    "multistate_state_0_seq_justlog": 3.039027214050293,
+    "multistate_state_0_ae_seq_justlog": 13.69686508178711,
+    "multistate_state_0_flow_gate_anchor_justlog": 0.015132629312574863,
+    "multistate_state_1_justlog": 2293.919921875,
+    "multistate_state_1_fm_justlog": 2293.719970703125,
+    "multistate_state_1_contact_justlog": 0.6103214025497437,
+    "multistate_state_1_distance_justlog": 0.7694350481033325,
+    "multistate_state_1_clash_justlog": 0.011818453669548035,
+    "multistate_state_1_seq_justlog": 3.063438892364502,
+    "multistate_state_1_ae_seq_justlog": 13.75415325164795,
+    "multistate_state_1_flow_gate_anchor_justlog": 0.015132629312574863,
+    "multistate_state_2_justlog": 459.104248046875,
+    "multistate_state_2_fm_justlog": 459.05267333984375,
+    "multistate_state_2_contact_justlog": 0.16736002266407013,
+    "multistate_state_2_distance_justlog": 0.17805564403533936,
+    "multistate_state_2_clash_justlog": 0.00439612939953804,
+    "multistate_state_2_seq_justlog": 0.767261266708374,
+    "multistate_state_2_ae_seq_justlog": 3.551593065261841,
+    "multistate_state_2_flow_gate_anchor_justlog": 0.015132629312574863
+  },
+  "identity": {
+    "shared_identity_mean": 0.22727273404598236,
+    "ae_state_identity_mean": 0.08712121099233627
+  },
+  "diagnostics": [
+    {
+      "step": 0,
+      "t": {
+        "bb_ca": 0.0,
+        "local_latents": 0.0
+      },
+      "shared_entropy": 2.849480628967285,
+      "state_seq_disagreement": 1.055729626386892e-05,
+      "identity": {
+        "shared_identity_mean": 0.07954546064138412,
+        "ae_state_identity_mean": 0.011363636702299118
+      },
+      "early_sequence_feedback_norm_mean": 6.736357688903809,
+      "sequence_feedback_norm_mean": 6.924734115600586,
+      "latent_sequence_repair_gate_mean": 0.6279987692832947,
+      "latent_sequence_repair_norm_mean": 1.8378134965896606
+    },
+    {
+      "step": 8,
+      "t": {
+        "bb_ca": 0.9090908765792847,
+        "local_latents": 0.25
+      },
+      "shared_entropy": 2.8001749515533447,
+      "state_seq_disagreement": 0.00010222303535556421,
+      "identity": {
+        "shared_identity_mean": 0.1306818276643753,
+        "ae_state_identity_mean": 0.05681818351149559
+      },
+      "early_sequence_feedback_norm_mean": 7.0571746826171875,
+      "sequence_feedback_norm_mean": 7.197793483734131,
+      "latent_sequence_repair_gate_mean": 0.557151198387146,
+      "latent_sequence_repair_norm_mean": 1.7722166776657104
+    },
+    {
+      "step": 15,
+      "t": {
+        "bb_ca": 0.9966310858726501,
+        "local_latents": 0.87890625
+      },
+      "shared_entropy": 2.166748285293579,
+      "state_seq_disagreement": 7.622418343089521e-05,
+      "identity": {
+        "shared_identity_mean": 0.1931818127632141,
+        "ae_state_identity_mean": 0.08143939822912216
+      },
+      "early_sequence_feedback_norm_mean": 6.615181922912598,
+      "sequence_feedback_norm_mean": 6.714623928070068,
+      "latent_sequence_repair_gate_mean": 0.5480781197547913,
+      "latent_sequence_repair_norm_mean": 1.3505637645721436
+    }
+  ],
+  "nsteps": 16
+}
