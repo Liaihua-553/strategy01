@@ -53,6 +53,38 @@ def state_seq_disagreement(state_logits: torch.Tensor, state_mask: torch.Tensor)
     return float(value.detach().cpu().item())
 
 
+def final_x_ae_identity(
+    ae: torch.nn.Module,
+    x_states: dict[str, torch.Tensor],
+    batch: dict[str, torch.Tensor],
+    weights: torch.Tensor,
+) -> dict[str, float]:
+    """Decode the actually integrated final sample, matching native Complexa generation."""
+    local_latents = x_states["local_latents"]
+    bb_ca = x_states["bb_ca"]
+    state_mask = batch["state_mask"].to(device=local_latents.device).bool()
+    target = batch["binder_seq_shared"].to(device=local_latents.device).long()
+    binder_mask = batch["binder_seq_mask"].to(device=local_latents.device).bool()
+    b, k, n, z = local_latents.shape
+    dec = ae.decode(
+        z_latent=local_latents.reshape(b * k, n, z),
+        ca_coors_nm=bb_ca.reshape(b * k, n, 3),
+        mask=state_mask.reshape(b * k, n),
+    )
+    state_logits = dec["seq_logits"].reshape(b, k, n, 20)
+    shared_logits = (state_logits * weights[:, :, None, None]).sum(dim=1)
+    state_identity = s11.sequence_identity_from_logits(
+        state_logits,
+        target[:, None, :].expand_as(state_logits[..., 0]),
+        state_mask,
+    )
+    shared_identity = s11.sequence_identity_from_logits(shared_logits, target, binder_mask)
+    return {
+        "final_x_ae_shared_identity_mean": float(shared_identity.detach().mean().cpu().item()),
+        "final_x_ae_state_identity_mean": float(state_identity.detach().mean().cpu().item()),
+    }
+
+
 def rollout_final(
     model: torch.nn.Module,
     ae: torch.nn.Module,
@@ -65,6 +97,8 @@ def rollout_final(
     local_latents_stop_t: float | None = None,
     target_shell_max_center_distance_nm: float = 0.0,
     stage13_native_state_path: bool = False,
+    stage14_enable_bounded_latent_repair: bool = False,
+    stage14_latent_repair_max_norm: float = 0.25,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -85,11 +119,19 @@ def rollout_final(
     diagnostics: list[dict[str, Any]] = []
     model.eval()
     with torch.no_grad():
+        x_sc_states: dict[str, torch.Tensor] | None = None
         for step in range(schedule_steps):
             work["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
             work["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+            if x_sc_states is not None:
+                work["x_sc_states"] = {dm: value.detach() for dm, value in x_sc_states.items()}
+            else:
+                work.pop("x_sc_states", None)
             if stage13_native_state_path:
                 work["stage13_native_state_path"] = True
+            if stage14_enable_bounded_latent_repair:
+                work["stage14_enable_bounded_latent_repair"] = True
+                work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
             s12.add_weighted_legacy_fields(work, weights)
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
@@ -119,6 +161,7 @@ def rollout_final(
                     }
                 )
             updated: dict[str, torch.Tensor] = {}
+            next_x_sc_states: dict[str, torch.Tensor] = {}
             for dm in fm.data_modes:
                 if (
                     local_latents_stop_t is not None
@@ -135,6 +178,7 @@ def rollout_final(
                 flat_nn = {param: nn_out[f"{dm}_states"].reshape(b * k, n, x_states[dm].shape[-1])}
                 base = fm.base_flow_matchers[dm]
                 flat_nn = base.nn_out_add_clean_sample_prediction(flat_x, flat_t, flat_mask, flat_nn)
+                next_x_sc_states[dm] = flat_nn["x_1"].reshape(b, k, n, x_states[dm].shape[-1]).detach()
                 flat_nn = base.nn_out_add_simulation_tensor(flat_x, flat_t, flat_mask, flat_nn)
                 flat_nn = base.nn_out_add_guided_simulation_tensor(flat_nn, None, None, guidance_w=1.0, ag_ratio=0.0)
                 flat_next = base.simulation_step(
@@ -151,11 +195,17 @@ def rollout_final(
                     state_next, _ = s12.project_bb_ca_to_target_shell(work, state_next, state_mask, target_shell_max_center_distance_nm)
                 updated[dm] = state_next
             x_states = updated
+            x_sc_states = next_x_sc_states
         final = s12.make_de_novo_batch(batch)
         if stage13_native_state_path:
             final["stage13_native_state_path"] = True
+        if stage14_enable_bounded_latent_repair:
+            final["stage14_enable_bounded_latent_repair"] = True
+            final["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
         final["x_0_states"] = work["x_0_states"]
         final["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
+        if x_sc_states is not None:
+            final["x_sc_states"] = {dm: value.detach() for dm, value in x_sc_states.items()}
         final["t_states"] = {
             dm: torch.clamp(
                 ts[dm][-1].expand(b, k).to(device),
@@ -170,13 +220,17 @@ def rollout_final(
         final_out = s11.attach_ae_sequence_logits(ae, fm, final, final_out, ca_source="pred")
         losses = fm.compute_multistate_loss(final, final_out)
         identity = s12.identity_metrics(final_out, final)
+        final_x_identity = final_x_ae_identity(ae, x_states, final, weights)
     return {
         "losses": s4.summarize_losses(losses),
         "identity": identity,
+        "final_x_identity": final_x_identity,
         "diagnostics": diagnostics,
         "nsteps": nsteps,
         "sample_count": len(samples),
         "stage13_native_state_path": bool(stage13_native_state_path),
+        "stage14_enable_bounded_latent_repair": bool(stage14_enable_bounded_latent_repair),
+        "stage14_latent_repair_max_norm": float(stage14_latent_repair_max_norm),
     }
 
 
@@ -208,6 +262,12 @@ def parse_args():
         action="store_true",
         help="Diagnostic only: run K state tensors through the native Complexa target-concat denoiser state-wise.",
     )
+    parser.add_argument(
+        "--stage14-enable-bounded-latent-repair",
+        action="store_true",
+        help="Use the Stage14 bounded clean latent repair output for final AE sequence diagnostics.",
+    )
+    parser.add_argument("--stage14-latent-repair-max-norm", type=float, default=0.25)
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
     return parser.parse_args()
 
@@ -263,6 +323,8 @@ def main() -> None:
         local_latents_stop_t=args.local_latents_stop_t,
         target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
         stage13_native_state_path=args.stage13_native_state_path,
+        stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
+        stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
     result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm

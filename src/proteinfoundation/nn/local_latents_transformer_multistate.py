@@ -302,7 +302,22 @@ class LocalLatentsTransformerMultistate(nn.Module):
             dm: value.reshape(b * k)
             for dm, value in input["t_states"].items()
         }
-        flat["x_sc"] = {dm: torch.zeros_like(value) for dm, value in flat["x_t"].items()}
+        if "x_sc_states" in input:
+            flat["x_sc"] = {
+                dm: value.reshape(b * k, nbinder, value.shape[-1])
+                for dm, value in input["x_sc_states"].items()
+            }
+        elif "x_sc" in input:
+            flat["x_sc"] = {}
+            for dm, value in input["x_sc"].items():
+                if value.shape[0] == b:
+                    flat["x_sc"][dm] = value[:, None, :, :].expand(b, k, nbinder, value.shape[-1]).reshape(
+                        b * k, nbinder, value.shape[-1]
+                    )
+                else:
+                    flat["x_sc"][dm] = value
+        else:
+            flat["x_sc"] = {dm: torch.zeros_like(value) for dm, value in flat["x_t"].items()}
 
         if "x_target_states" not in input or "target_mask_states" not in input or "seq_target_states" not in input:
             raise ValueError("stage13 native-state path requires explicit target state tensors")
@@ -425,6 +440,45 @@ class LocalLatentsTransformerMultistate(nn.Module):
             consensus_logits = (state_seq_logits * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
             shared_seq_logits = shared_seq_logits + consensus_logits
             flow_gate = torch.ones(batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+            latent_repair_gate = torch.zeros(
+                batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype
+            )
+            local_latents_clean_repaired = None
+            latent_repair_norm = torch.zeros((), device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+            # MODIFIED 2026-05-09 Stage14:
+            # Stage13 restored exact equivalence with the original Complexa
+            # denoiser, but replay showed that sampled local latents still
+            # leave the frozen-AE sequence manifold.  In native-state mode we
+            # therefore expose an optional, bounded clean-space latent repair
+            # driven only by the model's own shared-sequence distribution.  It
+            # is disabled by default, so the Stage13 equivalence probe remains
+            # exact unless the training/sampling contract explicitly enables it.
+            if bool(input.get("stage14_enable_bounded_latent_repair", False)):
+                shared_soft = torch.softmax(shared_seq_logits.float(), dim=-1).to(dtype=state_tokens.dtype) * mask[..., None]
+                seq_feedback = self.soft_sequence_feedback_projector(shared_soft) * mask[..., None]
+                repair_tokens = self.state_token_norm(state_tokens + 0.5 * seq_feedback[:, None, :, :])
+                repair_delta = self.latent_sequence_repair_projector(repair_tokens)
+                repair_delta_norm = torch.linalg.norm(repair_delta, dim=-1, keepdim=True).clamp_min(1.0e-6)
+                max_norm = float(input.get("stage14_latent_repair_max_norm", 0.25))
+                repair_delta = repair_delta * torch.clamp(max_norm / repair_delta_norm, max=1.0)
+                latent_repair_gate = self.latent_sequence_repair_gate(repair_tokens) * state_mask[..., None]
+                param = self.output_param["local_latents"]
+                if param == "x_1":
+                    clean_latents = local_latents_states
+                elif param == "v":
+                    x_t_latents = input["x_t_states"]["local_latents"].to(
+                        device=local_latents_states.device, dtype=local_latents_states.dtype
+                    )
+                    t_latents = input["t_states"]["local_latents"].to(
+                        device=local_latents_states.device, dtype=local_latents_states.dtype
+                    )[:, :, None, None]
+                    clean_latents = x_t_latents + local_latents_states * (1.0 - t_latents)
+                else:
+                    raise ValueError(f"Unsupported local_latents output parameterization: {param}")
+                local_latents_clean_repaired = (
+                    clean_latents + latent_repair_gate * repair_delta
+                ) * state_mask[..., None]
+                latent_repair_norm = repair_delta.detach().norm(dim=-1).mean()
             return {
                 "bb_ca": {self.output_param["bb_ca"]: shared_bb_ca},
                 "local_latents": {self.output_param["local_latents"]: shared_local_latents},
@@ -435,13 +489,21 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "state_seq_logits": state_seq_logits,
                 "bb_ca_states": bb_ca_states,
                 "local_latents_states": local_latents_states,
+                "local_latents_states_clean_repaired": local_latents_clean_repaired,
                 "flow_gate": flow_gate * state_mask[..., None],
+                "latent_sequence_repair_gate": latent_repair_gate,
                 "interface_quality_logits": torch.zeros(batch_size, nstates, 5, device=bb_ca_states.device, dtype=bb_ca_states.dtype),
                 "arch_debug": {
                     "stage13_native_state_path": torch.tensor(True, device=bb_ca_states.device),
+                    "stage14_bounded_latent_repair": torch.tensor(
+                        bool(input.get("stage14_enable_bounded_latent_repair", False)),
+                        device=bb_ca_states.device,
+                    ),
                     "target_state_weights": weights,
                     "sampling_state_weights": weights,
                     "flow_gate_mean": flow_gate.detach().mean(),
+                    "latent_sequence_repair_gate_mean": latent_repair_gate.detach().mean(),
+                    "latent_sequence_repair_norm_mean": latent_repair_norm,
                 },
             }
         c = self.cond_factory(input)

@@ -139,6 +139,12 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Diagnostic only: run K=1 through native Complexa target-concat denoiser inside the multistate wrapper.",
     )
+    parser.add_argument(
+        "--stage14-enable-bounded-latent-repair",
+        action="store_true",
+        help="Enable Stage14 bounded clean latent repair for K=1 de-novo audit.",
+    )
+    parser.add_argument("--stage14-latent-repair-max-norm", type=float, default=0.25)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=1313)
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
@@ -178,6 +184,8 @@ def main() -> None:
         local_latents_stop_t=args.local_latents_stop_t,
         target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
         stage13_native_state_path=args.native_state_path,
+        stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
+        stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
     )
     result = {
         "stage": "stage13_single_state_de_novo_audit",
@@ -189,6 +197,7 @@ def main() -> None:
             "forbidden_true_binder_optional_features": True,
             "purpose": "Audit whether Strategy01 preserves single-state target-conditioned de-novo generation before further multistate tuning.",
             "native_state_path": bool(args.native_state_path),
+            "stage14_bounded_latent_repair": bool(args.stage14_enable_bounded_latent_repair),
         },
         "checkpoint": str(args.checkpoint),
         "dataset": str(args.dataset),

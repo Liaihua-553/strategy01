@@ -103,7 +103,12 @@ def configure_stage12_loss(fm: Any, args: argparse.Namespace) -> dict[str, float
     return values
 
 
-def make_de_novo_batch(batch: dict[str, Any], stage13_native_state_path: bool = False) -> dict[str, Any]:
+def make_de_novo_batch(
+    batch: dict[str, Any],
+    stage13_native_state_path: bool = False,
+    stage14_enable_bounded_latent_repair: bool = False,
+    stage14_latent_repair_max_norm: float = 0.25,
+) -> dict[str, Any]:
     work = s4.clone_batch(batch)
     for key in FORBIDDEN_MODEL_INPUT_KEYS:
         work.pop(key, None)
@@ -114,6 +119,9 @@ def make_de_novo_batch(batch: dict[str, Any], stage13_native_state_path: bool = 
     work["de_novo_multistate_mode"] = True
     if stage13_native_state_path:
         work["stage13_native_state_path"] = True
+    if stage14_enable_bounded_latent_repair:
+        work["stage14_enable_bounded_latent_repair"] = True
+        work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
     return work
 
 
@@ -145,7 +153,10 @@ def add_weighted_legacy_fields(batch: dict[str, Any], weights: torch.Tensor) -> 
     batch["x_0"] = weighted_average_states(batch["x_0_states"], weights)
     batch["x_t"] = weighted_average_states(batch["x_t_states"], weights)
     batch["t"] = {dm: torch.sum(batch["t_states"][dm] * weights, dim=1) for dm in batch["t_states"]}
-    batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in batch["x_t"]}
+    if "x_sc_states" in batch:
+        batch["x_sc"] = weighted_average_states(batch["x_sc_states"], weights)
+    else:
+        batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in batch["x_t"]}
 
 
 def target_anchor_center(batch: dict[str, Any], device: torch.device) -> torch.Tensor | None:
@@ -220,6 +231,8 @@ def build_replay_condition_batch(
     safe_fallback_max_blend: float = 0.85,
     target_shell_max_center_distance_nm: float = 0.0,
     stage13_native_state_path: bool = False,
+    stage14_enable_bounded_latent_repair: bool = False,
+    stage14_latent_repair_max_norm: float = 0.25,
     seed: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate a target-only short rollout and return its intermediate state as a training condition."""
@@ -227,7 +240,12 @@ def build_replay_condition_batch(
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
-    work = make_de_novo_batch(batch, stage13_native_state_path=stage13_native_state_path)
+    work = make_de_novo_batch(
+        batch,
+        stage13_native_state_path=stage13_native_state_path,
+        stage14_enable_bounded_latent_repair=stage14_enable_bounded_latent_repair,
+        stage14_latent_repair_max_norm=stage14_latent_repair_max_norm,
+    )
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
     b, k, n = state_mask.shape
@@ -242,16 +260,22 @@ def build_replay_condition_batch(
     gt = {dm: value.to(device) for dm, value in gt.items()}
     was_training = model.training
     model.eval()
+    x_sc_states: dict[str, torch.Tensor] | None = None
     with torch.no_grad():
         for step in range(collect_step):
             work["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
             work["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+            if x_sc_states is not None:
+                work["x_sc_states"] = {dm: value.detach() for dm, value in x_sc_states.items()}
+            else:
+                work.pop("x_sc_states", None)
             if stage13_native_state_path:
                 work["stage13_native_state_path"] = True
             add_weighted_legacy_fields(work, weights)
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
             updated: dict[str, torch.Tensor] = {}
+            next_x_sc_states: dict[str, torch.Tensor] = {}
             for dm in fm.data_modes:
                 flat_x = x_states[dm].reshape(b * k, n, x_states[dm].shape[-1])
                 flat_mask = state_mask.reshape(b * k, n)
@@ -261,6 +285,7 @@ def build_replay_condition_batch(
                 flat_nn = {param: nn_out[f"{dm}_states"].reshape(b * k, n, x_states[dm].shape[-1])}
                 base = fm.base_flow_matchers[dm]
                 flat_nn = base.nn_out_add_clean_sample_prediction(flat_x, flat_t, flat_mask, flat_nn)
+                next_x_sc_states[dm] = flat_nn["x_1"].reshape(b, k, n, x_states[dm].shape[-1]).detach()
                 flat_nn = base.nn_out_add_simulation_tensor(flat_x, flat_t, flat_mask, flat_nn)
                 flat_nn = base.nn_out_add_guided_simulation_tensor(flat_nn, None, None, guidance_w=1.0, ag_ratio=0.0)
                 flat_next = base.simulation_step(
@@ -277,6 +302,7 @@ def build_replay_condition_batch(
                     state_next, _ = project_bb_ca_to_target_shell(work, state_next, state_mask, target_shell_max_center_distance_nm)
                 updated[dm] = state_next
             x_states = updated
+            x_sc_states = next_x_sc_states
     model.train(was_training)
     raw_bb_distance = float((x_states["bb_ca"] - work["x_1_states"]["bb_ca"]).abs().mean().detach().cpu().item())
     raw_latent_distance = float((x_states["local_latents"] - work["x_1_states"]["local_latents"]).abs().mean().detach().cpu().item())
@@ -291,7 +317,12 @@ def build_replay_condition_batch(
         safe_fallback_max_blend = max(0.0, min(float(safe_fallback_max_blend), 0.95))
         effective_teacher_blend = max(teacher_blend, min(max(required_blends), safe_fallback_max_blend))
 
-    replay = make_de_novo_batch(batch, stage13_native_state_path=stage13_native_state_path)
+    replay = make_de_novo_batch(
+        batch,
+        stage13_native_state_path=stage13_native_state_path,
+        stage14_enable_bounded_latent_repair=stage14_enable_bounded_latent_repair,
+        stage14_latent_repair_max_norm=stage14_latent_repair_max_norm,
+    )
     replay["x_0_states"] = x_start
     if effective_teacher_blend > 0.0:
         replay["x_t_states"] = {
@@ -306,6 +337,8 @@ def build_replay_condition_batch(
     replay["state_mask"] = state_mask
     replay["stage12_primary_state_tensors"] = True
     replay["stage12_replay_condition"] = True
+    if x_sc_states is not None:
+        replay["x_sc_states"] = {dm: value.detach() for dm, value in x_sc_states.items()}
     add_weighted_legacy_fields(replay, weights)
     diagnostics = {
         "rollout_steps": rollout_steps,
@@ -404,6 +437,10 @@ def build_fixed_replay_cache(
                 safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
                 target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
                 stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)),
+                stage14_enable_bounded_latent_repair=bool(
+                    getattr(args, "stage14_enable_bounded_latent_repair", False)
+                ),
+                stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
                 seed=9301 + refresh_index * 1000003 + batch_idx * 101 + int(blend * 1000),
             )
             cache[level_name].append(
@@ -461,16 +498,28 @@ def forward_loss_stage12(
             safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
             target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
             stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)),
+            stage14_enable_bounded_latent_repair=bool(
+                getattr(args, "stage14_enable_bounded_latent_repair", False)
+            ),
+            stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
             seed=seed,
         )
     elif replay_cache_entry is None:
-        work_batch = make_de_novo_batch(batch, stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)))
+        work_batch = make_de_novo_batch(
+            batch,
+            stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)),
+            stage14_enable_bounded_latent_repair=bool(
+                getattr(args, "stage14_enable_bounded_latent_repair", False)
+            ),
+            stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
+        )
         work_batch = fm.corrupt_multistate_batch(work_batch)
     nn_out = model(work_batch)
     nn_out = s11.attach_ae_sequence_logits(ae, fm, work_batch, nn_out, ca_source="pred")
     losses = fm.compute_multistate_loss(work_batch, nn_out)
     total = losses["multistate_total"].mean()
     if replay and args is not None:
+        base_total = total
         replay_extra = (
             float(args.replay_extra_ae_seq_weight) * losses["multistate_ae_seq_justlog"]
             + float(args.replay_extra_seq_ae_consistency_weight) * losses["multistate_seq_ae_consistency_justlog"]
@@ -480,7 +529,7 @@ def forward_loss_stage12(
         )
         losses["stage12_replay_extra_justlog"] = replay_extra
         losses["stage12_replay_total_justlog"] = losses["multistate_total"] + replay_extra
-        total = total + replay_extra.mean()
+        total = float(getattr(args, "replay_base_loss_scale", 1.0)) * base_total + replay_extra.mean()
         work_batch["stage12_replay_diagnostics"] = replay_diag
     return total, losses, nn_out, work_batch
 
@@ -505,6 +554,8 @@ def set_trainable(
     phase: str,
     stage13_heads_only: bool = False,
     stage13_train_latent_repair: bool = False,
+    stage14_train_bounded_latent_repair: bool = False,
+    stage14_native_latent_warmup: bool = False,
 ) -> dict[str, Any]:
     if stage13_heads_only:
         for p in model.parameters():
@@ -532,6 +583,29 @@ def set_trainable(
                 "latent_sequence_repair_gate",
                 "local_latents_linear",
             ]
+        if stage14_train_bounded_latent_repair:
+            # Stage14 trains the bounded residual adapter only.  Do not unfreeze
+            # the checkpoint-native local_latents_linear here: Stage13 showed
+            # that moving the full native latent readout on tiny replay data
+            # destabilizes the original Complexa prior.
+            prefixes += [
+                "latent_sequence_repair_projector",
+                "latent_sequence_repair_gate",
+                "soft_sequence_feedback_projector",
+            ]
+        if stage14_native_latent_warmup:
+            # Stage14B: repair the actual sampled local-latent manifold rather
+            # than only the final readout.  This keeps the pretrained native
+            # target-concat generator mostly frozen, but lets the latent
+            # velocity readout and top native transformer layers adapt to the
+            # curated multistate/shared-sequence supervision.
+            prefixes += [
+                "local_latents_linear",
+                "transformer_layers.10",
+                "transformer_layers.11",
+                "transformer_layers.12",
+                "transformer_layers.13",
+            ]
         for name, p in model.named_parameters():
             if any(name.startswith(prefix) for prefix in prefixes):
                 p.requires_grad = True
@@ -539,6 +613,8 @@ def set_trainable(
             "phase": phase,
             "stage13_heads_only": True,
             "stage13_train_latent_repair": bool(stage13_train_latent_repair),
+            "stage14_train_bounded_latent_repair": bool(stage14_train_bounded_latent_repair),
+            "stage14_native_latent_warmup": bool(stage14_native_latent_warmup),
             "prefixes": prefixes,
             "trainable_params": sum(p.numel() for p in model.parameters() if p.requires_grad),
             "total_params": sum(p.numel() for p in model.parameters()),
@@ -566,6 +642,8 @@ def run_loop(
         phase,
         stage13_heads_only=bool(getattr(args, "stage13_heads_only", False)),
         stage13_train_latent_repair=bool(getattr(args, "stage13_train_latent_repair", False)),
+        stage14_train_bounded_latent_repair=bool(getattr(args, "stage14_enable_bounded_latent_repair", False)),
+        stage14_native_latent_warmup=bool(getattr(args, "stage14_native_latent_warmup", False)),
     )
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
@@ -785,6 +863,15 @@ def parse_args():
     parser.add_argument("--replay-extra-contact-weight", type=float, default=0.10)
     parser.add_argument("--replay-extra-distance-weight", type=float, default=0.05)
     parser.add_argument("--replay-extra-clash-weight", type=float, default=0.10)
+    parser.add_argument(
+        "--replay-base-loss-scale",
+        type=float,
+        default=1.0,
+        help=(
+            "Scale the original multistate_total on replay batches. Values <1 prevent huge "
+            "off-manifold FM losses from drowning AE sequence/manifold repair objectives."
+        ),
+    )
     parser.add_argument("--enable-fixed-replay-cache", action="store_true", default=False)
     parser.add_argument("--replay-cache-batches", type=int, default=4)
     parser.add_argument(
@@ -827,6 +914,31 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--stage14-enable-bounded-latent-repair",
+        action="store_true",
+        default=False,
+        help=(
+            "Enable the Stage14 clean-space bounded latent repair path in native-state mode. "
+            "The repair is driven by model shared-sequence logits only; true binder sequence remains a loss label."
+        ),
+    )
+    parser.add_argument(
+        "--stage14-latent-repair-max-norm",
+        type=float,
+        default=0.25,
+        help="Maximum per-residue clean-space latent residual norm for Stage14 bounded repair.",
+    )
+    parser.add_argument(
+        "--stage14-native-latent-warmup",
+        action="store_true",
+        default=False,
+        help=(
+            "Unfreeze the native local_latents_linear and top transformer layers "
+            "inside the otherwise frozen native-state path. This targets the "
+            "sampled local-latent manifold directly instead of only training readout heads."
+        ),
+    )
+    parser.add_argument(
         "--replay-curriculum-switches",
         type=str,
         default="0.40,0.75",
@@ -866,6 +978,9 @@ def main():
             ),
             "stage13_heads_only": bool(args.stage13_heads_only),
             "stage13_train_latent_repair": bool(args.stage13_train_latent_repair),
+            "stage14_enable_bounded_latent_repair": bool(args.stage14_enable_bounded_latent_repair),
+            "stage14_latent_repair_max_norm": float(args.stage14_latent_repair_max_norm),
+            "stage14_native_latent_warmup": bool(args.stage14_native_latent_warmup),
         },
         "manifest_summary": {k: v for k, v in manifest.items() if k != "samples"},
         "training": {},
@@ -901,6 +1016,7 @@ def main():
             "contact": args.replay_extra_contact_weight,
             "distance": args.replay_extra_distance_weight,
             "clash": args.replay_extra_clash_weight,
+            "base_loss_scale": args.replay_base_loss_scale,
         },
     }
     with torch.no_grad():

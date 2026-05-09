@@ -170,7 +170,16 @@ def inject_sampled_latent_cache(
 
 
 def attach_ae_sequence_logits(ae: torch.nn.Module, fm: Any, batch: dict[str, Any], nn_out: dict[str, torch.Tensor], ca_source: str = "init") -> dict[str, torch.Tensor]:
-    clean_lat = state_clean_prediction(fm, batch, nn_out, "local_latents", "local_latents_states")
+    repaired_lat = nn_out.get("local_latents_states_clean_repaired")
+    if torch.is_tensor(repaired_lat):
+        # Stage14: if the model exports a bounded clean-space latent repair,
+        # use it for frozen-AE sequence supervision/diagnostics.  This keeps
+        # the flow velocity loss on the native output while letting the
+        # de-novo product-space model learn how to pull sampled z back onto the
+        # AE sequence manifold without feeding true binder sequence as input.
+        clean_lat = repaired_lat
+    else:
+        clean_lat = state_clean_prediction(fm, batch, nn_out, "local_latents", "local_latents_states")
     clean_bb = state_clean_prediction(fm, batch, nn_out, "bb_ca", "bb_ca_states")
     if ca_source == "init" and "init_bb_ca_states" in batch:
         clean_bb = batch["init_bb_ca_states"].to(device=clean_lat.device, dtype=clean_lat.dtype)
