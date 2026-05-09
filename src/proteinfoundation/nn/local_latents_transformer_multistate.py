@@ -2,6 +2,8 @@ import torch
 from torch import nn
 
 from proteinfoundation.nn.ensemble_target_encoder import EnsembleTargetEncoder
+from proteinfoundation.nn.feature_factory.concat_feature_factory import ConcatFeaturesFactory
+from proteinfoundation.nn.feature_factory.concat_pair_feature_factory import ConcatPairFeaturesFactory
 from proteinfoundation.nn.feature_factory.feature_factory import FeatureFactory
 from proteinfoundation.nn.modules.attn_n_transition import MultiheadAttnAndTransition, MultiheadCrossAttnAndTransition
 from proteinfoundation.nn.modules.pair_update import PairReprUpdate
@@ -39,6 +41,43 @@ class LocalLatentsTransformerMultistate(nn.Module):
             mode="seq",
             **kwargs,
         )
+        # Stage13: preserve the original Complexa target-concat denoiser path.
+        # Stage12's ensemble cross-attention path is useful for multistate
+        # research, but it bypasses the checkpoint-trained concat target
+        # placement prior.  The native-state path below reuses these modules
+        # with their original parameter names so `complexa.ckpt` can initialize
+        # single-state target-conditioned de-novo generation.
+        concat_config = kwargs.get("concat_features", {})
+        self.use_concat = (
+            concat_config.get("enable_motif", False)
+            or concat_config.get("enable_target", False)
+            or concat_config.get("enable_ligand", False)
+        )
+        if self.use_concat:
+            self.concat_factory = ConcatFeaturesFactory(
+                enable_motif=concat_config.get("enable_motif", False),
+                enable_target=concat_config.get("enable_target", False),
+                enable_ligand=concat_config.get("enable_ligand", False),
+                dim_feats_out=kwargs["token_dim"],
+                use_ln_out=False,
+                **kwargs,
+            )
+            self.use_advanced_pair = (
+                (concat_config.get("enable_motif", False) and concat_config.get("motif_pair_features", False))
+                or (concat_config.get("enable_target", False) and concat_config.get("target_pair_features", False))
+                or (concat_config.get("enable_ligand", False) and concat_config.get("ligand_pair_features", False))
+            )
+            if self.use_advanced_pair:
+                self.concat_pair_factory = ConcatPairFeaturesFactory(
+                    enable_motif=concat_config.get("enable_motif", False),
+                    enable_target=concat_config.get("enable_target", False),
+                    enable_ligand=concat_config.get("enable_ligand", False),
+                    **kwargs,
+                )
+        else:
+            self.concat_factory = None
+            self.use_advanced_pair = False
+        self.use_target_cross_attn = kwargs.get("use_target_cross_attn", False)
         self.transition_c_1 = Transition(kwargs["dim_cond"], expansion_factor=2)
         self.transition_c_2 = Transition(kwargs["dim_cond"], expansion_factor=2)
 
@@ -243,6 +282,94 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, 5, bias=False),
         )
 
+    def _native_state_flatten_input(self, input: dict) -> tuple[dict, int, int, int]:
+        """Flatten [B,K] state tensors into the original Complexa single-state schema."""
+        mask = input["mask"]
+        b, nbinder = mask.shape
+        if "state_present_mask" not in input:
+            raise ValueError("stage13 native-state path requires state_present_mask")
+        k = input["state_present_mask"].shape[1]
+        device = mask.device
+        flat: dict = dict(input)
+        flat["mask"] = mask[:, None, :].expand(b, k, nbinder).reshape(b * k, nbinder)
+        if "x_t_states" not in input or "t_states" not in input:
+            raise ValueError("stage13 native-state path requires x_t_states and t_states")
+        flat["x_t"] = {
+            dm: value.reshape(b * k, nbinder, value.shape[-1])
+            for dm, value in input["x_t_states"].items()
+        }
+        flat["t"] = {
+            dm: value.reshape(b * k)
+            for dm, value in input["t_states"].items()
+        }
+        flat["x_sc"] = {dm: torch.zeros_like(value) for dm, value in flat["x_t"].items()}
+
+        if "x_target_states" not in input or "target_mask_states" not in input or "seq_target_states" not in input:
+            raise ValueError("stage13 native-state path requires explicit target state tensors")
+        ntarget = input["x_target_states"].shape[2]
+        flat["x_target"] = input["x_target_states"].reshape(b * k, ntarget, 37, 3)
+        flat["target_mask"] = input["target_mask_states"].reshape(b * k, ntarget, 37)
+        flat["seq_target"] = input["seq_target_states"].reshape(b * k, ntarget)
+        flat["seq_target_mask"] = flat["target_mask"][..., 1].bool()
+        if "target_hotspot_mask_states" in input:
+            flat["target_hotspot_mask"] = input["target_hotspot_mask_states"].reshape(b * k, ntarget).bool()
+        else:
+            flat["target_hotspot_mask"] = torch.zeros(b * k, ntarget, dtype=torch.bool, device=device)
+        target_idx = torch.arange(1, ntarget + 1, device=device, dtype=torch.float32).expand(b * k, -1)
+        flat["target_pdb_idx"] = target_idx
+        flat["target_chains"] = torch.zeros(b * k, ntarget, device=device, dtype=torch.long)
+        flat.setdefault("residue_pdb_idx", torch.arange(1, nbinder + 1, device=device, dtype=torch.float32).expand(b * k, -1))
+        if flat["residue_pdb_idx"].shape[0] == b:
+            flat["residue_pdb_idx"] = flat["residue_pdb_idx"][:, None, :].expand(b, k, nbinder).reshape(b * k, nbinder)
+        flat.setdefault("chains", torch.zeros(b * k, nbinder, device=device, dtype=torch.long))
+        if flat["chains"].shape[0] == b:
+            flat["chains"] = flat["chains"][:, None, :].expand(b, k, nbinder).reshape(b * k, nbinder)
+        flat.setdefault("hotspot_mask", torch.zeros(b * k, nbinder, dtype=torch.bool, device=device))
+        if flat["hotspot_mask"].shape[0] == b:
+            flat["hotspot_mask"] = flat["hotspot_mask"][:, None, :].expand(b, k, nbinder).reshape(b * k, nbinder)
+        return flat, b, k, nbinder
+
+    def _native_single_state_forward(self, flat: dict) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Run the original Complexa target-concat denoiser on flattened states."""
+        mask = flat["mask"]
+        orig_mask = mask.clone()
+        c = self.cond_factory(flat)
+        c = self.transition_c_2(self.transition_c_1(c, mask), mask)
+        seqs = self.init_repr_factory(flat) * mask[..., None]
+        b, n_orig, _ = seqs.shape
+        if self.use_concat:
+            seqs, mask = self.concat_factory(flat, seqs, mask)
+            n_extended = seqs.shape[1]
+            n_concat = n_extended - n_orig
+            if n_concat > 0:
+                zero_cond = torch.zeros(b, n_concat, c.shape[-1], device=seqs.device, dtype=c.dtype)
+                c = torch.cat([c, zero_cond], dim=1)
+        else:
+            n_concat = 0
+        if self.use_concat and self.use_advanced_pair:
+            pair_rep = self.pair_repr_builder(flat)
+            pair_rep = self.concat_pair_factory(flat, pair_rep, orig_mask)
+        else:
+            pair_rep = self.pair_repr_builder(flat)
+            if n_concat > 0:
+                dim_pair = pair_rep.shape[-1]
+                zero_pad_1 = torch.zeros(b, n_concat, n_orig, dim_pair, device=seqs.device, dtype=pair_rep.dtype)
+                pair_rep = torch.cat([pair_rep, zero_pad_1], dim=1)
+                zero_pad_2 = torch.zeros(b, pair_rep.shape[1], n_concat, dim_pair, device=seqs.device, dtype=pair_rep.dtype)
+                pair_rep = torch.cat([pair_rep, zero_pad_2], dim=2)
+        for i in range(self.nlayers):
+            seqs = self.transformer_layers[i](seqs, pair_rep, c, mask)
+            if self.update_pair_repr and i < self.nlayers - 1 and self.pair_update_layers[i] is not None:
+                pair_rep = self.pair_update_layers[i](seqs, pair_rep, mask)
+        local_latents_out = self.local_latents_linear(seqs) * mask[..., None]
+        ca_nm_out = self.ca_linear(seqs) * mask[..., None]
+        seq_tokens = seqs
+        if n_concat > 0:
+            local_latents_out = local_latents_out[:, :n_orig, :] * orig_mask[:, :, None]
+            ca_nm_out = ca_nm_out[:, :n_orig, :] * orig_mask[:, :, None]
+            seq_tokens = seq_tokens[:, :n_orig, :] * orig_mask[:, :, None]
+        return ca_nm_out, local_latents_out, seq_tokens, orig_mask
+
     def forward(self, input: dict) -> dict[str, torch.Tensor | dict[str, torch.Tensor]]:
         mask = input["mask"]
         # MODIFIED 2026-05-07 Stage12:
@@ -272,6 +399,51 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 raise ValueError("de_novo_multistate mode forbids optional CA coordinate features")
             if bool(input.get("use_residue_type_feature", False)):
                 raise ValueError("de_novo_multistate mode forbids optional residue-type features")
+        if bool(input.get("stage13_native_state_path", False)):
+            flat, batch_size, nstates, nbinder = self._native_state_flatten_input(input)
+            flat_bb_ca, flat_local_latents, flat_seq_tokens, flat_mask = self._native_single_state_forward(flat)
+            bb_ca_states = flat_bb_ca.reshape(batch_size, nstates, nbinder, 3)
+            local_latents_states = flat_local_latents.reshape(batch_size, nstates, nbinder, self.latent_dim)
+            state_tokens = flat_seq_tokens.reshape(batch_size, nstates, nbinder, self.token_dim)
+            state_seq_logits = self.state_seq_head(flat_seq_tokens).reshape(batch_size, nstates, nbinder, 20)
+            state_present = input["state_present_mask"].to(device=bb_ca_states.device).bool()
+            state_mask = input.get("state_mask", mask[:, None, :].expand(-1, nstates, -1)).to(device=bb_ca_states.device).bool()
+            state_view = state_present[:, :, None, None]
+            bb_ca_states = bb_ca_states * state_view
+            local_latents_states = local_latents_states * state_view
+            state_seq_logits = state_seq_logits * state_view
+            weights = input.get("target_state_weights")
+            if weights is None:
+                weights = state_present.float()
+            else:
+                weights = weights.to(device=bb_ca_states.device, dtype=torch.float32) * state_present.float()
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
+            shared_bb_ca = (bb_ca_states * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
+            shared_local_latents = (local_latents_states * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
+            shared_tokens = (state_tokens * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
+            shared_seq_logits = self.shared_seq_head(shared_tokens) * mask[..., None]
+            consensus_logits = (state_seq_logits * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
+            shared_seq_logits = shared_seq_logits + consensus_logits
+            flow_gate = torch.ones(batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+            return {
+                "bb_ca": {self.output_param["bb_ca"]: shared_bb_ca},
+                "local_latents": {self.output_param["local_latents"]: shared_local_latents},
+                "seq_logits_shared": shared_seq_logits,
+                "seq_logits_base_shared": shared_seq_logits,
+                "seq_logits_shared_tokens": shared_seq_logits,
+                "shared_seq_tokens": shared_tokens,
+                "state_seq_logits": state_seq_logits,
+                "bb_ca_states": bb_ca_states,
+                "local_latents_states": local_latents_states,
+                "flow_gate": flow_gate * state_mask[..., None],
+                "interface_quality_logits": torch.zeros(batch_size, nstates, 5, device=bb_ca_states.device, dtype=bb_ca_states.dtype),
+                "arch_debug": {
+                    "stage13_native_state_path": torch.tensor(True, device=bb_ca_states.device),
+                    "target_state_weights": weights,
+                    "sampling_state_weights": weights,
+                    "flow_gate_mean": flow_gate.detach().mean(),
+                },
+            }
         c = self.cond_factory(input)
         c = self.transition_c_2(self.transition_c_1(c, mask), mask)
 

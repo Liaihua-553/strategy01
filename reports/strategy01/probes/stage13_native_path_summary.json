@@ -1,0 +1,756 @@
+{
+  "equiv": {
+    "path": "reports/strategy01/probes/stage13_native_path_equivalence_probe_cpu.json",
+    "status": "passed",
+    "diff": {
+      "bb_ca_states_vs_original": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      },
+      "local_latents_states_vs_original": {
+        "max_abs": 0.0,
+        "mean_abs": 0.0
+      }
+    }
+  },
+  "native_orig": {
+    "path": "reports/strategy01/probes/stage13_single_state_audit_original_ckpt_nativepath_val4_n16.json",
+    "status": "passed",
+    "identity": {
+      "shared_identity_mean": 0.01818181946873665,
+      "ae_state_identity_mean": 0.05000000074505806
+    }
+  },
+  "initial": {
+    "path": "reports/strategy01/probes/stage13_native_path_initial_probe_results.json",
+    "status": "passed",
+    "probe_identity": {
+      "shared_identity_mean": 0.0,
+      "ae_state_identity_mean": 0.43333330750465393
+    },
+    "checkpoint_path": null,
+    "training": {}
+  },
+  "heads": {
+    "path": "reports/strategy01/probes/stage13_native_heads_probe_results.json",
+    "status": "passed",
+    "probe_identity": {
+      "shared_identity_mean": 0.0,
+      "ae_state_identity_mean": 0.8833333849906921
+    },
+    "checkpoint_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage12_de_novo_multistate/runs/stage13_native_heads_probe/stage12_pilot_final.pt",
+    "training": {
+      "overfit1": {
+        "final_identity": {
+          "shared_identity_mean": 0.800000011920929,
+          "ae_state_identity_mean": 0.9000000357627869
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": null,
+          "eval_total": 39.43868637084961,
+          "eval_replay_total": null
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.800000011920929,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": null,
+          "eval_total": 37.47783279418945,
+          "eval_replay_total": null
+        },
+        "cuda_max_mem_gb": 2.263606071472168,
+        "step_time_sec": 0.11262335777282714
+      },
+      "overfit4": {
+        "final_identity": {
+          "shared_identity_mean": 0.8999999761581421,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.0,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": null,
+          "eval_total": 38.00743103027344,
+          "eval_replay_total": null
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.8999999761581421,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": null,
+          "eval_total": 36.16286087036133,
+          "eval_replay_total": null
+        },
+        "cuda_max_mem_gb": 4.502800941467285,
+        "step_time_sec": 0.10610365867614746
+      },
+      "pilot": {
+        "final_identity": {
+          "shared_identity_mean": 0.800000011920929,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "pilot",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": null,
+          "eval_total": 37.6531982421875,
+          "eval_replay_total": null
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.800000011920929,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": null,
+          "eval_total": 36.886878967285156,
+          "eval_replay_total": null
+        },
+        "cuda_max_mem_gb": 4.502800941467285,
+        "step_time_sec": 0.10688995718955993
+      }
+    }
+  },
+  "heads_audit": {
+    "path": "reports/strategy01/probes/stage13_single_state_audit_native_heads_val4_n16.json",
+    "status": "passed",
+    "identity": {
+      "shared_identity_mean": 0.022727273404598236,
+      "ae_state_identity_mean": 0.05000000074505806
+    }
+  },
+  "replay": {
+    "path": "reports/strategy01/probes/stage13_native_heads_replay_probe_results.json",
+    "status": "passed",
+    "probe_identity": {
+      "shared_identity_mean": 0.0,
+      "ae_state_identity_mean": 0.8833333849906921
+    },
+    "checkpoint_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage12_de_novo_multistate/runs/stage13_native_heads_replay_probe/stage12_pilot_final.pt",
+    "training": {
+      "overfit1": {
+        "final_identity": {
+          "shared_identity_mean": 0.800000011920929,
+          "ae_state_identity_mean": 0.9000000357627869
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.0,
+            "ae_state_identity_mean": 0.7666666507720947
+          },
+          "eval_total": 39.427642822265625,
+          "eval_replay_total": 76.77698516845703
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.800000011920929,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.6000000238418579,
+            "ae_state_identity_mean": 0.10000000894069672
+          },
+          "eval_total": 37.33555603027344,
+          "eval_replay_total": 1716.456787109375
+        },
+        "cuda_max_mem_gb": 2.2642717361450195,
+        "step_time_sec": 0.1585622549057007
+      },
+      "overfit4": {
+        "final_identity": {
+          "shared_identity_mean": 0.949999988079071,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.7833333015441895
+          },
+          "eval_total": 37.617740631103516,
+          "eval_replay_total": 89.28863525390625
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.949999988079071,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.5,
+            "ae_state_identity_mean": 0.11666667461395264
+          },
+          "eval_total": 35.764915466308594,
+          "eval_replay_total": 1396.01806640625
+        },
+        "cuda_max_mem_gb": 4.503118515014648,
+        "step_time_sec": 0.13178902467091877
+      },
+      "pilot": {
+        "final_identity": {
+          "shared_identity_mean": 0.7999999523162842,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "pilot",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.7833333015441895
+          },
+          "eval_total": 37.65910339355469,
+          "eval_replay_total": 89.3507308959961
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.7999999523162842,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.5,
+            "ae_state_identity_mean": 0.11666667461395264
+          },
+          "eval_total": 36.20500564575195,
+          "eval_replay_total": 1396.13232421875
+        },
+        "cuda_max_mem_gb": 4.503118515014648,
+        "step_time_sec": 0.12666010459264118
+      }
+    }
+  },
+  "replay_audit": {
+    "path": "reports/strategy01/probes/stage13_single_state_audit_native_heads_replay_val4_n16.json",
+    "status": "passed",
+    "identity": {
+      "shared_identity_mean": 0.054545458406209946,
+      "ae_state_identity_mean": 0.05000000074505806
+    }
+  },
+  "final_replay": {
+    "path": "reports/strategy01/probes/stage13_native_heads_final_replay_probe_results.json",
+    "status": "passed",
+    "probe_identity": {
+      "shared_identity_mean": 0.0,
+      "ae_state_identity_mean": 0.8833333849906921
+    },
+    "checkpoint_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage12_de_novo_multistate/runs/stage13_native_heads_final_replay_probe/stage12_pilot_final.pt",
+    "training": {
+      "overfit1": {
+        "final_identity": {
+          "shared_identity_mean": 0.800000011920929,
+          "ae_state_identity_mean": 0.9000000357627869
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.0,
+            "ae_state_identity_mean": 0.5333333611488342
+          },
+          "eval_total": 39.4500846862793,
+          "eval_replay_total": 1468.625244140625
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.800000011920929,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.6000000238418579,
+            "ae_state_identity_mean": 0.03333333507180214
+          },
+          "eval_total": 37.09413528442383,
+          "eval_replay_total": 3964.33251953125
+        },
+        "cuda_max_mem_gb": 2.2642717361450195,
+        "step_time_sec": 0.14294357299804689
+      },
+      "overfit4": {
+        "final_identity": {
+          "shared_identity_mean": 0.949999988079071,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.5666667222976685
+          },
+          "eval_total": 37.62861633300781,
+          "eval_replay_total": 1134.997802734375
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.949999988079071,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.6000000238418579,
+            "ae_state_identity_mean": 0.05000000447034836
+          },
+          "eval_total": 35.66142272949219,
+          "eval_replay_total": 4691.13671875
+        },
+        "cuda_max_mem_gb": 4.503118515014648,
+        "step_time_sec": 0.12372586727142335
+      },
+      "pilot": {
+        "final_identity": {
+          "shared_identity_mean": 0.8500000238418579,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "pilot",
+          "stage13_heads_only": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head"
+          ],
+          "trainable_params": 8952639,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.5666667222976685
+          },
+          "eval_total": 37.664527893066406,
+          "eval_replay_total": 1135.057373046875
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.8500000238418579,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.6000000238418579,
+            "ae_state_identity_mean": 0.05000000447034836
+          },
+          "eval_total": 35.794830322265625,
+          "eval_replay_total": 4691.033203125
+        },
+        "cuda_max_mem_gb": 4.503118515014648,
+        "step_time_sec": 0.10835884094238281
+      }
+    }
+  },
+  "final_replay_audit": {
+    "path": "reports/strategy01/probes/stage13_single_state_audit_native_heads_final_replay_val4_n16.json",
+    "status": "passed",
+    "identity": {
+      "shared_identity_mean": 0.15909092128276825,
+      "ae_state_identity_mean": 0.05000000074505806
+    }
+  },
+  "latent_repair": {
+    "path": "reports/strategy01/probes/stage13_native_latent_repair_final_replay_probe_results.json",
+    "status": "passed",
+    "probe_identity": {
+      "shared_identity_mean": 0.0,
+      "ae_state_identity_mean": 0.8833333849906921
+    },
+    "checkpoint_path": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/ckpts/stage12_de_novo_multistate/runs/stage13_native_latent_repair_final_replay_probe/stage12_pilot_final.pt",
+    "training": {
+      "overfit1": {
+        "final_identity": {
+          "shared_identity_mean": 0.800000011920929,
+          "ae_state_identity_mean": 0.9000000357627869
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "stage13_train_latent_repair": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head",
+            "latent_sequence_repair_projector",
+            "latent_sequence_repair_gate",
+            "local_latents_linear"
+          ],
+          "trainable_params": 8970304,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.0,
+            "ae_state_identity_mean": 0.5333333611488342
+          },
+          "eval_total": 39.31178665161133,
+          "eval_replay_total": 1452.892578125
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.800000011920929,
+            "ae_state_identity_mean": 0.9000000357627869
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.5,
+            "ae_state_identity_mean": 0.03333333507180214
+          },
+          "eval_total": 34.49211502075195,
+          "eval_replay_total": 3620.6044921875
+        },
+        "cuda_max_mem_gb": 2.2912960052490234,
+        "step_time_sec": 0.23257185618082682
+      },
+      "overfit4": {
+        "final_identity": {
+          "shared_identity_mean": 0.8500000238418579,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "overfit",
+          "stage13_heads_only": true,
+          "stage13_train_latent_repair": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head",
+            "latent_sequence_repair_projector",
+            "latent_sequence_repair_gate",
+            "local_latents_linear"
+          ],
+          "trainable_params": 8970304,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.5666667222976685
+          },
+          "eval_total": 37.558067321777344,
+          "eval_replay_total": 1131.9564208984375
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.8500000238418579,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.3500000238418579,
+            "ae_state_identity_mean": 0.05000000447034836
+          },
+          "eval_total": 34.33074188232422,
+          "eval_replay_total": 4618.6484375
+        },
+        "cuda_max_mem_gb": 4.503147125244141,
+        "step_time_sec": 0.22791634798049926
+      },
+      "pilot": {
+        "final_identity": {
+          "shared_identity_mean": 0.550000011920929,
+          "ae_state_identity_mean": 0.8333333730697632
+        },
+        "trainable": {
+          "phase": "pilot",
+          "stage13_heads_only": true,
+          "stage13_train_latent_repair": true,
+          "prefixes": [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head",
+            "latent_sequence_repair_projector",
+            "latent_sequence_repair_gate",
+            "local_latents_linear"
+          ],
+          "trainable_params": 8970304,
+          "total_params": 345750841
+        },
+        "first": {
+          "identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.10000000149011612,
+            "ae_state_identity_mean": 0.5666667222976685
+          },
+          "eval_total": 37.62907791137695,
+          "eval_replay_total": 1134.48583984375
+        },
+        "last": {
+          "identity": {
+            "shared_identity_mean": 0.550000011920929,
+            "ae_state_identity_mean": 0.8333333730697632
+          },
+          "replay_identity": {
+            "shared_identity_mean": 0.25,
+            "ae_state_identity_mean": 0.05000000447034836
+          },
+          "eval_total": 35.351837158203125,
+          "eval_replay_total": 4457.50732421875
+        },
+        "cuda_max_mem_gb": 4.503147125244141,
+        "step_time_sec": 0.17604328870773314
+      }
+    }
+  }
+}

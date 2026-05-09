@@ -1,0 +1,54 @@
+[
+  {
+    "idx": 0,
+    "baseline_md5": "3cb9ba81901e9408f11591d3cd1bf273",
+    "strategy_md5": "3cb9ba81901e9408f11591d3cd1bf273",
+    "identical": true,
+    "baseline_metrics": {
+      "chains": {
+        "A": 101,
+        "B": 105
+      },
+      "center_dist_A_B_A": 37.04207512608699,
+      "min_ca_dist_A": 1.0532331175955305,
+      "ca_contacts_lt8A": 20,
+      "ca_clash_lt2p5A": 1
+    },
+    "strategy_metrics": {
+      "chains": {
+        "A": 101,
+        "B": 105
+      },
+      "center_dist_A_B_A": 37.04207512608699,
+      "min_ca_dist_A": 1.0532331175955305,
+      "ca_contacts_lt8A": 20,
+      "ca_clash_lt2p5A": 1
+    }
+  },
+  {
+    "idx": 1,
+    "baseline_md5": "8664b52fc74e66f42623a39bc2e5d966",
+    "strategy_md5": "8664b52fc74e66f42623a39bc2e5d966",
+    "identical": true,
+    "baseline_metrics": {
+      "chains": {
+        "A": 101,
+        "B": 53
+      },
+      "center_dist_A_B_A": 16.48047378855095,
+      "min_ca_dist_A": 0.8274067923337345,
+      "ca_contacts_lt8A": 84,
+      "ca_clash_lt2p5A": 1
+    },
+    "strategy_metrics": {
+      "chains": {
+        "A": 101,
+        "B": 53
+      },
+      "center_dist_A_B_A": 16.48047378855095,
+      "min_ca_dist_A": 0.8274067923337345,
+      "ca_contacts_lt8A": 84,
+      "ca_clash_lt2p5A": 1
+    }
+  }
+]

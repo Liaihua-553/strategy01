@@ -134,6 +134,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--nsteps", type=int, default=16)
     parser.add_argument("--local-latents-stop-t", type=float, default=None)
     parser.add_argument("--target-shell-max-center-distance-nm", type=float, default=0.0)
+    parser.add_argument(
+        "--native-state-path",
+        action="store_true",
+        help="Diagnostic only: run K=1 through native Complexa target-concat denoiser inside the multistate wrapper.",
+    )
     parser.add_argument("--device", default="auto")
     parser.add_argument("--seed", type=int, default=1313)
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
@@ -172,6 +177,7 @@ def main() -> None:
         args.seed,
         local_latents_stop_t=args.local_latents_stop_t,
         target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
+        stage13_native_state_path=args.native_state_path,
     )
     result = {
         "stage": "stage13_single_state_de_novo_audit",
@@ -182,6 +188,7 @@ def main() -> None:
             "forbidden_source_pose": True,
             "forbidden_true_binder_optional_features": True,
             "purpose": "Audit whether Strategy01 preserves single-state target-conditioned de-novo generation before further multistate tuning.",
+            "native_state_path": bool(args.native_state_path),
         },
         "checkpoint": str(args.checkpoint),
         "dataset": str(args.dataset),
@@ -196,6 +203,7 @@ def main() -> None:
         "nsteps": args.nsteps,
         "local_latents_stop_t": args.local_latents_stop_t,
         "target_shell_max_center_distance_nm": args.target_shell_max_center_distance_nm,
+        "native_state_path": bool(args.native_state_path),
     }
     result.update(smoke)
     write_json(args.report_json, result)

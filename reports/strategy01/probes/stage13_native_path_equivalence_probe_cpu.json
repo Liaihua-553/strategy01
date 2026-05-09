@@ -1,0 +1,146 @@
+{
+  "stage": "stage13_native_path_equivalence_probe",
+  "status": "passed",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "checkpoint": "ckpts/complexa.ckpt",
+  "split": "val",
+  "sample_count": 2,
+  "manifest_stage": "stage10_exactaug",
+  "output_parameterization": {
+    "bb_ca": "v",
+    "local_latents": "v"
+  },
+  "original_checkpoint_meta": {
+    "checkpoint": "ckpts/complexa.ckpt",
+    "compatible_keys": 457,
+    "incompatible_shape_keys": [],
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "multistate_checkpoint_meta": {
+    "checkpoint": "ckpts/complexa.ckpt",
+    "compatible_keys": 457,
+    "incompatible_shape_keys": [],
+    "missing_keys": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_beta.weight",
+      "target2binder_cross_attention_layer.0.mhba.ln_b.weight",
+      "target2binder_cross_attention_layer.0.mhba.ln_b.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_q_a.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_g_a.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_g_a.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_v_b.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_v_b.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_k_b.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_k_b.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_out_node_a.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.to_out_node_a.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.node_norm_a.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.node_norm_a.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.node_norm_b.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.node_norm_b.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.q_layer_norm_a.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.q_layer_norm_a.bias",
+      "target2binder_cross_attention_layer.0.mhba.mha.k_layer_norm_b.weight",
+      "target2binder_cross_attention_layer.0.mhba.mha.k_layer_norm_b.bias",
+      "target2binder_cross_attention_layer.0.mhba.scale_output.to_adaln_zero_gamma.0.weight",
+      "target2binder_cross_attention_layer.0.mhba.scale_output.to_adaln_zero_gamma.0.bias",
+      "target2binder_cross_attention_layer.0.transition_a.adaln.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.transition_a.adaln.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.transition_a.adaln.to_gamma.0.weight",
+      "target2binder_cross_attention_layer.0.transition_a.adaln.to_gamma.0.bias",
+      "target2binder_cross_attention_layer.0.transition_a.adaln.to_beta.weight",
+      "target2binder_cross_attention_layer.0.transition_a.transition.swish_linear.0.weight"
+    ],
+    "unexpected_keys": []
+  },
+  "diff": {
+    "bb_ca_states_vs_original": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0
+    },
+    "local_latents_states_vs_original": {
+      "max_abs": 0.0,
+      "mean_abs": 0.0
+    }
+  },
+  "native_arch_debug": {
+    "stage13_native_state_path": 1.0,
+    "target_state_weights": [
+      [
+        0.3333333432674408,
+        0.3333333432674408,
+        0.3333333432674408
+      ],
+      [
+        0.3333333432674408,
+        0.3333333432674408,
+        0.3333333432674408
+      ]
+    ],
+    "sampling_state_weights": [
+      [
+        0.3333333432674408,
+        0.3333333432674408,
+        0.3333333432674408
+      ],
+      [
+        0.3333333432674408,
+        0.3333333432674408,
+        0.3333333432674408
+      ]
+    ],
+    "flow_gate_mean": 1.0
+  }
+}

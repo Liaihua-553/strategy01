@@ -103,7 +103,7 @@ def configure_stage12_loss(fm: Any, args: argparse.Namespace) -> dict[str, float
     return values
 
 
-def make_de_novo_batch(batch: dict[str, Any]) -> dict[str, Any]:
+def make_de_novo_batch(batch: dict[str, Any], stage13_native_state_path: bool = False) -> dict[str, Any]:
     work = s4.clone_batch(batch)
     for key in FORBIDDEN_MODEL_INPUT_KEYS:
         work.pop(key, None)
@@ -112,6 +112,8 @@ def make_de_novo_batch(batch: dict[str, Any]) -> dict[str, Any]:
     if bool(work.get("use_residue_type_feature", False)):
         raise ValueError("de_novo_multistate forbids real optional residue-type features")
     work["de_novo_multistate_mode"] = True
+    if stage13_native_state_path:
+        work["stage13_native_state_path"] = True
     return work
 
 
@@ -217,6 +219,7 @@ def build_replay_condition_batch(
     safe_max_local_latents_distance: float = 0.0,
     safe_fallback_max_blend: float = 0.85,
     target_shell_max_center_distance_nm: float = 0.0,
+    stage13_native_state_path: bool = False,
     seed: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate a target-only short rollout and return its intermediate state as a training condition."""
@@ -224,7 +227,7 @@ def build_replay_condition_batch(
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
-    work = make_de_novo_batch(batch)
+    work = make_de_novo_batch(batch, stage13_native_state_path=stage13_native_state_path)
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
     b, k, n = state_mask.shape
@@ -243,6 +246,8 @@ def build_replay_condition_batch(
         for step in range(collect_step):
             work["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
             work["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+            if stage13_native_state_path:
+                work["stage13_native_state_path"] = True
             add_weighted_legacy_fields(work, weights)
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
@@ -286,7 +291,7 @@ def build_replay_condition_batch(
         safe_fallback_max_blend = max(0.0, min(float(safe_fallback_max_blend), 0.95))
         effective_teacher_blend = max(teacher_blend, min(max(required_blends), safe_fallback_max_blend))
 
-    replay = make_de_novo_batch(batch)
+    replay = make_de_novo_batch(batch, stage13_native_state_path=stage13_native_state_path)
     replay["x_0_states"] = x_start
     if effective_teacher_blend > 0.0:
         replay["x_t_states"] = {
@@ -319,6 +324,7 @@ def build_replay_condition_batch(
         "bb_ca_distance_to_clean_nm": float((replay["x_t_states"]["bb_ca"] - work["x_1_states"]["bb_ca"]).abs().mean().detach().cpu().item()),
         "local_latents_distance_to_clean": float((replay["x_t_states"]["local_latents"] - work["x_1_states"]["local_latents"]).abs().mean().detach().cpu().item()),
         "target_shell_max_center_distance_nm": float(target_shell_max_center_distance_nm),
+        "stage13_native_state_path": bool(stage13_native_state_path),
     }
     return replay, diagnostics
 
@@ -397,6 +403,7 @@ def build_fixed_replay_cache(
                 safe_max_local_latents_distance=args.replay_safe_max_local_latents_distance,
                 safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
                 target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
+                stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)),
                 seed=9301 + refresh_index * 1000003 + batch_idx * 101 + int(blend * 1000),
             )
             cache[level_name].append(
@@ -453,10 +460,11 @@ def forward_loss_stage12(
             safe_max_local_latents_distance=args.replay_safe_max_local_latents_distance,
             safe_fallback_max_blend=args.replay_safe_fallback_max_blend,
             target_shell_max_center_distance_nm=args.replay_target_shell_max_center_distance_nm,
+            stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)),
             seed=seed,
         )
     elif replay_cache_entry is None:
-        work_batch = make_de_novo_batch(batch)
+        work_batch = make_de_novo_batch(batch, stage13_native_state_path=bool(getattr(args, "stage13_native_state_path", False)))
         work_batch = fm.corrupt_multistate_batch(work_batch)
     nn_out = model(work_batch)
     nn_out = s11.attach_ae_sequence_logits(ae, fm, work_batch, nn_out, ca_source="pred")
@@ -492,7 +500,49 @@ def identity_metrics(nn_out: dict[str, torch.Tensor], batch: dict[str, Any]) -> 
     }
 
 
-def set_trainable(model: torch.nn.Module, phase: str) -> dict[str, Any]:
+def set_trainable(
+    model: torch.nn.Module,
+    phase: str,
+    stage13_heads_only: bool = False,
+    stage13_train_latent_repair: bool = False,
+) -> dict[str, Any]:
+    if stage13_heads_only:
+        for p in model.parameters():
+            p.requires_grad = False
+        prefixes = [
+            "soft_sequence_feedback_projector",
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_to_state_projector",
+            "shared_seq_token_head",
+            "state_xt_bb_ca_projector",
+            "state_xt_latent_projector",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+            "state_condition_projector",
+            "state_token_norm",
+            "interface_quality_head",
+        ]
+        if stage13_train_latent_repair:
+            prefixes += [
+                "latent_sequence_repair_projector",
+                "latent_sequence_repair_gate",
+                "local_latents_linear",
+            ]
+        for name, p in model.named_parameters():
+            if any(name.startswith(prefix) for prefix in prefixes):
+                p.requires_grad = True
+        return {
+            "phase": phase,
+            "stage13_heads_only": True,
+            "stage13_train_latent_repair": bool(stage13_train_latent_repair),
+            "prefixes": prefixes,
+            "trainable_params": sum(p.numel() for p in model.parameters() if p.requires_grad),
+            "total_params": sum(p.numel() for p in model.parameters()),
+        }
     return s11.set_trainable_stage11(model, "overfit" if phase == "overfit" else "mini")
 
 
@@ -511,7 +561,12 @@ def run_loop(
     sampling_cfg: dict[str, Any],
 ) -> dict[str, Any]:
     model.train()
-    trainable = set_trainable(model, phase)
+    trainable = set_trainable(
+        model,
+        phase,
+        stage13_heads_only=bool(getattr(args, "stage13_heads_only", False)),
+        stage13_train_latent_repair=bool(getattr(args, "stage13_train_latent_repair", False)),
+    )
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
     replay_cache: dict[str, list[dict[str, Any]]] = {}
@@ -745,6 +800,33 @@ def parse_args():
         help="Comma-separated replay curriculum levels as name:teacher_blend.",
     )
     parser.add_argument(
+        "--stage13-native-state-path",
+        action="store_true",
+        default=False,
+        help=(
+            "Stage13 mode: preserve the checkpoint-compatible native Complexa "
+            "target-concat denoiser state-wise, then train multistate shared-sequence/coupling heads on top."
+        ),
+    )
+    parser.add_argument(
+        "--stage13-heads-only",
+        action="store_true",
+        default=False,
+        help=(
+            "When using Stage13 native-state path, freeze the checkpoint-native "
+            "target-conditioned denoiser and train only multistate/shared-sequence heads."
+        ),
+    )
+    parser.add_argument(
+        "--stage13-train-latent-repair",
+        action="store_true",
+        default=False,
+        help=(
+            "With --stage13-heads-only, additionally train local_latents_linear and "
+            "latent sequence repair gates so sampled latents can move back toward the AE sequence manifold."
+        ),
+    )
+    parser.add_argument(
         "--replay-curriculum-switches",
         type=str,
         default="0.40,0.75",
@@ -777,6 +859,13 @@ def main():
             "true_binder_sequence_allowed_only_as_loss_label": True,
             "bb_ca_flow_enabled": True,
             "local_latents_flow_enabled": True,
+            "stage13_native_state_path": bool(args.stage13_native_state_path),
+            "stage13_native_state_path_role": (
+                "Preserves the original Complexa target-conditioned generator state-wise; "
+                "multistate training should improve shared-sequence/cross-state coupling without replacing the base flow."
+            ),
+            "stage13_heads_only": bool(args.stage13_heads_only),
+            "stage13_train_latent_repair": bool(args.stage13_train_latent_repair),
         },
         "manifest_summary": {k: v for k, v in manifest.items() if k != "samples"},
         "training": {},

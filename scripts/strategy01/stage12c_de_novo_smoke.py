@@ -64,12 +64,15 @@ def rollout_final(
     seed: int,
     local_latents_stop_t: float | None = None,
     target_shell_max_center_distance_nm: float = 0.0,
+    stage13_native_state_path: bool = False,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     batch = s10.collate_variable(samples, device)
     work = s12.make_de_novo_batch(batch)
+    if stage13_native_state_path:
+        work["stage13_native_state_path"] = True
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
     weights = s12.normalize_state_weights(work, device)
@@ -85,6 +88,8 @@ def rollout_final(
         for step in range(schedule_steps):
             work["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
             work["t_states"] = {dm: ts[dm][step].expand(b, k).to(device) for dm in fm.data_modes}
+            if stage13_native_state_path:
+                work["stage13_native_state_path"] = True
             s12.add_weighted_legacy_fields(work, weights)
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
@@ -147,6 +152,8 @@ def rollout_final(
                 updated[dm] = state_next
             x_states = updated
         final = s12.make_de_novo_batch(batch)
+        if stage13_native_state_path:
+            final["stage13_native_state_path"] = True
         final["x_0_states"] = work["x_0_states"]
         final["x_t_states"] = {dm: value.detach() for dm, value in x_states.items()}
         final["t_states"] = {
@@ -169,6 +176,7 @@ def rollout_final(
         "diagnostics": diagnostics,
         "nsteps": nsteps,
         "sample_count": len(samples),
+        "stage13_native_state_path": bool(stage13_native_state_path),
     }
 
 
@@ -194,6 +202,11 @@ def parse_args():
         type=float,
         default=0.0,
         help="Target-only diagnostic guidance: rigidly translate binder states back inside this target/hotspot center shell.",
+    )
+    parser.add_argument(
+        "--stage13-native-state-path",
+        action="store_true",
+        help="Diagnostic only: run K state tensors through the native Complexa target-concat denoiser state-wise.",
     )
     parser.add_argument("--report-json", type=Path, default=DEFAULT_REPORT)
     return parser.parse_args()
@@ -235,6 +248,7 @@ def main() -> None:
             "forbidden_inputs": s12.FORBIDDEN_MODEL_INPUT_KEYS + ["optional_real_ca_feature", "optional_real_residue_type_feature"],
             "primary_outputs": ["bb_ca_states", "local_latents_states", "shared_seq_logits"],
             "legacy_average_outputs": "not used for main smoke evaluation",
+            "stage13_native_state_path": bool(args.stage13_native_state_path),
         },
     }
     smoke = rollout_final(
@@ -248,6 +262,7 @@ def main() -> None:
         args.seed,
         local_latents_stop_t=args.local_latents_stop_t,
         target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
+        stage13_native_state_path=args.stage13_native_state_path,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
     result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm
