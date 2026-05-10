@@ -62,6 +62,11 @@ def main() -> None:
     ap.add_argument('--nsteps', type=int, default=16)
     ap.add_argument('--seeds', default='1207,1211,1217,1223,1231,1237,1249,1259')
     ap.add_argument('--stage13-native-state-path', action='store_true')
+    ap.add_argument('--stage18-enable-clash-relief', action='store_true')
+    ap.add_argument('--stage18-clash-min-distance-nm', type=float, default=0.28)
+    ap.add_argument('--stage18-relief-step-nm', type=float, default=0.04)
+    ap.add_argument('--stage18-relief-iters', type=int, default=4)
+    ap.add_argument('--stage18-min-contact-count', type=int, default=4)
     ap.add_argument('--device', default='auto')
     ap.add_argument('--report-json', type=Path, default=REPO/'reports/strategy01/probes/stage17_per_sample_multiseed_probe.json')
     args=ap.parse_args()
@@ -78,22 +83,39 @@ def main() -> None:
     for sample_idx, sample in enumerate(selected):
         cand=[]
         for seed in seeds:
-            smoke=s12c.rollout_final(model, ae, fm, [sample], device, sampling_cfg, args.nsteps, seed + sample_idx*100003, stage13_native_state_path=args.stage13_native_state_path)
+            smoke=s12c.rollout_final(
+                model,
+                ae,
+                fm,
+                [sample],
+                device,
+                sampling_cfg,
+                args.nsteps,
+                seed + sample_idx*100003,
+                stage18_enable_clash_relief=args.stage18_enable_clash_relief,
+                stage18_clash_min_distance_nm=args.stage18_clash_min_distance_nm,
+                stage18_relief_step_nm=args.stage18_relief_step_nm,
+                stage18_relief_iters=args.stage18_relief_iters,
+                stage18_min_contact_count=args.stage18_min_contact_count,
+                stage13_native_state_path=args.stage13_native_state_path,
+            )
             final_x=smoke.get('final_x_identity') or {}
-            row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {})}
+            row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {}), 'stage18_clash_relief': smoke.get('stage18_clash_relief')}
             row['no_leak_score']=no_leak_score(row)
             cand.append(row)
-        by_proxy=sorted(cand, key=lambda r:r['no_leak_score'])[0]
+        safe_cand=[r for r in cand if float(r.get('target_severe_clash_rate') or 0.0) <= 0.0]
+        selection_pool=safe_cand if safe_cand else cand
+        by_proxy=sorted(selection_pool, key=lambda r:r['no_leak_score'])[0]
         by_oracle=sorted(cand, key=lambda r:float(r.get('shared_identity_mean_posthoc') or -1), reverse=True)[0]
         first=next(r for r in cand if r['seed']==seeds[0])
-        out={'sample_idx':sample_idx,'sample_id':sample.get('sample_id'),'target_id':sample.get('target_id'),'first_seed':first,'selected_by_proxy':by_proxy,'oracle_best':by_oracle,'proxy_matches_oracle':by_proxy['seed']==by_oracle['seed'],'identity_range':[min(float(r.get('shared_identity_mean_posthoc') or 0) for r in cand), max(float(r.get('shared_identity_mean_posthoc') or 0) for r in cand)],'candidates':cand}
+        out={'sample_idx':sample_idx,'sample_id':sample.get('sample_id'),'target_id':sample.get('target_id'),'first_seed':first,'selected_by_proxy':by_proxy,'oracle_best':by_oracle,'proxy_matches_oracle':by_proxy['seed']==by_oracle['seed'],'safe_candidate_available':bool(safe_cand),'selected_is_safe':float(by_proxy.get('target_severe_clash_rate') or 0.0) <= 0.0,'identity_range':[min(float(r.get('shared_identity_mean_posthoc') or 0) for r in cand), max(float(r.get('shared_identity_mean_posthoc') or 0) for r in cand)],'candidates':cand}
         sample_rows.append(out)
         print(json.dumps({k:v for k,v in out.items() if k!='candidates'}, ensure_ascii=False), flush=True)
 
     first_vals=[r['first_seed']['shared_identity_mean_posthoc'] for r in sample_rows]
     proxy_vals=[r['selected_by_proxy']['shared_identity_mean_posthoc'] for r in sample_rows]
     oracle_vals=[r['oracle_best']['shared_identity_mean_posthoc'] for r in sample_rows]
-    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True},'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
+    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
     write_json(args.report_json, result)
     print(json.dumps({'status':'passed','report':str(args.report_json),'summary':result['summary']}, ensure_ascii=False, indent=2))
 

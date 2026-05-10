@@ -97,6 +97,105 @@ def target_binder_geometry_proxy(batch: dict[str, torch.Tensor], x_states: dict[
     }
 
 
+
+
+def stage18_bounded_rigid_clash_relief(
+    batch: dict[str, torch.Tensor],
+    bb_ca_states: torch.Tensor,
+    state_mask: torch.Tensor,
+    clash_distance_nm: float = 0.28,
+    step_nm: float = 0.04,
+    max_iters: int = 4,
+    contact_distance_nm: float = 1.0,
+    min_contact_count: int = 4,
+) -> tuple[torch.Tensor, dict[str, float]]:
+    """Target-only rigid clash relief for de-novo sampled binder poses.
+
+    This is deliberately conservative: it only translates the whole binder state
+    by a small vector away from target CA atoms when generated CA coordinates have
+    a severe target-binder clash. It does not use exact binder labels, source
+    poses, or true interface contacts, so it preserves the Stage12 de-novo
+    contract. The accept rule requires reduced clash and a minimal target contact
+    shell, preventing the Stage09D failure mode where repulsion simply pushes the
+    binder away from the target.
+    """
+    if "x_target_states" not in batch or "target_mask_states" not in batch:
+        return bb_ca_states, {"stage18_relief_available": 0.0}
+    target_ca = batch["x_target_states"].to(device=bb_ca_states.device)[..., 1, :].float()
+    target_mask = batch["target_mask_states"].to(device=bb_ca_states.device).bool()[..., 1]
+    binder_mask = state_mask.to(device=bb_ca_states.device).bool()
+    out = bb_ca_states.detach().clone()
+    attempts = accepted = 0
+    min_before_sum = min_after_sum = 0.0
+    contact_before_sum = contact_after_sum = 0.0
+    bsz, k, _, _ = out.shape
+    for bi in range(bsz):
+        for si in range(k):
+            tmask = target_mask[bi, si]
+            bmask = binder_mask[bi, si]
+            if not bool(tmask.any()) or not bool(bmask.any()):
+                continue
+            tpts = target_ca[bi, si, tmask]
+            current = out[bi, si].clone()
+
+            def geom(ca: torch.Tensor) -> tuple[float, int, torch.Tensor]:
+                bpts = ca[bmask].float()
+                dist = torch.cdist(tpts, bpts)
+                min_dist = float(dist.min().detach().cpu().item())
+                contacts = int((dist < contact_distance_nm).sum().detach().cpu().item())
+                return min_dist, contacts, dist
+
+            before_min, before_contacts, dist = geom(current)
+            if before_min >= clash_distance_nm:
+                continue
+            attempts += 1
+            min_before_sum += before_min
+            contact_before_sum += before_contacts
+            best = current.clone()
+            best_min = before_min
+            best_contacts = before_contacts
+            working = current.clone()
+            for _ in range(max(0, int(max_iters))):
+                _, _, dist = geom(working)
+                clash_pairs = dist < clash_distance_nm
+                if not bool(clash_pairs.any()):
+                    break
+                ti, bj = torch.where(clash_pairs)
+                bpts = working[bmask].float()
+                vec = bpts[bj] - tpts[ti]
+                unit = vec / vec.norm(dim=-1, keepdim=True).clamp_min(1e-6)
+                direction = unit.mean(dim=0)
+                if float(direction.norm().detach().cpu().item()) < 1e-6:
+                    direction = bpts.mean(dim=0) - tpts.mean(dim=0)
+                direction = direction / direction.norm().clamp_min(1e-6)
+                proposal = working.clone()
+                proposal[bmask] = proposal[bmask] + float(step_nm) * direction
+                prop_min, prop_contacts, _ = geom(proposal)
+                contact_floor = min_contact_count if before_contacts >= min_contact_count else 0
+                if prop_min > best_min and prop_contacts >= contact_floor:
+                    best = proposal.clone()
+                    best_min = prop_min
+                    best_contacts = prop_contacts
+                    working = proposal
+                else:
+                    break
+            min_after_sum += best_min
+            contact_after_sum += best_contacts
+            if best_min > before_min:
+                out[bi, si] = best
+                accepted += 1
+    denom = max(1, attempts)
+    return out * binder_mask[..., None], {
+        "stage18_relief_available": 1.0,
+        "stage18_relief_attempts": float(attempts),
+        "stage18_relief_accepted": float(accepted),
+        "stage18_relief_accept_rate": float(accepted / denom),
+        "stage18_relief_min_before_mean": float(min_before_sum / denom),
+        "stage18_relief_min_after_mean": float(min_after_sum / denom),
+        "stage18_relief_contacts_before_mean": float(contact_before_sum / denom),
+        "stage18_relief_contacts_after_mean": float(contact_after_sum / denom),
+    }
+
 def final_x_ae_identity(
     ae: torch.nn.Module,
     x_states: dict[str, torch.Tensor],
@@ -140,6 +239,11 @@ def rollout_final(
     seed: int,
     local_latents_stop_t: float | None = None,
     target_shell_max_center_distance_nm: float = 0.0,
+    stage18_enable_clash_relief: bool = False,
+    stage18_clash_min_distance_nm: float = 0.28,
+    stage18_relief_step_nm: float = 0.04,
+    stage18_relief_iters: int = 4,
+    stage18_min_contact_count: int = 4,
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
@@ -161,6 +265,14 @@ def rollout_final(
     gt = {dm: value.to(device) for dm, value in gt.items()}
     schedule_steps = min(int(value.numel()) - 1 for value in ts.values())
     diagnostics: list[dict[str, Any]] = []
+    stage18_relief_totals = {
+        "stage18_relief_attempts": 0.0,
+        "stage18_relief_accepted": 0.0,
+        "stage18_relief_min_before_sum": 0.0,
+        "stage18_relief_min_after_sum": 0.0,
+        "stage18_relief_contacts_before_sum": 0.0,
+        "stage18_relief_contacts_after_sum": 0.0,
+    }
     model.eval()
     with torch.no_grad():
         x_sc_states: dict[str, torch.Tensor] | None = None
@@ -237,6 +349,23 @@ def rollout_final(
                 state_next = flat_next.reshape(b, k, n, x_states[dm].shape[-1]) * state_mask[..., None]
                 if dm == "bb_ca" and target_shell_max_center_distance_nm > 0.0:
                     state_next, _ = s12.project_bb_ca_to_target_shell(work, state_next, state_mask, target_shell_max_center_distance_nm)
+                if dm == "bb_ca" and stage18_enable_clash_relief:
+                    state_next, relief_stats = stage18_bounded_rigid_clash_relief(
+                        work,
+                        state_next,
+                        state_mask,
+                        clash_distance_nm=stage18_clash_min_distance_nm,
+                        step_nm=stage18_relief_step_nm,
+                        max_iters=stage18_relief_iters,
+                        min_contact_count=stage18_min_contact_count,
+                    )
+                    attempts = relief_stats.get("stage18_relief_attempts", 0.0)
+                    stage18_relief_totals["stage18_relief_attempts"] += attempts
+                    stage18_relief_totals["stage18_relief_accepted"] += relief_stats.get("stage18_relief_accepted", 0.0)
+                    stage18_relief_totals["stage18_relief_min_before_sum"] += relief_stats.get("stage18_relief_min_before_mean", 0.0) * max(1.0, attempts)
+                    stage18_relief_totals["stage18_relief_min_after_sum"] += relief_stats.get("stage18_relief_min_after_mean", 0.0) * max(1.0, attempts)
+                    stage18_relief_totals["stage18_relief_contacts_before_sum"] += relief_stats.get("stage18_relief_contacts_before_mean", 0.0) * max(1.0, attempts)
+                    stage18_relief_totals["stage18_relief_contacts_after_sum"] += relief_stats.get("stage18_relief_contacts_after_mean", 0.0) * max(1.0, attempts)
                 updated[dm] = state_next
             x_states = updated
             x_sc_states = next_x_sc_states
@@ -266,11 +395,26 @@ def rollout_final(
         identity = s12.identity_metrics(final_out, final)
         final_x_identity = final_x_ae_identity(ae, x_states, final, weights)
         target_geometry_proxy = target_binder_geometry_proxy(final, x_states)
+    relief_attempts = stage18_relief_totals["stage18_relief_attempts"]
+    stage18_relief_summary = {
+        "enabled": bool(stage18_enable_clash_relief),
+        "attempts": float(relief_attempts),
+        "accepted": float(stage18_relief_totals["stage18_relief_accepted"]),
+        "accept_rate": float(stage18_relief_totals["stage18_relief_accepted"] / max(1.0, relief_attempts)),
+        "min_before_mean": float(stage18_relief_totals["stage18_relief_min_before_sum"] / max(1.0, relief_attempts)),
+        "min_after_mean": float(stage18_relief_totals["stage18_relief_min_after_sum"] / max(1.0, relief_attempts)),
+        "contacts_before_mean": float(stage18_relief_totals["stage18_relief_contacts_before_sum"] / max(1.0, relief_attempts)),
+        "contacts_after_mean": float(stage18_relief_totals["stage18_relief_contacts_after_sum"] / max(1.0, relief_attempts)),
+        "clash_min_distance_nm": float(stage18_clash_min_distance_nm),
+        "relief_step_nm": float(stage18_relief_step_nm),
+        "relief_iters": int(stage18_relief_iters),
+    }
     return {
         "losses": s4.summarize_losses(losses),
         "identity": identity,
         "final_x_identity": final_x_identity,
         "target_geometry_proxy": target_geometry_proxy,
+        "stage18_clash_relief": stage18_relief_summary,
         "diagnostics": diagnostics,
         "nsteps": nsteps,
         "sample_count": len(samples),
@@ -303,6 +447,11 @@ def parse_args():
         default=0.0,
         help="Target-only diagnostic guidance: rigidly translate binder states back inside this target/hotspot center shell.",
     )
+    parser.add_argument("--stage18-enable-clash-relief", action="store_true")
+    parser.add_argument("--stage18-clash-min-distance-nm", type=float, default=0.28)
+    parser.add_argument("--stage18-relief-step-nm", type=float, default=0.04)
+    parser.add_argument("--stage18-relief-iters", type=int, default=4)
+    parser.add_argument("--stage18-min-contact-count", type=int, default=4)
     parser.add_argument(
         "--stage13-native-state-path",
         action="store_true",
@@ -355,6 +504,7 @@ def main() -> None:
             "primary_outputs": ["bb_ca_states", "local_latents_states", "shared_seq_logits"],
             "legacy_average_outputs": "not used for main smoke evaluation",
             "stage13_native_state_path": bool(args.stage13_native_state_path),
+        "stage18_enable_clash_relief": bool(args.stage18_enable_clash_relief),
         },
     }
     smoke = rollout_final(
@@ -368,12 +518,24 @@ def main() -> None:
         args.seed,
         local_latents_stop_t=args.local_latents_stop_t,
         target_shell_max_center_distance_nm=args.target_shell_max_center_distance_nm,
+        stage18_enable_clash_relief=args.stage18_enable_clash_relief,
+        stage18_clash_min_distance_nm=args.stage18_clash_min_distance_nm,
+        stage18_relief_step_nm=args.stage18_relief_step_nm,
+        stage18_relief_iters=args.stage18_relief_iters,
+        stage18_min_contact_count=args.stage18_min_contact_count,
         stage13_native_state_path=args.stage13_native_state_path,
         stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
     result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm
+    result["stage18_relief_config"] = {
+        "enabled": bool(args.stage18_enable_clash_relief),
+        "clash_min_distance_nm": float(args.stage18_clash_min_distance_nm),
+        "relief_step_nm": float(args.stage18_relief_step_nm),
+        "relief_iters": int(args.stage18_relief_iters),
+        "min_contact_count": int(args.stage18_min_contact_count),
+    }
     result.update(smoke)
     result["status"] = "passed"
     write_json(args.report_json, result)
