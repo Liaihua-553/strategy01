@@ -196,6 +196,33 @@ def stage18_bounded_rigid_clash_relief(
         "stage18_relief_contacts_after_mean": float(contact_after_sum / denom),
     }
 
+
+
+def write_binder_ca_pdb(path: Path, ca_nm: torch.Tensor, mask: torch.Tensor, chain_id: str = "B") -> None:
+    """Write generated binder CA coordinates as a minimal PDB in Angstroms.
+
+    This is for exact geometry benchmarking only. It writes generated state-specific
+    `bb_ca_states[k]`; legacy weighted-average coordinates are never used here.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ca_a = ca_nm.detach().float().cpu() * 10.0
+    m = mask.detach().bool().cpu()
+    lines = []
+    atom_id = 1
+    res_id = 1
+    for idx in range(ca_a.shape[0]):
+        if not bool(m[idx]):
+            continue
+        x, y, z = [float(v) for v in ca_a[idx].tolist()]
+        lines.append(
+            f"ATOM  {atom_id:5d}  CA  GLY {chain_id:1s}{res_id:4d}    "
+            f"{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00           C"
+        )
+        atom_id += 1
+        res_id += 1
+    lines.append("END")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
 def final_x_ae_identity(
     ae: torch.nn.Module,
     x_states: dict[str, torch.Tensor],
@@ -244,6 +271,7 @@ def rollout_final(
     stage18_relief_step_nm: float = 0.04,
     stage18_relief_iters: int = 8,
     stage18_min_contact_count: int = 4,
+    output_pdb_dir: Path | None = None,
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
@@ -395,6 +423,19 @@ def rollout_final(
         identity = s12.identity_metrics(final_out, final)
         final_x_identity = final_x_ae_identity(ae, x_states, final, weights)
         target_geometry_proxy = target_binder_geometry_proxy(final, x_states)
+        written_pdb_dirs: list[str] = []
+        if output_pdb_dir is not None:
+            for bi, sample in enumerate(samples):
+                sid = str(sample.get("sample_id") or f"sample_{bi:03d}").replace("/", "_")
+                sample_dir = Path(output_pdb_dir) / sid
+                valid_k = int(state_mask[bi].any(dim=-1).sum().detach().cpu().item())
+                for si in range(valid_k):
+                    write_binder_ca_pdb(
+                        sample_dir / f"state{si:02d}_binder_ca.pdb",
+                        x_states["bb_ca"][bi, si],
+                        state_mask[bi, si],
+                    )
+                written_pdb_dirs.append(str(sample_dir))
     relief_attempts = stage18_relief_totals["stage18_relief_attempts"]
     stage18_relief_summary = {
         "enabled": bool(stage18_enable_clash_relief),
@@ -415,6 +456,7 @@ def rollout_final(
         "final_x_identity": final_x_identity,
         "target_geometry_proxy": target_geometry_proxy,
         "stage18_clash_relief": stage18_relief_summary,
+        "written_pdb_dirs": written_pdb_dirs if output_pdb_dir is not None else [],
         "diagnostics": diagnostics,
         "nsteps": nsteps,
         "sample_count": len(samples),
@@ -452,6 +494,7 @@ def parse_args():
     parser.add_argument("--stage18-relief-step-nm", type=float, default=0.04)
     parser.add_argument("--stage18-relief-iters", type=int, default=8)
     parser.add_argument("--stage18-min-contact-count", type=int, default=4)
+    parser.add_argument("--output-pdb-dir", type=Path, default=None)
     parser.add_argument(
         "--stage13-native-state-path",
         action="store_true",
@@ -523,6 +566,7 @@ def main() -> None:
         stage18_relief_step_nm=args.stage18_relief_step_nm,
         stage18_relief_iters=args.stage18_relief_iters,
         stage18_min_contact_count=args.stage18_min_contact_count,
+        output_pdb_dir=args.output_pdb_dir,
         stage13_native_state_path=args.stage13_native_state_path,
         stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
@@ -536,6 +580,7 @@ def main() -> None:
         "relief_iters": int(args.stage18_relief_iters),
         "min_contact_count": int(args.stage18_min_contact_count),
     }
+    result["output_pdb_dir"] = str(args.output_pdb_dir) if args.output_pdb_dir is not None else None
     result.update(smoke)
     result["status"] = "passed"
     write_json(args.report_json, result)

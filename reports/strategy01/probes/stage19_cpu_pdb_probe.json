@@ -1,0 +1,257 @@
+{
+  "stage": "stage17_per_sample_multiseed_probe",
+  "status": "passed",
+  "checkpoint": "ckpts/stage12_de_novo_multistate/runs/stage15_teacher_selfcond_from_warmup/stage12_pilot_final.pt",
+  "split": "val",
+  "sample_offset": 0,
+  "sample_count": 1,
+  "nsteps": 1,
+  "seeds": [
+    1207
+  ],
+  "contract": {
+    "target_only_de_novo": true,
+    "production_selection_uses_reference_labels": false,
+    "posthoc_identity_is_diagnostic_only": true,
+    "stage18_clash_relief": true,
+    "severe_clash_is_hard_gate": true
+  },
+  "stage18_relief_config": {
+    "enabled": true,
+    "clash_min_distance_nm": 0.28,
+    "relief_step_nm": 0.04,
+    "relief_iters": 8,
+    "min_contact_count": 4
+  },
+  "write_candidate_pdb_dir": "reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs",
+  "summary": {
+    "first_seed_identity_mean": 0.04545454680919647,
+    "proxy_selected_identity_mean": 0.04545454680919647,
+    "oracle_identity_mean": 0.04545454680919647,
+    "proxy_matches_oracle_rate": 1.0,
+    "safe_candidate_available_rate": 1.0,
+    "selected_safe_rate": 1.0
+  },
+  "samples": [
+    {
+      "sample_idx": 0,
+      "sample_id": "2ofq_A_B__v00__k3__hexact",
+      "target_id": "2ofq",
+      "first_seed": {
+        "seed": 1207,
+        "sample_idx": 0,
+        "sample_id": "2ofq_A_B__v00__k3__hexact",
+        "target_id": "2ofq",
+        "shared_identity_mean_posthoc": 0.04545454680919647,
+        "ae_state_identity_mean_posthoc": 0.04545454680919647,
+        "shared_entropy": 2.818861961364746,
+        "state_seq_disagreement": 9.535169374430552e-05,
+        "target_min_distance_nm_mean": 63.683027267456055,
+        "target_min_distance_nm_min": 16.151437759399414,
+        "target_contact_count_mean": 0.0,
+        "target_hotspot_contact_count_mean": 0.0,
+        "target_severe_clash_rate": 0.0,
+        "stage18_clash_relief": {
+          "enabled": true,
+          "attempts": 0.0,
+          "accepted": 0.0,
+          "accept_rate": 0.0,
+          "min_before_mean": 0.0,
+          "min_after_mean": 0.0,
+          "contacts_before_mean": 0.0,
+          "contacts_after_mean": 0.0,
+          "clash_min_distance_nm": 0.28,
+          "relief_step_nm": 0.04,
+          "relief_iters": 8
+        },
+        "written_pdb_dirs": [
+          "reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact"
+        ],
+        "no_leak_score": 69.50284274575824
+      },
+      "selected_by_proxy": {
+        "seed": 1207,
+        "sample_idx": 0,
+        "sample_id": "2ofq_A_B__v00__k3__hexact",
+        "target_id": "2ofq",
+        "shared_identity_mean_posthoc": 0.04545454680919647,
+        "ae_state_identity_mean_posthoc": 0.04545454680919647,
+        "shared_entropy": 2.818861961364746,
+        "state_seq_disagreement": 9.535169374430552e-05,
+        "target_min_distance_nm_mean": 63.683027267456055,
+        "target_min_distance_nm_min": 16.151437759399414,
+        "target_contact_count_mean": 0.0,
+        "target_hotspot_contact_count_mean": 0.0,
+        "target_severe_clash_rate": 0.0,
+        "stage18_clash_relief": {
+          "enabled": true,
+          "attempts": 0.0,
+          "accepted": 0.0,
+          "accept_rate": 0.0,
+          "min_before_mean": 0.0,
+          "min_after_mean": 0.0,
+          "contacts_before_mean": 0.0,
+          "contacts_after_mean": 0.0,
+          "clash_min_distance_nm": 0.28,
+          "relief_step_nm": 0.04,
+          "relief_iters": 8
+        },
+        "written_pdb_dirs": [
+          "reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact"
+        ],
+        "no_leak_score": 69.50284274575824
+      },
+      "oracle_best": {
+        "seed": 1207,
+        "sample_idx": 0,
+        "sample_id": "2ofq_A_B__v00__k3__hexact",
+        "target_id": "2ofq",
+        "shared_identity_mean_posthoc": 0.04545454680919647,
+        "ae_state_identity_mean_posthoc": 0.04545454680919647,
+        "shared_entropy": 2.818861961364746,
+        "state_seq_disagreement": 9.535169374430552e-05,
+        "target_min_distance_nm_mean": 63.683027267456055,
+        "target_min_distance_nm_min": 16.151437759399414,
+        "target_contact_count_mean": 0.0,
+        "target_hotspot_contact_count_mean": 0.0,
+        "target_severe_clash_rate": 0.0,
+        "stage18_clash_relief": {
+          "enabled": true,
+          "attempts": 0.0,
+          "accepted": 0.0,
+          "accept_rate": 0.0,
+          "min_before_mean": 0.0,
+          "min_after_mean": 0.0,
+          "contacts_before_mean": 0.0,
+          "contacts_after_mean": 0.0,
+          "clash_min_distance_nm": 0.28,
+          "relief_step_nm": 0.04,
+          "relief_iters": 8
+        },
+        "written_pdb_dirs": [
+          "reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact"
+        ],
+        "no_leak_score": 69.50284274575824
+      },
+      "proxy_matches_oracle": true,
+      "safe_candidate_available": true,
+      "selected_is_safe": true,
+      "identity_range": [
+        0.04545454680919647,
+        0.04545454680919647
+      ],
+      "candidates": [
+        {
+          "seed": 1207,
+          "sample_idx": 0,
+          "sample_id": "2ofq_A_B__v00__k3__hexact",
+          "target_id": "2ofq",
+          "shared_identity_mean_posthoc": 0.04545454680919647,
+          "ae_state_identity_mean_posthoc": 0.04545454680919647,
+          "shared_entropy": 2.818861961364746,
+          "state_seq_disagreement": 9.535169374430552e-05,
+          "target_min_distance_nm_mean": 63.683027267456055,
+          "target_min_distance_nm_min": 16.151437759399414,
+          "target_contact_count_mean": 0.0,
+          "target_hotspot_contact_count_mean": 0.0,
+          "target_severe_clash_rate": 0.0,
+          "stage18_clash_relief": {
+            "enabled": true,
+            "attempts": 0.0,
+            "accepted": 0.0,
+            "accept_rate": 0.0,
+            "min_before_mean": 0.0,
+            "min_after_mean": 0.0,
+            "contacts_before_mean": 0.0,
+            "contacts_after_mean": 0.0,
+            "clash_min_distance_nm": 0.28,
+            "relief_step_nm": 0.04,
+            "relief_iters": 8
+          },
+          "written_pdb_dirs": [
+            "reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact"
+          ],
+          "no_leak_score": 69.50284274575824
+        }
+      ]
+    }
+  ],
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 634,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "checkpoint_meta": {
+    "loaded": true,
+    "path": "ckpts/stage12_de_novo_multistate/runs/stage15_teacher_selfcond_from_warmup/stage12_pilot_final.pt",
+    "compatible_keys": 1091,
+    "incompatible_shape_keys": [],
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "loss_cfg": {
+    "de_novo_multistate": true,
+    "target_center_noise_scale_nm": 0.2,
+    "latent_state_residual_noise_scale": 0.05,
+    "lambda_ae_seq": 1.5,
+    "lambda_seq_ae_consistency": 0.15,
+    "lambda_flow_gate_reg": 0.03,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.0,
+    "ae_seq_hard_state_gamma": 0.0
+  }
+}

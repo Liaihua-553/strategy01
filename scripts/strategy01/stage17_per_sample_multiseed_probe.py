@@ -69,6 +69,7 @@ def main() -> None:
     ap.add_argument('--stage18-relief-iters', type=int, default=8)
     ap.add_argument('--stage18-min-contact-count', type=int, default=4)
     ap.add_argument('--device', default='auto')
+    ap.add_argument('--write-candidate-pdb-dir', type=Path, default=None)
     ap.add_argument('--report-json', type=Path, default=REPO/'reports/strategy01/probes/stage17_per_sample_multiseed_probe.json')
     args=ap.parse_args()
 
@@ -99,10 +100,11 @@ def main() -> None:
                 stage18_relief_step_nm=args.stage18_relief_step_nm,
                 stage18_relief_iters=args.stage18_relief_iters,
                 stage18_min_contact_count=args.stage18_min_contact_count,
+                output_pdb_dir=(args.write_candidate_pdb_dir / f"sample_{sample_idx:03d}_seed_{seed}") if args.write_candidate_pdb_dir is not None else None,
                 stage13_native_state_path=args.stage13_native_state_path,
             )
             final_x=smoke.get('final_x_identity') or {}
-            row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {}), 'stage18_clash_relief': smoke.get('stage18_clash_relief')}
+            row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {}), 'stage18_clash_relief': smoke.get('stage18_clash_relief'), 'written_pdb_dirs': smoke.get('written_pdb_dirs') or []}
             row['no_leak_score']=no_leak_score(row)
             cand.append(row)
         safe_cand=[r for r in cand if float(r.get('target_severe_clash_rate') or 0.0) <= 0.0]
@@ -117,7 +119,7 @@ def main() -> None:
     first_vals=[r['first_seed']['shared_identity_mean_posthoc'] for r in sample_rows]
     proxy_vals=[r['selected_by_proxy']['shared_identity_mean_posthoc'] for r in sample_rows]
     oracle_vals=[r['oracle_best']['shared_identity_mean_posthoc'] for r in sample_rows]
-    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_offset':int(args.sample_offset),'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
+    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_offset':int(args.sample_offset),'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'write_candidate_pdb_dir':str(args.write_candidate_pdb_dir) if args.write_candidate_pdb_dir is not None else None,'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
     write_json(args.report_json, result)
     print(json.dumps({'status':'passed','report':str(args.report_json),'summary':result['summary']}, ensure_ascii=False, indent=2))
 
