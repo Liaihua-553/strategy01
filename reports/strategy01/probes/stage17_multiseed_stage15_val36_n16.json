@@ -1,0 +1,493 @@
+{
+  "stage": "stage17_multiseed_denovo_probe",
+  "status": "passed",
+  "checkpoint": "ckpts/stage12_de_novo_multistate/runs/stage15_teacher_selfcond_from_warmup/stage12_pilot_final.pt",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "split": "val",
+  "sample_count": 36,
+  "chunk_size": 12,
+  "nsteps": 16,
+  "seeds": [
+    1207,
+    1211,
+    1217,
+    1223,
+    1231,
+    1237,
+    1249,
+    1259
+  ],
+  "contract": {
+    "target_only_de_novo": true,
+    "production_selection_uses_reference_labels": false,
+    "posthoc_identity_is_diagnostic_only": true,
+    "stage13_native_state_path": true
+  },
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 634,
+    "missing_keys_sample": [
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.to_gamma.0.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "checkpoint_meta": {
+    "loaded": true,
+    "path": "ckpts/stage12_de_novo_multistate/runs/stage15_teacher_selfcond_from_warmup/stage12_pilot_final.pt",
+    "compatible_keys": 1091,
+    "incompatible_shape_keys": [],
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "loss_cfg": {
+    "de_novo_multistate": true,
+    "target_center_noise_scale_nm": 0.2,
+    "latent_state_residual_noise_scale": 0.05,
+    "lambda_ae_seq": 1.5,
+    "lambda_seq_ae_consistency": 0.15,
+    "lambda_flow_gate_reg": 0.03,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.0,
+    "ae_seq_hard_state_gamma": 0.0
+  },
+  "rows": [
+    {
+      "seed": 1207,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.20958284040292105,
+      "ae_state_identity_mean_posthoc": 0.14974490304787955,
+      "shared_entropy": 0.10343404362599055,
+      "state_seq_disagreement": 0.053666457533836365,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.27858418226242065,
+          "ae_state_identity_mean_posthoc": 0.19903871417045593,
+          "shared_entropy": 0.0968167632818222,
+          "state_seq_disagreement": 0.05822093039751053
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.23755411803722382,
+          "ae_state_identity_mean_posthoc": 0.1619769185781479,
+          "shared_entropy": 0.11141624301671982,
+          "state_seq_disagreement": 0.054361697286367416
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.11261022090911865,
+          "ae_state_identity_mean_posthoc": 0.08821907639503479,
+          "shared_entropy": 0.10206912457942963,
+          "state_seq_disagreement": 0.04841674491763115
+        }
+      ],
+      "no_leak_score": 0.6400986189643542
+    },
+    {
+      "seed": 1211,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.20759871105353037,
+      "ae_state_identity_mean_posthoc": 0.1551948090394338,
+      "shared_entropy": 0.14146316548188528,
+      "state_seq_disagreement": 0.07500291119019191,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.27263179421424866,
+          "ae_state_identity_mean_posthoc": 0.20770734548568726,
+          "shared_entropy": 0.17156900465488434,
+          "state_seq_disagreement": 0.08717621862888336
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.24512986838817596,
+          "ae_state_identity_mean_posthoc": 0.1654040366411209,
+          "shared_entropy": 0.12833356857299805,
+          "state_seq_disagreement": 0.06974773108959198
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.1050344705581665,
+          "ae_state_identity_mean_posthoc": 0.09247304499149323,
+          "shared_entropy": 0.12448692321777344,
+          "state_seq_disagreement": 0.06808478385210037
+        }
+      ],
+      "no_leak_score": 0.8914922773838044
+    },
+    {
+      "seed": 1217,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.2086410994331042,
+      "ae_state_identity_mean_posthoc": 0.15172462165355682,
+      "shared_entropy": 0.11255184809366862,
+      "state_seq_disagreement": 0.05188692112763723,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.27368220686912537,
+          "ae_state_identity_mean_posthoc": 0.19524021446704865,
+          "shared_entropy": 0.20214660465717316,
+          "state_seq_disagreement": 0.06614870578050613
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.24945887923240662,
+          "ae_state_identity_mean_posthoc": 0.17243868112564087,
+          "shared_entropy": 0.06718189269304276,
+          "state_seq_disagreement": 0.04470808431506157
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.10278221219778061,
+          "ae_state_identity_mean_posthoc": 0.08749496936798096,
+          "shared_entropy": 0.06832704693078995,
+          "state_seq_disagreement": 0.04480397328734398
+        }
+      ],
+      "no_leak_score": 0.6314210593700409
+    },
+    {
+      "seed": 1223,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.21270182728767395,
+      "ae_state_identity_mean_posthoc": 0.14919771254062653,
+      "shared_entropy": 0.09990307937065761,
+      "state_seq_disagreement": 0.07139300182461739,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.28237205743789673,
+          "ae_state_identity_mean_posthoc": 0.19705457985401154,
+          "shared_entropy": 0.09451507031917572,
+          "state_seq_disagreement": 0.07121673971414566
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.24945887923240662,
+          "ae_state_identity_mean_posthoc": 0.1673881709575653,
+          "shared_entropy": 0.1200447604060173,
+          "state_seq_disagreement": 0.09116566926240921
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.1062745451927185,
+          "ae_state_identity_mean_posthoc": 0.08315038681030273,
+          "shared_entropy": 0.08514940738677979,
+          "state_seq_disagreement": 0.05179659649729729
+        }
+      ],
+      "no_leak_score": 0.8138330976168314
+    },
+    {
+      "seed": 1231,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.19960208733876547,
+      "ae_state_identity_mean_posthoc": 0.15224658449490866,
+      "shared_entropy": 0.09376194576422374,
+      "state_seq_disagreement": 0.052034435172875725,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.2710084319114685,
+          "ae_state_identity_mean_posthoc": 0.20356930792331696,
+          "shared_entropy": 0.11053621023893356,
+          "state_seq_disagreement": 0.05140041559934616
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.23430737853050232,
+          "ae_state_identity_mean_posthoc": 0.1693722903728485,
+          "shared_entropy": 0.09110396355390549,
+          "state_seq_disagreement": 0.05227237194776535
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.09349045157432556,
+          "ae_state_identity_mean_posthoc": 0.08379815518856049,
+          "shared_entropy": 0.07964566349983215,
+          "state_seq_disagreement": 0.052430517971515656
+        }
+      ],
+      "no_leak_score": 0.614106297492981
+    },
+    {
+      "seed": 1237,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.20884931335846582,
+      "ae_state_identity_mean_posthoc": 0.15147959192593893,
+      "shared_entropy": 0.10739955802758534,
+      "state_seq_disagreement": 0.054597372810045876,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.28237205743789673,
+          "ae_state_identity_mean_posthoc": 0.1968742161989212,
+          "shared_entropy": 0.0955209955573082,
+          "state_seq_disagreement": 0.05732730031013489
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.23755411803722382,
+          "ae_state_identity_mean_posthoc": 0.1639610379934311,
+          "shared_entropy": 0.14938142895698547,
+          "state_seq_disagreement": 0.06618403643369675
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.10662176460027695,
+          "ae_state_identity_mean_posthoc": 0.09360352158546448,
+          "shared_entropy": 0.07729624956846237,
+          "state_seq_disagreement": 0.040280781686306
+        }
+      ],
+      "no_leak_score": 0.6533732861280441
+    },
+    {
+      "seed": 1249,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.2142124722401301,
+      "ae_state_identity_mean_posthoc": 0.1487442528208097,
+      "shared_entropy": 0.09754407902558644,
+      "state_seq_disagreement": 0.05096746856967608,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.2861599326133728,
+          "ae_state_identity_mean_posthoc": 0.19724556803703308,
+          "shared_entropy": 0.08116872608661652,
+          "state_seq_disagreement": 0.0423714704811573
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.2554112672805786,
+          "ae_state_identity_mean_posthoc": 0.1693722903728485,
+          "shared_entropy": 0.1289195865392685,
+          "state_seq_disagreement": 0.06335459649562836
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.1010662168264389,
+          "ae_state_identity_mean_posthoc": 0.07961490005254745,
+          "shared_entropy": 0.08254392445087433,
+          "state_seq_disagreement": 0.047176338732242584
+        }
+      ],
+      "no_leak_score": 0.6072187647223473
+    },
+    {
+      "seed": 1259,
+      "nsteps": 16,
+      "sample_count": 36,
+      "chunk_size": 12,
+      "chunk_count": 3,
+      "shared_identity_mean_posthoc": 0.20703496038913727,
+      "ae_state_identity_mean_posthoc": 0.15103765080372492,
+      "shared_entropy": 0.11975107466181119,
+      "state_seq_disagreement": 0.052245739847421646,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.2812579870223999,
+          "ae_state_identity_mean_posthoc": 0.20247645676136017,
+          "shared_entropy": 0.17378319799900055,
+          "state_seq_disagreement": 0.0513073168694973
+        },
+        {
+          "chunk_index": 1,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.22564935684204102,
+          "ae_state_identity_mean_posthoc": 0.1619769185781479,
+          "shared_entropy": 0.1327587068080902,
+          "state_seq_disagreement": 0.06671679019927979
+        },
+        {
+          "chunk_index": 2,
+          "sample_count": 12,
+          "shared_identity_mean_posthoc": 0.11419753730297089,
+          "ae_state_identity_mean_posthoc": 0.08865957707166672,
+          "shared_entropy": 0.05271131917834282,
+          "state_seq_disagreement": 0.038713112473487854
+        }
+      ],
+      "no_leak_score": 0.6422084731360277
+    }
+  ],
+  "selected_by_no_leak_proxy": {
+    "seed": 1249,
+    "nsteps": 16,
+    "sample_count": 36,
+    "chunk_size": 12,
+    "chunk_count": 3,
+    "shared_identity_mean_posthoc": 0.2142124722401301,
+    "ae_state_identity_mean_posthoc": 0.1487442528208097,
+    "shared_entropy": 0.09754407902558644,
+    "state_seq_disagreement": 0.05096746856967608,
+    "chunks": [
+      {
+        "chunk_index": 0,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.2861599326133728,
+        "ae_state_identity_mean_posthoc": 0.19724556803703308,
+        "shared_entropy": 0.08116872608661652,
+        "state_seq_disagreement": 0.0423714704811573
+      },
+      {
+        "chunk_index": 1,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.2554112672805786,
+        "ae_state_identity_mean_posthoc": 0.1693722903728485,
+        "shared_entropy": 0.1289195865392685,
+        "state_seq_disagreement": 0.06335459649562836
+      },
+      {
+        "chunk_index": 2,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.1010662168264389,
+        "ae_state_identity_mean_posthoc": 0.07961490005254745,
+        "shared_entropy": 0.08254392445087433,
+        "state_seq_disagreement": 0.047176338732242584
+      }
+    ],
+    "no_leak_score": 0.6072187647223473
+  },
+  "oracle_best_by_reference_identity": {
+    "seed": 1249,
+    "nsteps": 16,
+    "sample_count": 36,
+    "chunk_size": 12,
+    "chunk_count": 3,
+    "shared_identity_mean_posthoc": 0.2142124722401301,
+    "ae_state_identity_mean_posthoc": 0.1487442528208097,
+    "shared_entropy": 0.09754407902558644,
+    "state_seq_disagreement": 0.05096746856967608,
+    "chunks": [
+      {
+        "chunk_index": 0,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.2861599326133728,
+        "ae_state_identity_mean_posthoc": 0.19724556803703308,
+        "shared_entropy": 0.08116872608661652,
+        "state_seq_disagreement": 0.0423714704811573
+      },
+      {
+        "chunk_index": 1,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.2554112672805786,
+        "ae_state_identity_mean_posthoc": 0.1693722903728485,
+        "shared_entropy": 0.1289195865392685,
+        "state_seq_disagreement": 0.06335459649562836
+      },
+      {
+        "chunk_index": 2,
+        "sample_count": 12,
+        "shared_identity_mean_posthoc": 0.1010662168264389,
+        "ae_state_identity_mean_posthoc": 0.07961490005254745,
+        "shared_entropy": 0.08254392445087433,
+        "state_seq_disagreement": 0.047176338732242584
+      }
+    ],
+    "no_leak_score": 0.6072187647223473
+  },
+  "diagnosis": {
+    "candidate_diversity_identity_range": [
+      0.19960208733876547,
+      0.2142124722401301
+    ],
+    "proxy_matches_oracle_seed": true
+  }
+}

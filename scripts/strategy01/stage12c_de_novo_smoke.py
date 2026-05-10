@@ -53,6 +53,50 @@ def state_seq_disagreement(state_logits: torch.Tensor, state_mask: torch.Tensor)
     return float(value.detach().cpu().item())
 
 
+def target_binder_geometry_proxy(batch: dict[str, torch.Tensor], x_states: dict[str, torch.Tensor]) -> dict[str, float]:
+    """Target-only geometry proxy for de-novo candidates.
+
+    It uses target coordinates and generated binder CA only.  No exact binder pose
+    or interface labels are read, so this is safe for candidate selection.
+    Units are nanometers because Strategy01 tensors follow Complexa internals.
+    """
+    if "x_target_states" not in batch or "target_mask_states" not in batch:
+        return {}
+    target_ca = batch["x_target_states"].to(device=x_states["bb_ca"].device)[..., 1, :]
+    target_mask = batch["target_mask_states"].to(device=x_states["bb_ca"].device).bool()[..., 1]
+    binder_ca = x_states["bb_ca"]
+    binder_mask = batch["state_mask"].to(device=binder_ca.device).bool()
+    b, k, nb, _ = binder_ca.shape
+    rows = []
+    hotspot = batch.get("target_hotspot_mask_states")
+    hotspot_mask = hotspot.to(device=binder_ca.device).bool() if hotspot is not None else target_mask
+    for bi in range(b):
+        for si in range(k):
+            tmask = target_mask[bi, si]
+            bmask = binder_mask[bi, si]
+            if not bool(tmask.any()) or not bool(bmask.any()):
+                continue
+            dist = torch.cdist(target_ca[bi, si, tmask].float(), binder_ca[bi, si, bmask].float())
+            min_dist = float(dist.min().detach().cpu().item())
+            contact_count = int((dist < 1.0).sum().detach().cpu().item())
+            severe_clash = min_dist < 0.28
+            hmask = hotspot_mask[bi, si] & tmask
+            hotspot_contacts = 0
+            if bool(hmask.any()):
+                hdist = torch.cdist(target_ca[bi, si, hmask].float(), binder_ca[bi, si, bmask].float())
+                hotspot_contacts = int((hdist < 1.0).sum().detach().cpu().item())
+            rows.append((min_dist, contact_count, hotspot_contacts, severe_clash))
+    if not rows:
+        return {}
+    return {
+        "target_min_distance_nm_mean": float(sum(r[0] for r in rows) / len(rows)),
+        "target_min_distance_nm_min": float(min(r[0] for r in rows)),
+        "target_contact_count_mean": float(sum(r[1] for r in rows) / len(rows)),
+        "target_hotspot_contact_count_mean": float(sum(r[2] for r in rows) / len(rows)),
+        "target_severe_clash_rate": float(sum(1 for r in rows if r[3]) / len(rows)),
+    }
+
+
 def final_x_ae_identity(
     ae: torch.nn.Module,
     x_states: dict[str, torch.Tensor],
@@ -221,10 +265,12 @@ def rollout_final(
         losses = fm.compute_multistate_loss(final, final_out)
         identity = s12.identity_metrics(final_out, final)
         final_x_identity = final_x_ae_identity(ae, x_states, final, weights)
+        target_geometry_proxy = target_binder_geometry_proxy(final, x_states)
     return {
         "losses": s4.summarize_losses(losses),
         "identity": identity,
         "final_x_identity": final_x_identity,
+        "target_geometry_proxy": target_geometry_proxy,
         "diagnostics": diagnostics,
         "nsteps": nsteps,
         "sample_count": len(samples),

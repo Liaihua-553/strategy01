@@ -159,6 +159,48 @@ def add_weighted_legacy_fields(batch: dict[str, Any], weights: torch.Tensor) -> 
         batch["x_sc"] = {dm: torch.zeros_like(batch["x_t"][dm]) for dm in batch["x_t"]}
 
 
+def apply_stage16_t_window(
+    fm: Any,
+    batch: dict[str, Any],
+    t_min: float,
+    t_max: float,
+    seed: int | None = None,
+) -> dict[str, float]:
+    """Replace teacher-forced t with a shared near-clean time window and rebuild x_t_states.
+
+    Stage16 uses this only during supervised corruption, not during generation.
+    It teaches the native flow and AE-decoded sequence losses on the same late
+    denoising regime where sampled local latents currently leave the AE manifold.
+    """
+    state_mask = batch["state_mask"].bool()
+    b, k, _ = state_mask.shape
+    device = state_mask.device
+    t_min = max(0.0, min(float(t_min), 0.999))
+    t_max = max(t_min + 1e-4, min(float(t_max), 0.999))
+    if seed is not None:
+        torch.manual_seed(int(seed) + 1600003)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(int(seed) + 1600003)
+    t_base = t_min + (t_max - t_min) * torch.rand((b,), device=device)
+    for dm in fm.data_modes:
+        t = t_base[:, None].expand(b, k).contiguous()
+        batch["t_states"][dm] = t
+        batch["x_t_states"][dm] = fm.base_flow_matchers[dm].interpolate(
+            x_0=batch["x_0_states"][dm],
+            x_1=batch["x_1_states"][dm].to(device=device),
+            t=t,
+            mask=state_mask,
+        )
+    weights = normalize_state_weights(batch, device)
+    add_weighted_legacy_fields(batch, weights)
+    batch["stage16_t_window_condition"] = True
+    return {
+        "stage16_t_window_min": t_min,
+        "stage16_t_window_max": t_max,
+        "stage16_t_window_mean": float(t_base.mean().detach().cpu().item()),
+    }
+
+
 def attach_teacher_forced_self_conditioning(
     model: torch.nn.Module,
     fm: Any,
@@ -552,6 +594,21 @@ def forward_loss_stage12(
             stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
         )
         work_batch = fm.corrupt_multistate_batch(work_batch)
+        if args is not None and bool(getattr(args, "enable_stage16_t_window", False)):
+            prob_t = max(0.0, min(float(getattr(args, "stage16_t_window_prob", 1.0)), 1.0))
+            draw_t = 0.0 if seed is None else ((int(seed) * 7919) % 10000) / 10000.0
+            if draw_t < prob_t:
+                t_diag = apply_stage16_t_window(
+                    fm,
+                    work_batch,
+                    t_min=float(getattr(args, "stage16_t_min", 0.55)),
+                    t_max=float(getattr(args, "stage16_t_max", 0.95)),
+                    seed=seed,
+                )
+                replay_diag.update(t_diag)
+                replay_diag["stage16_t_window_applied"] = True
+            else:
+                replay_diag["stage16_t_window_applied"] = False
         if args is not None and bool(getattr(args, "enable_teacher_self_conditioning", False)):
             prob = max(0.0, min(float(getattr(args, "teacher_self_cond_prob", 1.0)), 1.0))
             draw = 0.0 if seed is None else ((int(seed) * 9973) % 10000) / 10000.0
@@ -907,6 +964,10 @@ def parse_args():
         ),
     )
     parser.add_argument("--teacher-self-cond-prob", type=float, default=1.0)
+    parser.add_argument("--enable-stage16-t-window", action="store_true", default=False)
+    parser.add_argument("--stage16-t-min", type=float, default=0.55)
+    parser.add_argument("--stage16-t-max", type=float, default=0.95)
+    parser.add_argument("--stage16-t-window-prob", type=float, default=1.0)
     parser.add_argument("--enable-replay", action="store_true", default=False)
     parser.add_argument("--replay-mix-prob", type=float, default=0.20)
     parser.add_argument("--replay-warmup-steps", type=int, default=60)
@@ -1056,6 +1117,13 @@ def main():
         "enabled": bool(args.enable_teacher_self_conditioning),
         "prob": float(args.teacher_self_cond_prob),
         "scientific_role": "Expose training to model-generated clean self-conditioning used during de-novo sampling without source-pose or sequence leakage.",
+    }
+    result["stage16_t_window"] = {
+        "enabled": bool(args.enable_stage16_t_window),
+        "t_min": float(args.stage16_t_min),
+        "t_max": float(args.stage16_t_max),
+        "prob": float(args.stage16_t_window_prob),
+        "scientific_role": "Bias part of supervised flow training toward late denoising states where sampled local latents must stay AE-decodable into one shared binder sequence.",
     }
     result["stage12c_replay"] = {
         "enabled": bool(args.enable_replay),
