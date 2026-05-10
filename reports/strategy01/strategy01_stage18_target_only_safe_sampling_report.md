@@ -82,3 +82,16 @@ cd /data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benc
 sbatch scripts/strategy01/slurm/stage18_geo_relief_persample.sbatch
 sbatch scripts/strategy01/slurm/stage18_geo_relief_persample36.sbatch
 ```
+
+## 5ixf unsafe 样本参数 sweep
+val36 的唯一 unsafe 样本是 `5ixf_A_B__v01__k2__hpred`。针对它单独扫描 relief 参数，结果如下：
+| 配置文件 | step_nm | iters | min_contact | safe | selected identity | contact | hotspot | min_dist_nm | clash |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `stage18_unsafe_5ixf_step004_iter8.json` | 0.04 | 8 | 4 | 1.0 | 0.2857142984867096 | 67.5 | 9.0 | 0.31042779982089996 | 0.0 |
+| `stage18_unsafe_5ixf_step006_iter6.json` | 0.06 | 6 | 4 | 1.0 | 0.2142857164144516 | 50.0 | 4.0 | 0.30486960709095 | 0.0 |
+| `stage18_unsafe_5ixf_step008_iter8.json` | 0.08 | 8 | 4 | 1.0 | 0.2142857164144516 | 50.5 | 3.5 | 0.3047672361135483 | 0.0 |
+| `stage18_unsafe_5ixf_step008_iter8_min0.json` | 0.08 | 8 | 0 | 1.0 | 0.2142857164144516 | 50.5 | 3.5 | 0.3047672361135483 | 0.0 |
+
+结论：`step=0.04 nm, iters=8` 是当前最稳的修正，能把 `5ixf` 从 unsafe 变为 no-clash，同时保持最高 selected identity 和更好的 contact/hotspot。更大 step 也能去 clash，但 sequence/contact 不更好。因此 Stage18 默认 relief 迭代数从 4 调整为 8。
+
+注意：尝试用 iter8 重跑 val36 时，SLURM job `2041340` 因 A100 资源不可用长期 `PENDING(Resources)`，系统给出的 StartTime 异常远；已取消，避免无意义排队。完整 val36 iter8 应在 gu02 A100 恢复后补跑。

@@ -29,7 +29,7 @@ $PY scripts/strategy01/stage17_per_sample_multiseed_probe.py \
   --stage18-enable-clash-relief \
   --stage18-clash-min-distance-nm 0.28 \
   --stage18-relief-step-nm 0.04 \
-  --stage18-relief-iters 4 \
+  --stage18-relief-iters 8 \
   --stage18-min-contact-count 4 \
   --seeds 1207,1211,1217,1223,1231,1237,1249,1259 \
   --report-json reports/strategy01/probes/stage18_per_sample_multiseed_relief_stage15_val36_n16.json

@@ -242,7 +242,7 @@ def rollout_final(
     stage18_enable_clash_relief: bool = False,
     stage18_clash_min_distance_nm: float = 0.28,
     stage18_relief_step_nm: float = 0.04,
-    stage18_relief_iters: int = 4,
+    stage18_relief_iters: int = 8,
     stage18_min_contact_count: int = 4,
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
@@ -450,7 +450,7 @@ def parse_args():
     parser.add_argument("--stage18-enable-clash-relief", action="store_true")
     parser.add_argument("--stage18-clash-min-distance-nm", type=float, default=0.28)
     parser.add_argument("--stage18-relief-step-nm", type=float, default=0.04)
-    parser.add_argument("--stage18-relief-iters", type=int, default=4)
+    parser.add_argument("--stage18-relief-iters", type=int, default=8)
     parser.add_argument("--stage18-min-contact-count", type=int, default=4)
     parser.add_argument(
         "--stage13-native-state-path",
