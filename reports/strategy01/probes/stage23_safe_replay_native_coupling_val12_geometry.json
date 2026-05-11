@@ -1,0 +1,689 @@
+{
+  "stage": "stage19_candidate_geometry_benchmark",
+  "status": "completed",
+  "candidate_json": "reports/strategy01/probes/stage23_safe_replay_native_coupling_val12_candidates.json",
+  "dataset": "data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "split": "val",
+  "candidate_sample_count": 12,
+  "evaluated_sample_count": 12,
+  "exact_like_name_count": 6,
+  "contact_cutoff_nm": 1.0,
+  "clash_cutoff_nm": 0.28,
+  "aggregate": {
+    "mean_contact_f1": {
+      "n": 12,
+      "mean": 0.04394561460200288,
+      "best": 0.1268421052631579,
+      "worst": 0.0
+    },
+    "worst_contact_f1": {
+      "n": 12,
+      "mean": 0.02341203980365601,
+      "best": 0.07042253521126761,
+      "worst": 0.0
+    },
+    "mean_direct_rmsd_A": {
+      "n": 12,
+      "mean": 44.3852471974161,
+      "best": 24.78427529335022,
+      "worst": 58.529396057128906
+    },
+    "worst_direct_rmsd_A": {
+      "n": 12,
+      "mean": 49.604511857032776,
+      "best": 30.28259038925171,
+      "worst": 61.854119300842285
+    },
+    "mean_aligned_rmsd_A": {
+      "n": 12,
+      "mean": 28.270022025663437,
+      "best": 10.596684823437625,
+      "worst": 38.113814525417986
+    },
+    "severe_clash_rate": {
+      "n": 12,
+      "mean": 0.0,
+      "best": 0.0,
+      "worst": 0.0
+    },
+    "contact_persistence": {
+      "n": 12,
+      "mean": 0.28888491161446794,
+      "best": 0.6049382716049383,
+      "worst": 0.03333333333333333
+    },
+    "mean_generated_contact_count": {
+      "n": 12,
+      "mean": 73.48611111111111,
+      "best": 111.33333333333333,
+      "worst": 3.5
+    }
+  },
+  "warning": "This evaluates against the current Stage10/Stage07 tensor labels. It is not V_exact-only unless the input dataset/report is exact-only.",
+  "rows": [
+    {
+      "sample_id": "2ofq_A_B__v00__k3__hexact",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1223,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.1818181872367859,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_000_seed_1223/2ofq_A_B__v00__k3__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 98,
+          "reference_contact_count": 71,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 46.476783752441406,
+          "aligned_binder_ca_rmsd_A": 42.84054126046502,
+          "min_target_binder_distance_nm": 0.2945707142353058,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_000_seed_1223/2ofq_A_B__v00__k3__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 98,
+          "reference_contact_count": 60,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 54.320502281188965,
+          "aligned_binder_ca_rmsd_A": 36.14098920658728,
+          "min_target_binder_distance_nm": 0.2952224612236023,
+          "severe_clash": false
+        },
+        {
+          "state_index": 2,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_000_seed_1223/2ofq_A_B__v00__k3__hexact/state02_binder_ca.pdb",
+          "generated_contact_count": 117,
+          "reference_contact_count": 72,
+          "contact_f1": 0.010582010582010583,
+          "direct_binder_ca_rmsd_A": 37.52060413360596,
+          "aligned_binder_ca_rmsd_A": 27.96430437584032,
+          "min_target_binder_distance_nm": 0.28573960065841675,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.0035273368606701942,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 46.10596338907878,
+        "worst_direct_rmsd_A": 54.320502281188965,
+        "mean_aligned_rmsd_A": 35.648611614297536,
+        "worst_aligned_rmsd_A": 42.84054126046502,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.27647058823529413,
+        "mean_generated_contact_count": 104.33333333333333
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v00__k3__hpred",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1217,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.27272728085517883,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_001_seed_1217/2ofq_A_B__v00__k3__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 87,
+          "reference_contact_count": 71,
+          "contact_f1": 0.0379746835443038,
+          "direct_binder_ca_rmsd_A": 56.1815881729126,
+          "aligned_binder_ca_rmsd_A": 30.09144808193945,
+          "min_target_binder_distance_nm": 0.28642648458480835,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_001_seed_1217/2ofq_A_B__v00__k3__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 62,
+          "reference_contact_count": 60,
+          "contact_f1": 0.06557377049180328,
+          "direct_binder_ca_rmsd_A": 52.01868534088135,
+          "aligned_binder_ca_rmsd_A": 37.74044116027064,
+          "min_target_binder_distance_nm": 0.2897595465183258,
+          "severe_clash": false
+        },
+        {
+          "state_index": 2,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_001_seed_1217/2ofq_A_B__v00__k3__hpred/state02_binder_ca.pdb",
+          "generated_contact_count": 65,
+          "reference_contact_count": 72,
+          "contact_f1": 0.058394160583941604,
+          "direct_binder_ca_rmsd_A": 59.65057849884033,
+          "aligned_binder_ca_rmsd_A": 32.87061812134096,
+          "min_target_binder_distance_nm": 0.30502086877822876,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.05398087154001622,
+        "worst_contact_f1": 0.0379746835443038,
+        "mean_direct_rmsd_A": 55.950284004211426,
+        "worst_direct_rmsd_A": 59.65057849884033,
+        "mean_aligned_rmsd_A": 33.56750245451702,
+        "worst_aligned_rmsd_A": 37.74044116027064,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.15037593984962405,
+        "mean_generated_contact_count": 71.33333333333333
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v01__k2__hexact",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1231,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.27272728085517883,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_002_seed_1231/2ofq_A_B__v01__k2__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 84,
+          "reference_contact_count": 71,
+          "contact_f1": 0.012903225806451611,
+          "direct_binder_ca_rmsd_A": 36.940791606903076,
+          "aligned_binder_ca_rmsd_A": 28.850882584250126,
+          "min_target_binder_distance_nm": 0.28984910249710083,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_002_seed_1231/2ofq_A_B__v01__k2__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 99,
+          "reference_contact_count": 60,
+          "contact_f1": 0.050314465408805034,
+          "direct_binder_ca_rmsd_A": 49.57221984863281,
+          "aligned_binder_ca_rmsd_A": 23.979338506332915,
+          "min_target_binder_distance_nm": 0.3004959523677826,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.03160884560762832,
+        "worst_contact_f1": 0.012903225806451611,
+        "mean_direct_rmsd_A": 43.256505727767944,
+        "worst_direct_rmsd_A": 49.57221984863281,
+        "mean_aligned_rmsd_A": 26.415110545291522,
+        "worst_aligned_rmsd_A": 28.850882584250126,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.5641025641025641,
+        "mean_generated_contact_count": 91.5
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v01__k2__hpred",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1217,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.27272728085517883,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_003_seed_1217/2ofq_A_B__v01__k2__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 74,
+          "reference_contact_count": 71,
+          "contact_f1": 0.013793103448275862,
+          "direct_binder_ca_rmsd_A": 52.860751152038574,
+          "aligned_binder_ca_rmsd_A": 33.97132205903096,
+          "min_target_binder_distance_nm": 0.28716588020324707,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_003_seed_1217/2ofq_A_B__v01__k2__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 74,
+          "reference_contact_count": 60,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 56.20091438293457,
+          "aligned_binder_ca_rmsd_A": 42.13668678742927,
+          "min_target_binder_distance_nm": 0.2947904169559479,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.006896551724137931,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 54.53083276748657,
+        "worst_direct_rmsd_A": 56.20091438293457,
+        "mean_aligned_rmsd_A": 38.05400442323012,
+        "worst_aligned_rmsd_A": 42.13668678742927,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.30973451327433627,
+        "mean_generated_contact_count": 74.0
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v02__k2__hexact",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1231,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.27272728085517883,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_004_seed_1231/2ofq_A_B__v02__k2__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 75,
+          "reference_contact_count": 71,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 59.40519332885742,
+          "aligned_binder_ca_rmsd_A": 41.967277458777666,
+          "min_target_binder_distance_nm": 0.3351423144340515,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_004_seed_1231/2ofq_A_B__v02__k2__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 102,
+          "reference_contact_count": 72,
+          "contact_f1": 0.011494252873563218,
+          "direct_binder_ca_rmsd_A": 57.65359878540039,
+          "aligned_binder_ca_rmsd_A": 34.2603515920583,
+          "min_target_binder_distance_nm": 0.3199492394924164,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.005747126436781609,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 58.529396057128906,
+        "worst_direct_rmsd_A": 59.40519332885742,
+        "mean_aligned_rmsd_A": 38.113814525417986,
+        "worst_aligned_rmsd_A": 41.967277458777666,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.3014705882352941,
+        "mean_generated_contact_count": 88.5
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v02__k2__hpred",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1211,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.1818181872367859,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_005_seed_1211/2ofq_A_B__v02__k2__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 67,
+          "reference_contact_count": 71,
+          "contact_f1": 0.04347826086956522,
+          "direct_binder_ca_rmsd_A": 61.854119300842285,
+          "aligned_binder_ca_rmsd_A": 38.83630156263627,
+          "min_target_binder_distance_nm": 0.28415200114250183,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_005_seed_1211/2ofq_A_B__v02__k2__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 63,
+          "reference_contact_count": 72,
+          "contact_f1": 0.07407407407407407,
+          "direct_binder_ca_rmsd_A": 46.99124813079834,
+          "aligned_binder_ca_rmsd_A": 24.690160759620177,
+          "min_target_binder_distance_nm": 0.2950781583786011,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.05877616747181964,
+        "worst_contact_f1": 0.04347826086956522,
+        "mean_direct_rmsd_A": 54.42268371582031,
+        "worst_direct_rmsd_A": 61.854119300842285,
+        "mean_aligned_rmsd_A": 31.763231161128225,
+        "worst_aligned_rmsd_A": 38.83630156263627,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.6049382716049383,
+        "mean_generated_contact_count": 65.0
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v03__k2__hexact",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1249,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.22727273404598236,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_006_seed_1249/2ofq_A_B__v03__k2__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 73,
+          "reference_contact_count": 60,
+          "contact_f1": 0.09022556390977443,
+          "direct_binder_ca_rmsd_A": 56.344003677368164,
+          "aligned_binder_ca_rmsd_A": 33.433623538156134,
+          "min_target_binder_distance_nm": 0.28078794479370117,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_006_seed_1249/2ofq_A_B__v03__k2__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 100,
+          "reference_contact_count": 72,
+          "contact_f1": 0.03488372093023256,
+          "direct_binder_ca_rmsd_A": 44.384026527404785,
+          "aligned_binder_ca_rmsd_A": 36.57363396975544,
+          "min_target_binder_distance_nm": 0.30087903141975403,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.0625546424200035,
+        "worst_contact_f1": 0.03488372093023256,
+        "mean_direct_rmsd_A": 50.364015102386475,
+        "worst_direct_rmsd_A": 56.344003677368164,
+        "mean_aligned_rmsd_A": 35.00362875395579,
+        "worst_aligned_rmsd_A": 36.57363396975544,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.26277372262773724,
+        "mean_generated_contact_count": 86.5
+      }
+    },
+    {
+      "sample_id": "2ofq_A_B__v03__k2__hpred",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1223,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.27272728085517883,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_007_seed_1223/2ofq_A_B__v03__k2__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 82,
+          "reference_contact_count": 60,
+          "contact_f1": 0.07042253521126761,
+          "direct_binder_ca_rmsd_A": 61.30053997039795,
+          "aligned_binder_ca_rmsd_A": 37.56190616384737,
+          "min_target_binder_distance_nm": 0.2975602447986603,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_007_seed_1223/2ofq_A_B__v03__k2__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 79,
+          "reference_contact_count": 72,
+          "contact_f1": 0.07947019867549669,
+          "direct_binder_ca_rmsd_A": 40.56475639343262,
+          "aligned_binder_ca_rmsd_A": 28.685206150598187,
+          "min_target_binder_distance_nm": 0.30299878120422363,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.07494636694338215,
+        "worst_contact_f1": 0.07042253521126761,
+        "mean_direct_rmsd_A": 50.93264818191528,
+        "worst_direct_rmsd_A": 61.30053997039795,
+        "mean_aligned_rmsd_A": 33.12355615722278,
+        "worst_aligned_rmsd_A": 37.56190616384737,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.41228070175438597,
+        "mean_generated_contact_count": 80.5
+      }
+    },
+    {
+      "sample_id": "2kxc_A_B__v00__k2__hexact",
+      "target_id": "2kxc",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1217,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.3529411852359772,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_008_seed_1217/2kxc_A_B__v00__k2__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 1,
+          "reference_contact_count": 31,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 18.995027542114258,
+          "aligned_binder_ca_rmsd_A": 14.804765991252975,
+          "min_target_binder_distance_nm": 0.9914435744285583,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_008_seed_1217/2kxc_A_B__v00__k2__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 6,
+          "reference_contact_count": 32,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 35.33929109573364,
+          "aligned_binder_ca_rmsd_A": 16.12432911221665,
+          "min_target_binder_distance_nm": 0.38774266839027405,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.0,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 27.16715931892395,
+        "worst_direct_rmsd_A": 35.33929109573364,
+        "mean_aligned_rmsd_A": 15.464547551734814,
+        "worst_aligned_rmsd_A": 16.12432911221665,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.16666666666666666,
+        "mean_generated_contact_count": 3.5
+      }
+    },
+    {
+      "sample_id": "2kxc_A_B__v00__k2__hpred",
+      "target_id": "2kxc",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1259,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.23529411852359772,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_009_seed_1259/2kxc_A_B__v00__k2__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 27,
+          "reference_contact_count": 31,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 19.28596019744873,
+          "aligned_binder_ca_rmsd_A": 10.846340498602734,
+          "min_target_binder_distance_nm": 0.3264232277870178,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_009_seed_1259/2kxc_A_B__v00__k2__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 33,
+          "reference_contact_count": 32,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 30.28259038925171,
+          "aligned_binder_ca_rmsd_A": 10.347029148272515,
+          "min_target_binder_distance_nm": 0.4027855694293976,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.0,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 24.78427529335022,
+        "worst_direct_rmsd_A": 30.28259038925171,
+        "mean_aligned_rmsd_A": 10.596684823437625,
+        "worst_aligned_rmsd_A": 10.846340498602734,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.07142857142857142,
+        "mean_generated_contact_count": 30.0
+      }
+    },
+    {
+      "sample_id": "5ixf_A_B__v00__k3__hexact",
+      "target_id": "5ixf",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1207,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.2142857164144516,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_010_seed_1207/5ixf_A_B__v00__k3__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 71,
+          "reference_contact_count": 45,
+          "contact_f1": 0.10344827586206895,
+          "direct_binder_ca_rmsd_A": 40.57365417480469,
+          "aligned_binder_ca_rmsd_A": 31.489224701795084,
+          "min_target_binder_distance_nm": 0.293427973985672,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_010_seed_1207/5ixf_A_B__v00__k3__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 62,
+          "reference_contact_count": 16,
+          "contact_f1": 0.05128205128205128,
+          "direct_binder_ca_rmsd_A": 38.960182666778564,
+          "aligned_binder_ca_rmsd_A": 28.70824563200559,
+          "min_target_binder_distance_nm": 0.28353211283683777,
+          "severe_clash": false
+        },
+        {
+          "state_index": 2,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_010_seed_1207/5ixf_A_B__v00__k3__hexact/state02_binder_ca.pdb",
+          "generated_contact_count": 93,
+          "reference_contact_count": 38,
+          "contact_f1": 0.15267175572519084,
+          "direct_binder_ca_rmsd_A": 34.720585346221924,
+          "aligned_binder_ca_rmsd_A": 24.27498993619,
+          "min_target_binder_distance_nm": 0.29299479722976685,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.102467360956437,
+        "worst_contact_f1": 0.05128205128205128,
+        "mean_direct_rmsd_A": 38.08480739593506,
+        "worst_direct_rmsd_A": 40.57365417480469,
+        "mean_aligned_rmsd_A": 28.15748675666356,
+        "worst_aligned_rmsd_A": 31.489224701795084,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.3130434782608696,
+        "mean_generated_contact_count": 75.33333333333333
+      }
+    },
+    {
+      "sample_id": "5ixf_A_B__v00__k3__hpred",
+      "target_id": "5ixf",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1211,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.1428571492433548,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_011_seed_1211/5ixf_A_B__v00__k3__hpred/state00_binder_ca.pdb",
+          "generated_contact_count": 88,
+          "reference_contact_count": 45,
+          "contact_f1": 0.2105263157894737,
+          "direct_binder_ca_rmsd_A": 30.41053533554077,
+          "aligned_binder_ca_rmsd_A": 15.869804730105159,
+          "min_target_binder_distance_nm": 0.2826469838619232,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_011_seed_1211/5ixf_A_B__v00__k3__hpred/state01_binder_ca.pdb",
+          "generated_contact_count": 184,
+          "reference_contact_count": 16,
+          "contact_f1": 0.03,
+          "direct_binder_ca_rmsd_A": 25.543344020843506,
+          "aligned_binder_ca_rmsd_A": 11.446198719658739,
+          "min_target_binder_distance_nm": 0.29166826605796814,
+          "severe_clash": false
+        },
+        {
+          "state_index": 2,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/results/strategy01/stage23_safe_replay_native_coupling_pdbs/val12/sample_011_seed_1211/5ixf_A_B__v00__k3__hpred/state02_binder_ca.pdb",
+          "generated_contact_count": 62,
+          "reference_contact_count": 38,
+          "contact_f1": 0.14,
+          "direct_binder_ca_rmsd_A": 29.529306888580322,
+          "aligned_binder_ca_rmsd_A": 12.68025317342883,
+          "min_target_binder_distance_nm": 0.3037111461162567,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.1268421052631579,
+        "worst_contact_f1": 0.03,
+        "mean_direct_rmsd_A": 28.494395414988198,
+        "worst_direct_rmsd_A": 30.41053533554077,
+        "mean_aligned_rmsd_A": 13.332085541064245,
+        "worst_aligned_rmsd_A": 15.869804730105159,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.03333333333333333,
+        "mean_generated_contact_count": 111.33333333333333
+      }
+    }
+  ]
+}

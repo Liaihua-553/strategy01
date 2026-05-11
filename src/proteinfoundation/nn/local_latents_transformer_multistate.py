@@ -230,6 +230,14 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.Linear(self.token_dim, 1),
             nn.Sigmoid(),
         )
+        # MODIFIED 2026-05-12 Stage22:
+        # Stage13 native-state mode reuses the checkpoint-trained Complexa
+        # target-concat denoiser, but until now its state-specific bb_ca/z
+        # velocities were independent and the shared sequence path only affected
+        # logits.  This small learnable residual scale lets cross-state shared
+        # sequence feedback alter native flow outputs when explicitly enabled,
+        # while keeping the legacy native path available for equivalence checks.
+        self.native_flow_coupling_scale = nn.Parameter(torch.tensor(0.05))
         self.state_condition_projector = nn.Sequential(
             nn.LayerNorm(self.token_dim),
             nn.Linear(self.token_dim, self.token_dim),
@@ -435,10 +443,58 @@ class LocalLatentsTransformerMultistate(nn.Module):
             weights = weights / weights.sum(dim=1, keepdim=True).clamp_min(1e-6)
             shared_bb_ca = (bb_ca_states * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
             shared_local_latents = (local_latents_states * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
-            shared_tokens = (state_tokens * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
-            shared_seq_logits = self.shared_seq_head(shared_tokens) * mask[..., None]
-            consensus_logits = (state_seq_logits * weights[:, :, None, None]).sum(dim=1) * mask[..., None]
-            shared_seq_logits = shared_seq_logits + consensus_logits
+            state_weight_view = weights[:, :, None, None]
+            shared_tokens_seed = (state_tokens * state_weight_view).sum(dim=1) * mask[..., None]
+            state_tokens_by_residue = state_tokens.permute(0, 2, 1, 3).reshape(
+                batch_size * nbinder, nstates, self.token_dim
+            )
+            state_key_padding = ~state_present[:, None, :].expand(batch_size, nbinder, nstates).reshape(
+                batch_size * nbinder, nstates
+            )
+            attended_by_residue, _ = self.cross_state_shared_seq_attention(
+                state_tokens_by_residue,
+                state_tokens_by_residue,
+                state_tokens_by_residue,
+                key_padding_mask=state_key_padding,
+                need_weights=False,
+            )
+            attended_states = attended_by_residue.reshape(batch_size, nbinder, nstates, self.token_dim).permute(0, 2, 1, 3)
+            shared_tokens_attn = (attended_states * state_weight_view).sum(dim=1) * mask[..., None]
+            shared_tokens = self.shared_seq_token_norm(
+                shared_tokens_seed + self.shared_seq_token_update(shared_tokens_attn)
+            ) * mask[..., None]
+            shared_seq_token_logits = self.shared_seq_token_head(shared_tokens) * mask[..., None]
+            base_shared_seq_logits = self.shared_seq_head(shared_tokens) * mask[..., None]
+            enable_native_flow_coupling = bool(input.get("stage22_enable_native_flow_coupling", False))
+            native_flow_coupling_scale = torch.clamp(self.native_flow_coupling_scale, min=0.0, max=1.0)
+            native_seq_feedback_norm = torch.zeros((), device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+            if enable_native_flow_coupling:
+                shared_soft = torch.softmax((base_shared_seq_logits + shared_seq_token_logits).float(), dim=-1).to(dtype=state_tokens.dtype)
+                shared_soft = shared_soft * mask[..., None]
+                seq_feedback = self.soft_sequence_feedback_projector(shared_soft) * mask[..., None]
+                shared_state_feedback = self.shared_seq_to_state_projector(shared_tokens) * mask[..., None]
+                coupled_state_tokens = self.state_token_norm(
+                    state_tokens
+                    + native_flow_coupling_scale
+                    * (shared_state_feedback[:, None, :, :] + 0.25 * seq_feedback[:, None, :, :])
+                )
+                flat_state_tokens_base = state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
+                flat_state_tokens_coupled = coupled_state_tokens.reshape(batch_size * nstates, nbinder, self.token_dim)
+                flat_mask = state_mask.reshape(batch_size * nstates, nbinder)
+                bb_delta = (
+                    self.ca_linear(flat_state_tokens_coupled) - self.ca_linear(flat_state_tokens_base)
+                ).reshape(batch_size, nstates, nbinder, 3)
+                latent_delta = (
+                    self.local_latents_linear(flat_state_tokens_coupled) - self.local_latents_linear(flat_state_tokens_base)
+                ).reshape(batch_size, nstates, nbinder, self.latent_dim)
+                bb_ca_states = (bb_ca_states + bb_delta * state_mask[..., None]) * state_view
+                local_latents_states = (local_latents_states + latent_delta * state_mask[..., None]) * state_view
+                state_tokens = coupled_state_tokens * state_view
+                state_seq_logits = self.state_seq_head(flat_state_tokens_coupled).reshape(batch_size, nstates, nbinder, 20)
+                state_seq_logits = state_seq_logits * state_mask[..., None] * state_view
+                native_seq_feedback_norm = seq_feedback.detach().norm(dim=-1).mean()
+            consensus_logits = (state_seq_logits * state_weight_view).sum(dim=1) * mask[..., None]
+            shared_seq_logits = (base_shared_seq_logits + shared_seq_token_logits + consensus_logits) * mask[..., None]
             flow_gate = torch.ones(batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype)
             latent_repair_gate = torch.zeros(
                 batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype
@@ -502,6 +558,12 @@ class LocalLatentsTransformerMultistate(nn.Module):
                     "target_state_weights": weights,
                     "sampling_state_weights": weights,
                     "flow_gate_mean": flow_gate.detach().mean(),
+                    "stage22_native_flow_coupling_enabled": torch.tensor(
+                        bool(input.get("stage22_enable_native_flow_coupling", False)),
+                        device=bb_ca_states.device,
+                    ),
+                    "stage22_native_flow_coupling_scale": native_flow_coupling_scale.detach(),
+                    "stage22_native_seq_feedback_norm_mean": native_seq_feedback_norm,
                     "latent_sequence_repair_gate_mean": latent_repair_gate.detach().mean(),
                     "latent_sequence_repair_norm_mean": latent_repair_norm,
                 },

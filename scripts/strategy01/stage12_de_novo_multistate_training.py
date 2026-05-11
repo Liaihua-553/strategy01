@@ -108,6 +108,7 @@ def make_de_novo_batch(
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
+    stage22_enable_native_flow_coupling: bool = False,
 ) -> dict[str, Any]:
     work = s4.clone_batch(batch)
     for key in FORBIDDEN_MODEL_INPUT_KEYS:
@@ -122,6 +123,8 @@ def make_de_novo_batch(
     if stage14_enable_bounded_latent_repair:
         work["stage14_enable_bounded_latent_repair"] = True
         work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
+    if stage22_enable_native_flow_coupling:
+        work["stage22_enable_native_flow_coupling"] = True
     return work
 
 
@@ -313,6 +316,7 @@ def build_replay_condition_batch(
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
+    stage22_enable_native_flow_coupling: bool = False,
     seed: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate a target-only short rollout and return its intermediate state as a training condition."""
@@ -325,6 +329,7 @@ def build_replay_condition_batch(
         stage13_native_state_path=stage13_native_state_path,
         stage14_enable_bounded_latent_repair=stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=stage14_latent_repair_max_norm,
+        stage22_enable_native_flow_coupling=stage22_enable_native_flow_coupling,
     )
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
@@ -351,6 +356,8 @@ def build_replay_condition_batch(
                 work.pop("x_sc_states", None)
             if stage13_native_state_path:
                 work["stage13_native_state_path"] = True
+            if stage22_enable_native_flow_coupling:
+                work["stage22_enable_native_flow_coupling"] = True
             add_weighted_legacy_fields(work, weights)
             work["de_novo_multistate_mode"] = True
             nn_out = model(work)
@@ -402,6 +409,7 @@ def build_replay_condition_batch(
         stage13_native_state_path=stage13_native_state_path,
         stage14_enable_bounded_latent_repair=stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=stage14_latent_repair_max_norm,
+        stage22_enable_native_flow_coupling=stage22_enable_native_flow_coupling,
     )
     replay["x_0_states"] = x_start
     if effective_teacher_blend > 0.0:
@@ -521,6 +529,7 @@ def build_fixed_replay_cache(
                     getattr(args, "stage14_enable_bounded_latent_repair", False)
                 ),
                 stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
+                stage22_enable_native_flow_coupling=bool(getattr(args, "stage22_enable_native_flow_coupling", False)),
                 seed=9301 + refresh_index * 1000003 + batch_idx * 101 + int(blend * 1000),
             )
             cache[level_name].append(
@@ -582,6 +591,7 @@ def forward_loss_stage12(
                 getattr(args, "stage14_enable_bounded_latent_repair", False)
             ),
             stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
+            stage22_enable_native_flow_coupling=bool(getattr(args, "stage22_enable_native_flow_coupling", False)),
             seed=seed,
         )
     elif replay_cache_entry is None:
@@ -592,6 +602,7 @@ def forward_loss_stage12(
                 getattr(args, "stage14_enable_bounded_latent_repair", False)
             ),
             stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
+            stage22_enable_native_flow_coupling=bool(getattr(args, "stage22_enable_native_flow_coupling", False)),
         )
         work_batch = fm.corrupt_multistate_batch(work_batch)
         if args is not None and bool(getattr(args, "enable_stage16_t_window", False)):
@@ -1035,6 +1046,15 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--stage22-enable-native-flow-coupling",
+        action="store_true",
+        default=False,
+        help=(
+            "When using Stage13 native-state path, feed cross-state shared-sequence "
+            "tokens back into native state-specific bb_ca/local_latents flow outputs."
+        ),
+    )
+    parser.add_argument(
         "--stage14-enable-bounded-latent-repair",
         action="store_true",
         default=False,
@@ -1100,6 +1120,7 @@ def main():
             "stage13_heads_only": bool(args.stage13_heads_only),
             "stage13_train_latent_repair": bool(args.stage13_train_latent_repair),
             "stage14_enable_bounded_latent_repair": bool(args.stage14_enable_bounded_latent_repair),
+            "stage22_enable_native_flow_coupling": bool(args.stage22_enable_native_flow_coupling),
             "stage14_latent_repair_max_norm": float(args.stage14_latent_repair_max_norm),
             "stage14_native_latent_warmup": bool(args.stage14_native_latent_warmup),
         },

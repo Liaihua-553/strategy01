@@ -290,6 +290,7 @@ def rollout_final(
     stage13_native_state_path: bool = False,
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
+    stage22_enable_native_flow_coupling: bool = False,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -298,6 +299,8 @@ def rollout_final(
     work = s12.make_de_novo_batch(batch)
     if stage13_native_state_path:
         work["stage13_native_state_path"] = True
+    if stage22_enable_native_flow_coupling:
+        work["stage22_enable_native_flow_coupling"] = True
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
     weights = s12.normalize_state_weights(work, device)
@@ -328,6 +331,8 @@ def rollout_final(
                 work.pop("x_sc_states", None)
             if stage13_native_state_path:
                 work["stage13_native_state_path"] = True
+            if stage22_enable_native_flow_coupling:
+                work["stage22_enable_native_flow_coupling"] = True
             if stage14_enable_bounded_latent_repair:
                 work["stage14_enable_bounded_latent_repair"] = True
                 work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
@@ -415,6 +420,8 @@ def rollout_final(
         final = s12.make_de_novo_batch(batch)
         if stage13_native_state_path:
             final["stage13_native_state_path"] = True
+        if stage22_enable_native_flow_coupling:
+            final["stage22_enable_native_flow_coupling"] = True
         if stage14_enable_bounded_latent_repair:
             final["stage14_enable_bounded_latent_repair"] = True
             final["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
@@ -478,6 +485,7 @@ def rollout_final(
         "stage13_native_state_path": bool(stage13_native_state_path),
         "stage14_enable_bounded_latent_repair": bool(stage14_enable_bounded_latent_repair),
         "stage14_latent_repair_max_norm": float(stage14_latent_repair_max_norm),
+        "stage22_enable_native_flow_coupling": bool(stage22_enable_native_flow_coupling),
     }
 
 
@@ -514,6 +522,11 @@ def parse_args():
         "--stage13-native-state-path",
         action="store_true",
         help="Diagnostic only: run K state tensors through the native Complexa target-concat denoiser state-wise.",
+    )
+    parser.add_argument(
+        "--stage22-enable-native-flow-coupling",
+        action="store_true",
+        help="In native-state mode, inject cross-state shared sequence feedback into state-specific bb_ca/z flow outputs.",
     )
     parser.add_argument(
         "--stage14-enable-bounded-latent-repair",
@@ -562,6 +575,7 @@ def main() -> None:
             "primary_outputs": ["bb_ca_states", "local_latents_states", "shared_seq_logits"],
             "legacy_average_outputs": "not used for main smoke evaluation",
             "stage13_native_state_path": bool(args.stage13_native_state_path),
+            "stage22_enable_native_flow_coupling": bool(args.stage22_enable_native_flow_coupling),
         "stage18_enable_clash_relief": bool(args.stage18_enable_clash_relief),
         },
     }
@@ -585,6 +599,7 @@ def main() -> None:
         stage13_native_state_path=args.stage13_native_state_path,
         stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
+        stage22_enable_native_flow_coupling=args.stage22_enable_native_flow_coupling,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
     result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm
