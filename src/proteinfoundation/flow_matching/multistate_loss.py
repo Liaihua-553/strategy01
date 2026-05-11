@@ -540,6 +540,8 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
     l_clash_state = _masked_pair_mean(clash_raw, pair_mask)
 
     l_quality_state = zeros_state
+    l_target_interface_site_state = zeros_state
+    l_target_interface_center_state = zeros_state
     if "interface_quality_logits" in nn_out and "interface_quality_labels" in batch:
         quality_logits = nn_out["interface_quality_logits"]
         quality_labels = batch["interface_quality_labels"].to(device=device, dtype=quality_logits.dtype)
@@ -550,6 +552,25 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
             quality_mask = quality_mask.to(device).bool()
         q_loss = F.mse_loss(torch.sigmoid(quality_logits).float(), quality_labels.float(), reduction="none").to(dtype)
         l_quality_state = (q_loss * quality_mask.float()).sum(dim=-1) / quality_mask.float().sum(dim=-1).clamp_min(1.0)
+
+    if "target_interface_logits_states" in nn_out and contact_labels is not None:
+        target_logits = nn_out["target_interface_logits_states"].to(device=device, dtype=dtype)
+        if target_logits.numel() > 0:
+            labels = contact_labels.to(device=device, dtype=dtype)
+            site_mask = pair_mask.any(dim=-1)
+            site_labels = ((labels > 0.5) & pair_mask).any(dim=-1).to(dtype)
+            site_raw = F.binary_cross_entropy_with_logits(
+                target_logits.float(), site_labels.float(), reduction="none"
+            ).to(dtype)
+            l_target_interface_site_state = (site_raw * site_mask.float()).sum(dim=-1) / site_mask.float().sum(dim=-1).clamp_min(1.0)
+
+            pred_weight = torch.sigmoid(target_logits).to(dtype) * site_mask.float()
+            label_weight = site_labels * site_mask.float()
+            pred_center = (pred_weight[..., None] * target_ca.to(dtype=dtype)).sum(dim=2) / pred_weight.sum(dim=-1, keepdim=True).clamp_min(1.0e-6)
+            label_center = (label_weight[..., None] * target_ca.to(dtype=dtype)).sum(dim=2) / label_weight.sum(dim=-1, keepdim=True).clamp_min(1.0e-6)
+            has_positive = label_weight.sum(dim=-1) > 0
+            center_raw = F.smooth_l1_loss(pred_center.float(), label_center.float(), reduction="none", beta=0.1).sum(dim=-1).to(dtype)
+            l_target_interface_center_state = torch.where(has_positive, center_raw, torch.zeros_like(center_raw))
 
     l_anchor = torch.zeros(b, device=device, dtype=dtype)
     if contact_labels is not None:
@@ -584,6 +605,8 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
         "distance_state": torch.where(state_present, l_distance_state, torch.zeros_like(l_distance_state)),
         "clash_state": torch.where(state_present, l_clash_state, torch.zeros_like(l_clash_state)),
         "quality_state": torch.where(state_present, l_quality_state, torch.zeros_like(l_quality_state)),
+        "target_interface_site_state": torch.where(state_present, l_target_interface_site_state, torch.zeros_like(l_target_interface_site_state)),
+        "target_interface_center_state": torch.where(state_present, l_target_interface_center_state, torch.zeros_like(l_target_interface_center_state)),
         "anchor_sample": l_anchor,
         "self_geometry_sample": l_self,
     }
@@ -637,6 +660,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_distance_state = torch.zeros_like(l_fm_state)
     l_clash_state = torch.zeros_like(l_fm_state)
     l_quality_state = torch.zeros_like(l_fm_state)
+    l_target_interface_site_state = torch.zeros_like(l_fm_state)
+    l_target_interface_center_state = torch.zeros_like(l_fm_state)
     l_anchor = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     l_self = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     if _interface_enabled(cfg):
@@ -645,6 +670,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         l_distance_state = interface["distance_state"]
         l_clash_state = interface["clash_state"]
         l_quality_state = interface["quality_state"]
+        l_target_interface_site_state = interface["target_interface_site_state"]
+        l_target_interface_center_state = interface["target_interface_center_state"]
         l_anchor = interface["anchor_sample"]
         l_self = interface["self_geometry_sample"]
 
@@ -654,6 +681,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         + float(_cfg_get(cfg, "lambda_distance", 0.0)) * l_distance_state
         + float(_cfg_get(cfg, "lambda_clash", 0.0)) * l_clash_state
         + float(_cfg_get(cfg, "lambda_quality_proxy", 0.0)) * l_quality_state
+        + float(_cfg_get(cfg, "lambda_target_interface_site", 0.0)) * l_target_interface_site_state
+        + float(_cfg_get(cfg, "lambda_target_interface_center", 0.0)) * l_target_interface_center_state
     )
     l_mean = torch.sum(l_state * weights, dim=1)
     cvar_topk = _cfg_get(cfg, "cvar_topk", 2)
@@ -704,6 +733,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         "multistate_distance_justlog": torch.sum(l_distance_state * weights, dim=1),
         "multistate_clash_justlog": torch.sum(l_clash_state * weights, dim=1),
         "multistate_quality_proxy_justlog": torch.sum(l_quality_state * weights, dim=1),
+        "multistate_target_interface_site_justlog": torch.sum(l_target_interface_site_state * weights, dim=1),
+        "multistate_target_interface_center_justlog": torch.sum(l_target_interface_center_state * weights, dim=1),
         "multistate_anchor_persistence_justlog": l_anchor,
         "multistate_self_geometry_justlog": l_self,
         "multistate_mean_justlog": l_mean,
@@ -716,6 +747,8 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         losses[f"multistate_state_{state_idx}_contact_justlog"] = l_contact_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_distance_justlog"] = l_distance_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_clash_justlog"] = l_clash_state[:, state_idx]
+        losses[f"multistate_state_{state_idx}_target_interface_site_justlog"] = l_target_interface_site_state[:, state_idx]
+        losses[f"multistate_state_{state_idx}_target_interface_center_justlog"] = l_target_interface_center_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_seq_justlog"] = sequence_consensus["state_seq_state"][:, state_idx]
         losses[f"multistate_state_{state_idx}_ae_seq_justlog"] = ae_sequence["ae_seq_state"][:, state_idx]
         losses[f"multistate_state_{state_idx}_flow_gate_anchor_justlog"] = flow_gate_losses["flow_gate_anchor_sample"]

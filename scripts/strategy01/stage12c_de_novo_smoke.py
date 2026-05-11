@@ -291,6 +291,11 @@ def rollout_final(
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
     stage22_enable_native_flow_coupling: bool = False,
+    stage24_enable_target_interface_field: bool = False,
+    stage24_enable_interface_guidance: bool = False,
+    stage24_interface_guidance_scale: float = 1.0,
+    stage24_interface_guidance_max_shift_nm: float = 0.15,
+    stage24_interface_hotspot_prior: float = 0.25,
 ) -> dict[str, Any]:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -301,6 +306,13 @@ def rollout_final(
         work["stage13_native_state_path"] = True
     if stage22_enable_native_flow_coupling:
         work["stage22_enable_native_flow_coupling"] = True
+    if stage24_enable_target_interface_field:
+        work["stage24_enable_target_interface_field"] = True
+    if stage24_enable_interface_guidance:
+        work["stage24_enable_interface_guidance"] = True
+    work["stage24_interface_guidance_scale"] = float(stage24_interface_guidance_scale)
+    work["stage24_interface_guidance_max_shift_nm"] = float(stage24_interface_guidance_max_shift_nm)
+    work["stage24_interface_hotspot_prior"] = float(stage24_interface_hotspot_prior)
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
     weights = s12.normalize_state_weights(work, device)
@@ -333,6 +345,13 @@ def rollout_final(
                 work["stage13_native_state_path"] = True
             if stage22_enable_native_flow_coupling:
                 work["stage22_enable_native_flow_coupling"] = True
+            if stage24_enable_target_interface_field:
+                work["stage24_enable_target_interface_field"] = True
+            if stage24_enable_interface_guidance:
+                work["stage24_enable_interface_guidance"] = True
+            work["stage24_interface_guidance_scale"] = float(stage24_interface_guidance_scale)
+            work["stage24_interface_guidance_max_shift_nm"] = float(stage24_interface_guidance_max_shift_nm)
+            work["stage24_interface_hotspot_prior"] = float(stage24_interface_hotspot_prior)
             if stage14_enable_bounded_latent_repair:
                 work["stage14_enable_bounded_latent_repair"] = True
                 work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
@@ -422,6 +441,13 @@ def rollout_final(
             final["stage13_native_state_path"] = True
         if stage22_enable_native_flow_coupling:
             final["stage22_enable_native_flow_coupling"] = True
+        if stage24_enable_target_interface_field:
+            final["stage24_enable_target_interface_field"] = True
+        if stage24_enable_interface_guidance:
+            final["stage24_enable_interface_guidance"] = True
+        final["stage24_interface_guidance_scale"] = float(stage24_interface_guidance_scale)
+        final["stage24_interface_guidance_max_shift_nm"] = float(stage24_interface_guidance_max_shift_nm)
+        final["stage24_interface_hotspot_prior"] = float(stage24_interface_hotspot_prior)
         if stage14_enable_bounded_latent_repair:
             final["stage14_enable_bounded_latent_repair"] = True
             final["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
@@ -528,6 +554,13 @@ def parse_args():
         action="store_true",
         help="In native-state mode, inject cross-state shared sequence feedback into state-specific bb_ca/z flow outputs.",
     )
+    parser.add_argument("--stage24-enable-target-interface-field", action="store_true")
+    parser.add_argument("--stage24-enable-interface-guidance", action="store_true")
+    parser.add_argument("--stage24-interface-guidance-scale", type=float, default=1.0)
+    parser.add_argument("--stage24-interface-guidance-max-shift-nm", type=float, default=0.15)
+    parser.add_argument("--stage24-interface-hotspot-prior", type=float, default=0.25)
+    parser.add_argument("--lambda-target-interface-site", type=float, default=0.0)
+    parser.add_argument("--lambda-target-interface-center", type=float, default=0.0)
     parser.add_argument(
         "--stage14-enable-bounded-latent-repair",
         action="store_true",
@@ -553,6 +586,8 @@ def main() -> None:
         lambda_ae_seq=1.5,
         lambda_seq_ae_consistency=0.15,
         lambda_flow_gate_reg=0.03,
+        lambda_target_interface_site=getattr(args, "lambda_target_interface_site", 0.0),
+        lambda_target_interface_center=getattr(args, "lambda_target_interface_center", 0.0),
         ae_seq_hard_state_alpha=0.0,
         ae_seq_hard_state_gamma=0.0,
     )
@@ -576,6 +611,11 @@ def main() -> None:
             "legacy_average_outputs": "not used for main smoke evaluation",
             "stage13_native_state_path": bool(args.stage13_native_state_path),
             "stage22_enable_native_flow_coupling": bool(args.stage22_enable_native_flow_coupling),
+            "stage24_enable_target_interface_field": bool(args.stage24_enable_target_interface_field),
+            "stage24_enable_interface_guidance": bool(args.stage24_enable_interface_guidance),
+            "stage24_interface_guidance_scale": float(args.stage24_interface_guidance_scale),
+            "stage24_interface_guidance_max_shift_nm": float(args.stage24_interface_guidance_max_shift_nm),
+            "stage24_interface_hotspot_prior": float(args.stage24_interface_hotspot_prior),
         "stage18_enable_clash_relief": bool(args.stage18_enable_clash_relief),
         },
     }
@@ -600,6 +640,11 @@ def main() -> None:
         stage14_enable_bounded_latent_repair=args.stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=args.stage14_latent_repair_max_norm,
         stage22_enable_native_flow_coupling=args.stage22_enable_native_flow_coupling,
+        stage24_enable_target_interface_field=args.stage24_enable_target_interface_field,
+        stage24_enable_interface_guidance=args.stage24_enable_interface_guidance,
+        stage24_interface_guidance_scale=args.stage24_interface_guidance_scale,
+        stage24_interface_guidance_max_shift_nm=args.stage24_interface_guidance_max_shift_nm,
+        stage24_interface_hotspot_prior=args.stage24_interface_hotspot_prior,
     )
     result["local_latents_stop_t"] = args.local_latents_stop_t
     result["target_shell_max_center_distance_nm"] = args.target_shell_max_center_distance_nm

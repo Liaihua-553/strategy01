@@ -94,6 +94,8 @@ def configure_stage12_loss(fm: Any, args: argparse.Namespace) -> dict[str, float
         "lambda_ae_seq": args.lambda_ae_seq,
         "lambda_seq_ae_consistency": args.lambda_seq_ae_consistency,
         "lambda_flow_gate_reg": args.lambda_flow_gate_reg,
+        "lambda_target_interface_site": args.lambda_target_interface_site,
+        "lambda_target_interface_center": args.lambda_target_interface_center,
         "ae_seq_cvar_topk": 2,
         "ae_seq_hard_state_alpha": args.ae_seq_hard_state_alpha,
         "ae_seq_hard_state_gamma": args.ae_seq_hard_state_gamma,
@@ -109,6 +111,11 @@ def make_de_novo_batch(
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
     stage22_enable_native_flow_coupling: bool = False,
+    stage24_enable_target_interface_field: bool = False,
+    stage24_enable_interface_guidance: bool = False,
+    stage24_interface_guidance_scale: float = 1.0,
+    stage24_interface_guidance_max_shift_nm: float = 0.15,
+    stage24_interface_hotspot_prior: float = 0.25,
 ) -> dict[str, Any]:
     work = s4.clone_batch(batch)
     for key in FORBIDDEN_MODEL_INPUT_KEYS:
@@ -125,6 +132,13 @@ def make_de_novo_batch(
         work["stage14_latent_repair_max_norm"] = float(stage14_latent_repair_max_norm)
     if stage22_enable_native_flow_coupling:
         work["stage22_enable_native_flow_coupling"] = True
+    if stage24_enable_target_interface_field:
+        work["stage24_enable_target_interface_field"] = True
+    if stage24_enable_interface_guidance:
+        work["stage24_enable_interface_guidance"] = True
+    work["stage24_interface_guidance_scale"] = float(stage24_interface_guidance_scale)
+    work["stage24_interface_guidance_max_shift_nm"] = float(stage24_interface_guidance_max_shift_nm)
+    work["stage24_interface_hotspot_prior"] = float(stage24_interface_hotspot_prior)
     return work
 
 
@@ -317,6 +331,11 @@ def build_replay_condition_batch(
     stage14_enable_bounded_latent_repair: bool = False,
     stage14_latent_repair_max_norm: float = 0.25,
     stage22_enable_native_flow_coupling: bool = False,
+    stage24_enable_target_interface_field: bool = False,
+    stage24_enable_interface_guidance: bool = False,
+    stage24_interface_guidance_scale: float = 1.0,
+    stage24_interface_guidance_max_shift_nm: float = 0.15,
+    stage24_interface_hotspot_prior: float = 0.25,
     seed: int | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Generate a target-only short rollout and return its intermediate state as a training condition."""
@@ -330,6 +349,11 @@ def build_replay_condition_batch(
         stage14_enable_bounded_latent_repair=stage14_enable_bounded_latent_repair,
         stage14_latent_repair_max_norm=stage14_latent_repair_max_norm,
         stage22_enable_native_flow_coupling=stage22_enable_native_flow_coupling,
+        stage24_enable_target_interface_field=stage24_enable_target_interface_field,
+        stage24_enable_interface_guidance=stage24_enable_interface_guidance,
+        stage24_interface_guidance_scale=stage24_interface_guidance_scale,
+        stage24_interface_guidance_max_shift_nm=stage24_interface_guidance_max_shift_nm,
+        stage24_interface_hotspot_prior=stage24_interface_hotspot_prior,
     )
     work = fm.corrupt_multistate_batch(work)
     state_mask = work["state_mask"].to(device=device).bool()
@@ -603,6 +627,11 @@ def forward_loss_stage12(
             ),
             stage14_latent_repair_max_norm=float(getattr(args, "stage14_latent_repair_max_norm", 0.25)),
             stage22_enable_native_flow_coupling=bool(getattr(args, "stage22_enable_native_flow_coupling", False)),
+            stage24_enable_target_interface_field=bool(getattr(args, "stage24_enable_target_interface_field", False)),
+            stage24_enable_interface_guidance=bool(getattr(args, "stage24_enable_interface_guidance", False)),
+            stage24_interface_guidance_scale=float(getattr(args, "stage24_interface_guidance_scale", 1.0)),
+            stage24_interface_guidance_max_shift_nm=float(getattr(args, "stage24_interface_guidance_max_shift_nm", 0.15)),
+            stage24_interface_hotspot_prior=float(getattr(args, "stage24_interface_hotspot_prior", 0.25)),
         )
         work_batch = fm.corrupt_multistate_batch(work_batch)
         if args is not None and bool(getattr(args, "enable_stage16_t_window", False)):
@@ -1064,6 +1093,21 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--stage24-enable-target-interface-field",
+        action="store_true",
+        help="Enable target-only target-side interface field logits for Stage24 loss/probes.",
+    )
+    parser.add_argument(
+        "--stage24-enable-interface-guidance",
+        action="store_true",
+        help="Use the predicted target interface field to apply bounded bb_ca translation guidance.",
+    )
+    parser.add_argument("--stage24-interface-guidance-scale", type=float, default=1.0)
+    parser.add_argument("--stage24-interface-guidance-max-shift-nm", type=float, default=0.15)
+    parser.add_argument("--stage24-interface-hotspot-prior", type=float, default=0.25)
+    parser.add_argument("--lambda-target-interface-site", type=float, default=0.0)
+    parser.add_argument("--lambda-target-interface-center", type=float, default=0.0)
+    parser.add_argument(
         "--stage14-latent-repair-max-norm",
         type=float,
         default=0.25,
@@ -1121,6 +1165,11 @@ def main():
             "stage13_train_latent_repair": bool(args.stage13_train_latent_repair),
             "stage14_enable_bounded_latent_repair": bool(args.stage14_enable_bounded_latent_repair),
             "stage22_enable_native_flow_coupling": bool(args.stage22_enable_native_flow_coupling),
+            "stage24_enable_target_interface_field": bool(args.stage24_enable_target_interface_field),
+            "stage24_enable_interface_guidance": bool(args.stage24_enable_interface_guidance),
+            "stage24_interface_guidance_scale": float(args.stage24_interface_guidance_scale),
+            "stage24_interface_guidance_max_shift_nm": float(args.stage24_interface_guidance_max_shift_nm),
+            "stage24_interface_hotspot_prior": float(args.stage24_interface_hotspot_prior),
             "stage14_latent_repair_max_norm": float(args.stage14_latent_repair_max_norm),
             "stage14_native_latent_warmup": bool(args.stage14_native_latent_warmup),
         },

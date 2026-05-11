@@ -67,6 +67,13 @@ def main() -> None:
     ap.add_argument('--seeds', default='1207,1211,1217,1223,1231,1237,1249,1259')
     ap.add_argument('--stage13-native-state-path', action='store_true')
     ap.add_argument('--stage22-enable-native-flow-coupling', action='store_true')
+    ap.add_argument('--stage24-enable-target-interface-field', action='store_true')
+    ap.add_argument('--stage24-enable-interface-guidance', action='store_true')
+    ap.add_argument('--stage24-interface-guidance-scale', type=float, default=1.0)
+    ap.add_argument('--stage24-interface-guidance-max-shift-nm', type=float, default=0.15)
+    ap.add_argument('--stage24-interface-hotspot-prior', type=float, default=0.25)
+    ap.add_argument('--lambda-target-interface-site', type=float, default=0.0)
+    ap.add_argument('--lambda-target-interface-center', type=float, default=0.0)
     ap.add_argument('--stage18-enable-clash-relief', action='store_true')
     ap.add_argument('--stage18-clash-min-distance-nm', type=float, default=0.28)
     ap.add_argument('--stage18-relief-step-nm', type=float, default=0.04)
@@ -82,7 +89,7 @@ def main() -> None:
     split_samples=[s for s in samples if s.get('split')==args.split]
     selected=split_samples[args.sample_offset:args.sample_offset+args.max_samples]
     seeds=[int(x.strip()) for x in args.seeds.split(',') if x.strip()]
-    stack_args=argparse.Namespace(init_ckpt=args.checkpoint, ae_ckpt=args.ae_ckpt, target_center_noise_scale_nm=0.20, latent_state_residual_noise_scale=0.05, lambda_ae_seq=1.5, lambda_seq_ae_consistency=0.15, lambda_flow_gate_reg=0.03, ae_seq_hard_state_alpha=0.0, ae_seq_hard_state_gamma=0.0)
+    stack_args=argparse.Namespace(init_ckpt=args.checkpoint, ae_ckpt=args.ae_ckpt, target_center_noise_scale_nm=0.20, latent_state_residual_noise_scale=0.05, lambda_ae_seq=1.5, lambda_seq_ae_consistency=0.15, lambda_flow_gate_reg=0.03, lambda_target_interface_site=args.lambda_target_interface_site, lambda_target_interface_center=args.lambda_target_interface_center, ae_seq_hard_state_alpha=0.0, ae_seq_hard_state_gamma=0.0)
     model,fm,ae,model_meta,ckpt_meta,loss_cfg=s12.build_model_stack(device, stack_args)
     sampling_cfg=s12.load_sampling_cfg(args.sampling_config)
 
@@ -107,6 +114,11 @@ def main() -> None:
                 output_pdb_dir=(args.write_candidate_pdb_dir / f"sample_{sample_idx:03d}_seed_{seed}") if args.write_candidate_pdb_dir is not None else None,
                 stage13_native_state_path=args.stage13_native_state_path,
                 stage22_enable_native_flow_coupling=args.stage22_enable_native_flow_coupling,
+                stage24_enable_target_interface_field=args.stage24_enable_target_interface_field,
+                stage24_enable_interface_guidance=args.stage24_enable_interface_guidance,
+                stage24_interface_guidance_scale=args.stage24_interface_guidance_scale,
+                stage24_interface_guidance_max_shift_nm=args.stage24_interface_guidance_max_shift_nm,
+                stage24_interface_hotspot_prior=args.stage24_interface_hotspot_prior,
             )
             final_x=smoke.get('final_x_identity') or {}
             row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {}), 'stage18_clash_relief': smoke.get('stage18_clash_relief'), 'written_pdb_dirs': smoke.get('written_pdb_dirs') or []}
@@ -124,7 +136,7 @@ def main() -> None:
     first_vals=[r['first_seed']['shared_identity_mean_posthoc'] for r in sample_rows]
     proxy_vals=[r['selected_by_proxy']['shared_identity_mean_posthoc'] for r in sample_rows]
     oracle_vals=[r['oracle_best']['shared_identity_mean_posthoc'] for r in sample_rows]
-    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_offset':int(args.sample_offset),'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'stage22_native_flow_coupling':bool(args.stage22_enable_native_flow_coupling),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'write_candidate_pdb_dir':str(args.write_candidate_pdb_dir) if args.write_candidate_pdb_dir is not None else None,'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
+    result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_offset':int(args.sample_offset),'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'stage22_native_flow_coupling':bool(args.stage22_enable_native_flow_coupling),'stage24_target_interface_field':bool(args.stage24_enable_target_interface_field),'stage24_interface_guidance':bool(args.stage24_enable_interface_guidance),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'write_candidate_pdb_dir':str(args.write_candidate_pdb_dir) if args.write_candidate_pdb_dir is not None else None,'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
     write_json(args.report_json, result)
     print(json.dumps({'status':'passed','report':str(args.report_json),'summary':result['summary']}, ensure_ascii=False, indent=2))
 

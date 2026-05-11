@@ -289,6 +289,92 @@ class LocalLatentsTransformerMultistate(nn.Module):
             nn.LayerNorm(self.token_dim),
             nn.Linear(self.token_dim, 5, bias=False),
         )
+        # MODIFIED 2026-05-12 Stage24:
+        # Stage23 showed that no-clash/contact-count objectives can still place
+        # the binder on the wrong target surface.  This head predicts a
+        # target-side interface field from target-only ensemble tokens.  It is
+        # supervised from exact/hybrid interface labels and can optionally guide
+        # bb_ca velocity toward the predicted target interface center.
+        self.target_interface_site_head = nn.Sequential(
+            nn.LayerNorm(self.token_dim),
+            nn.Linear(self.token_dim, 1, bias=False),
+        )
+        self.target_interface_guidance_scale = nn.Parameter(torch.tensor(0.05))
+
+
+    def _stage24_target_interface_field(
+        self,
+        input: dict,
+        target_bundle: dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Predict target-side interface logits and differentiable centers.
+
+        The field uses only target-state tokens and optional hotspot masks.  It
+        does not consume source poses, true binder coordinates, or binder
+        sequence, so it preserves the target-only de-novo contract.
+        """
+        target_tokens = target_bundle["state_target_tokens"]
+        target_mask = target_bundle["state_target_mask"].bool()
+        logits = self.target_interface_site_head(target_tokens).squeeze(-1)
+        logits = logits.masked_fill(~target_mask, -20.0)
+
+        x_target = input["x_target_states"].to(device=target_tokens.device, dtype=target_tokens.dtype)
+        target_ca = x_target[..., 1, :]
+        probs = torch.sigmoid(logits) * target_mask.float()
+        hotspot = input.get("target_hotspot_mask_states")
+        if hotspot is not None:
+            prior = float(input.get("stage24_interface_hotspot_prior", 0.25))
+            probs = probs + prior * hotspot.to(device=target_tokens.device).float() * target_mask.float()
+        denom = probs.sum(dim=-1, keepdim=True).clamp_min(1.0e-6)
+        centers = (probs[..., None] * target_ca).sum(dim=2) / denom
+        return logits, centers
+
+    def _stage24_apply_interface_guidance(
+        self,
+        input: dict,
+        bb_ca_states: torch.Tensor,
+        state_mask: torch.Tensor,
+        target_interface_centers: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Apply a bounded target-only translation bias to bb_ca output.
+
+        The guidance is deliberately rigid-body only.  It can improve target
+        surface localization without deforming the binder backbone or using exact
+        benchmark labels at sampling time.
+        """
+        if not bool(input.get("stage24_enable_interface_guidance", False)):
+            return bb_ca_states, torch.zeros((), device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+
+        mask = state_mask.to(device=bb_ca_states.device).bool()
+        mask_f = mask.float()
+        param = self.output_param["bb_ca"]
+        if param == "v":
+            x_t = input["x_t_states"]["bb_ca"].to(device=bb_ca_states.device, dtype=bb_ca_states.dtype)
+            t = input["t_states"]["bb_ca"].to(device=bb_ca_states.device, dtype=bb_ca_states.dtype)[:, :, None, None]
+            clean_bb = x_t + bb_ca_states * (1.0 - t)
+        else:
+            t = None
+            clean_bb = bb_ca_states
+
+        denom = mask_f.sum(dim=-1, keepdim=True).clamp_min(1.0)
+        binder_center = (clean_bb * mask_f[..., None]).sum(dim=2) / denom
+        delta = target_interface_centers.to(dtype=bb_ca_states.dtype) - binder_center
+        norm = torch.linalg.norm(delta, dim=-1, keepdim=True).clamp_min(1.0e-6)
+        max_shift = float(input.get("stage24_interface_guidance_max_shift_nm", 0.15))
+        shift = delta * torch.clamp(max_shift / norm, max=1.0)
+        learned = torch.clamp(self.target_interface_guidance_scale, min=0.0, max=1.0)
+        user_scale = float(input.get("stage24_interface_guidance_scale", 1.0))
+        shift = shift * learned * user_scale
+        if param == "v":
+            denom_t = (1.0 - t).clamp_min(0.20)
+            out_delta = shift[:, :, None, :] / denom_t
+        else:
+            out_delta = shift[:, :, None, :]
+        guided = bb_ca_states + out_delta * mask_f[..., None]
+        valid_state = mask.any(dim=-1).float()
+        shift_norm = torch.linalg.norm(shift, dim=-1)
+        shift_mean = (shift_norm * valid_state).sum() / valid_state.sum().clamp_min(1.0)
+        return guided, shift_mean
 
     def _native_state_flatten_input(self, input: dict) -> tuple[dict, int, int, int]:
         """Flatten [B,K] state tensors into the original Complexa single-state schema."""
@@ -493,6 +579,13 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 state_seq_logits = self.state_seq_head(flat_state_tokens_coupled).reshape(batch_size, nstates, nbinder, 20)
                 state_seq_logits = state_seq_logits * state_mask[..., None] * state_view
                 native_seq_feedback_norm = seq_feedback.detach().norm(dim=-1).mean()
+            target_bundle_native = self.ensemble_target_encoder(input)
+            target_interface_logits_states, target_interface_centers = self._stage24_target_interface_field(
+                input, target_bundle_native
+            )
+            bb_ca_states, stage24_guidance_shift_mean = self._stage24_apply_interface_guidance(
+                input, bb_ca_states, state_mask, target_interface_centers
+            )
             consensus_logits = (state_seq_logits * state_weight_view).sum(dim=1) * mask[..., None]
             shared_seq_logits = (base_shared_seq_logits + shared_seq_token_logits + consensus_logits) * mask[..., None]
             flow_gate = torch.ones(batch_size, nstates, nbinder, 1, device=bb_ca_states.device, dtype=bb_ca_states.dtype)
@@ -549,6 +642,7 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "flow_gate": flow_gate * state_mask[..., None],
                 "latent_sequence_repair_gate": latent_repair_gate,
                 "interface_quality_logits": torch.zeros(batch_size, nstates, 5, device=bb_ca_states.device, dtype=bb_ca_states.dtype),
+                "target_interface_logits_states": target_interface_logits_states,
                 "arch_debug": {
                     "stage13_native_state_path": torch.tensor(True, device=bb_ca_states.device),
                     "stage14_bounded_latent_repair": torch.tensor(
@@ -564,6 +658,12 @@ class LocalLatentsTransformerMultistate(nn.Module):
                     ),
                     "stage22_native_flow_coupling_scale": native_flow_coupling_scale.detach(),
                     "stage22_native_seq_feedback_norm_mean": native_seq_feedback_norm,
+                    "stage24_target_interface_field_enabled": torch.tensor(True, device=bb_ca_states.device),
+                    "stage24_interface_guidance_enabled": torch.tensor(
+                        bool(input.get("stage24_enable_interface_guidance", False)),
+                        device=bb_ca_states.device,
+                    ),
+                    "stage24_interface_guidance_shift_nm_mean": stage24_guidance_shift_mean,
                     "latent_sequence_repair_gate_mean": latent_repair_gate.detach().mean(),
                     "latent_sequence_repair_norm_mean": latent_repair_norm,
                 },
@@ -679,6 +779,7 @@ class LocalLatentsTransformerMultistate(nn.Module):
             state_binder_summary + target_bundle["state_summary_tokens"]
         ) * target_bundle["state_present_mask"][:, :, None]
 
+        target_interface_logits_states, target_interface_centers = self._stage24_target_interface_field(input, target_bundle)
         # The quality proxy is intentionally detached for consensus weighting:
         # sequence gradients flow through state_seq_logits/state_tokens, while
         # the quality head is trained by its own offline labels.
@@ -722,6 +823,12 @@ class LocalLatentsTransformerMultistate(nn.Module):
 
         local_latents_states = local_latents_states * state_present_mask
         bb_ca_states = bb_ca_states * state_present_mask
+        bb_ca_states, stage24_guidance_shift_mean = self._stage24_apply_interface_guidance(
+            input,
+            bb_ca_states,
+            target_bundle["state_present_mask"][:, :, None].expand(-1, -1, nbinder),
+            target_interface_centers,
+        )
         state_seq_logits = state_seq_logits * state_present_mask
         flow_gate = flow_gate * state_present_mask
 
@@ -749,6 +856,7 @@ class LocalLatentsTransformerMultistate(nn.Module):
             "early_seq_feedback_tokens": early_seq_feedback_tokens,
             "seq_logits_pre_feedback": shared_seq_logits_pre,
             "interface_quality_logits": interface_quality_logits,
+            "target_interface_logits_states": target_interface_logits_states,
             "arch_debug": {
                 "ensemble_target_memory": target_bundle["ensemble_target_memory"],
                 "ensemble_target_mask": target_bundle["ensemble_target_mask"],
@@ -769,5 +877,10 @@ class LocalLatentsTransformerMultistate(nn.Module):
                 "latent_sequence_repair_norm_mean": flat_latent_repair.detach().norm(dim=-1).mean(),
                 "flow_gate_mean": flow_gate.detach().mean(),
                 "flow_gate_std": flow_gate.detach().std(),
+                "stage24_target_interface_field_enabled": torch.tensor(True, device=seqs.device),
+                "stage24_interface_guidance_enabled": torch.tensor(
+                    bool(input.get("stage24_enable_interface_guidance", False)), device=seqs.device
+                ),
+                "stage24_interface_guidance_shift_nm_mean": stage24_guidance_shift_mean,
             },
         }
