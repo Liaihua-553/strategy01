@@ -1,0 +1,125 @@
+{
+  "stage": "stage19_candidate_geometry_benchmark",
+  "status": "completed",
+  "candidate_json": "reports/strategy01/probes/stage19_cpu_pdb_probe.json",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "split": "val",
+  "candidate_sample_count": 1,
+  "evaluated_sample_count": 1,
+  "exact_like_name_count": 1,
+  "contact_cutoff_nm": 1.0,
+  "clash_cutoff_nm": 0.28,
+  "aggregate": {
+    "mean_contact_f1": {
+      "n": 1,
+      "mean": 0.029436066928320594,
+      "best": 0.029436066928320594,
+      "worst": 0.029436066928320594
+    },
+    "worst_contact_f1": {
+      "n": 1,
+      "mean": 0.0,
+      "best": 0.0,
+      "worst": 0.0
+    },
+    "mean_direct_rmsd_A": {
+      "n": 1,
+      "mean": 1639.920654296875,
+      "best": 1639.920654296875,
+      "worst": 1639.920654296875
+    },
+    "worst_direct_rmsd_A": {
+      "n": 1,
+      "mean": 1909.7047424316406,
+      "best": 1909.7047424316406,
+      "worst": 1909.7047424316406
+    },
+    "mean_aligned_rmsd_A": {
+      "n": 1,
+      "mean": 1270.124291446815,
+      "best": 1270.124291446815,
+      "worst": 1270.124291446815
+    },
+    "severe_clash_rate": {
+      "n": 1,
+      "mean": 0.0,
+      "best": 0.0,
+      "worst": 0.0
+    },
+    "contact_persistence": {
+      "n": 1,
+      "mean": 0.2421875,
+      "best": 0.2421875,
+      "worst": 0.2421875
+    },
+    "mean_generated_contact_count": {
+      "n": 1,
+      "mean": 84.33333333333333,
+      "best": 84.33333333333333,
+      "worst": 84.33333333333333
+    }
+  },
+  "warning": "This evaluates against the current Stage10/Stage07 tensor labels. It is not V_exact-only unless the input dataset/report is exact-only.",
+  "rows": [
+    {
+      "sample_id": "2ofq_A_B__v00__k3__hexact",
+      "target_id": "2ofq",
+      "source_tier": "train_boltz",
+      "quality_tier": "bronze",
+      "selected_seed": 1207,
+      "selected_safe": true,
+      "selected_proxy_identity": 0.04545454680919647,
+      "selected_proxy_clash_rate": 0.0,
+      "status": "ok",
+      "state_rows": [
+        {
+          "state_index": 0,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact/state00_binder_ca.pdb",
+          "generated_contact_count": 32,
+          "reference_contact_count": 71,
+          "contact_f1": 0.07766990291262135,
+          "direct_binder_ca_rmsd_A": 1909.7047424316406,
+          "aligned_binder_ca_rmsd_A": 1351.491972090213,
+          "min_target_binder_distance_nm": 0.5095550417900085,
+          "severe_clash": false
+        },
+        {
+          "state_index": 1,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact/state01_binder_ca.pdb",
+          "generated_contact_count": 128,
+          "reference_contact_count": 60,
+          "contact_f1": 0.010638297872340425,
+          "direct_binder_ca_rmsd_A": 1330.0831604003906,
+          "aligned_binder_ca_rmsd_A": 1172.5772263319432,
+          "min_target_binder_distance_nm": 0.5120770335197449,
+          "severe_clash": false
+        },
+        {
+          "state_index": 2,
+          "status": "ok",
+          "pdb": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/reports/strategy01/probes/stage19_cpu_pdb_probe_pdbs/sample_000_seed_1207/2ofq_A_B__v00__k3__hexact/state02_binder_ca.pdb",
+          "generated_contact_count": 93,
+          "reference_contact_count": 72,
+          "contact_f1": 0.0,
+          "direct_binder_ca_rmsd_A": 1679.9740600585938,
+          "aligned_binder_ca_rmsd_A": 1286.3036759182885,
+          "min_target_binder_distance_nm": 0.5088728070259094,
+          "severe_clash": false
+        }
+      ],
+      "sample_metrics": {
+        "mean_contact_f1": 0.029436066928320594,
+        "worst_contact_f1": 0.0,
+        "mean_direct_rmsd_A": 1639.920654296875,
+        "worst_direct_rmsd_A": 1909.7047424316406,
+        "mean_aligned_rmsd_A": 1270.124291446815,
+        "worst_aligned_rmsd_A": 1351.491972090213,
+        "severe_clash_rate": 0.0,
+        "contact_persistence": 0.2421875,
+        "mean_generated_contact_count": 84.33333333333333
+      }
+    }
+  ]
+}

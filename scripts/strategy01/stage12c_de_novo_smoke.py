@@ -68,6 +68,7 @@ def target_binder_geometry_proxy(batch: dict[str, torch.Tensor], x_states: dict[
     binder_mask = batch["state_mask"].to(device=binder_ca.device).bool()
     b, k, nb, _ = binder_ca.shape
     rows = []
+    contact_sets_by_sample: list[list[set[tuple[int, int]]]] = [[] for _ in range(b)]
     hotspot = batch.get("target_hotspot_mask_states")
     hotspot_mask = hotspot.to(device=binder_ca.device).bool() if hotspot is not None else target_mask
     for bi in range(b):
@@ -76,9 +77,13 @@ def target_binder_geometry_proxy(batch: dict[str, torch.Tensor], x_states: dict[
             bmask = binder_mask[bi, si]
             if not bool(tmask.any()) or not bool(bmask.any()):
                 continue
+            t_indices = torch.nonzero(tmask, as_tuple=False).flatten()
+            b_indices = torch.nonzero(bmask, as_tuple=False).flatten()
             dist = torch.cdist(target_ca[bi, si, tmask].float(), binder_ca[bi, si, bmask].float())
             min_dist = float(dist.min().detach().cpu().item())
-            contact_count = int((dist < 1.0).sum().detach().cpu().item())
+            contact_idx = torch.nonzero(dist < 1.0, as_tuple=False)
+            contact_count = int(contact_idx.shape[0])
+            contact_sets_by_sample[bi].append({(int(t_indices[i]), int(b_indices[j])) for i, j in contact_idx.detach().cpu().tolist()})
             severe_clash = min_dist < 0.28
             hmask = hotspot_mask[bi, si] & tmask
             hotspot_contacts = 0
@@ -88,11 +93,21 @@ def target_binder_geometry_proxy(batch: dict[str, torch.Tensor], x_states: dict[
             rows.append((min_dist, contact_count, hotspot_contacts, severe_clash))
     if not rows:
         return {}
+    persistence_vals = []
+    for sets in contact_sets_by_sample:
+        if not sets:
+            continue
+        union = set().union(*sets)
+        inter = set(sets[0])
+        for cset in sets[1:]:
+            inter &= cset
+        persistence_vals.append(len(inter) / max(1, len(union)) if union else 0.0)
     return {
         "target_min_distance_nm_mean": float(sum(r[0] for r in rows) / len(rows)),
         "target_min_distance_nm_min": float(min(r[0] for r in rows)),
         "target_contact_count_mean": float(sum(r[1] for r in rows) / len(rows)),
         "target_hotspot_contact_count_mean": float(sum(r[2] for r in rows) / len(rows)),
+        "target_contact_persistence_mean": float(sum(persistence_vals) / len(persistence_vals)) if persistence_vals else 0.0,
         "target_severe_clash_rate": float(sum(1 for r in rows if r[3]) / len(rows)),
     }
 

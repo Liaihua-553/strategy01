@@ -38,12 +38,15 @@ def no_leak_score(row: dict[str, Any]) -> float:
     clash = float(row.get('target_severe_clash_rate') or 0.0)
     contact = float(row.get('target_contact_count_mean') or 0.0)
     hotspot = float(row.get('target_hotspot_contact_count_mean') or 0.0)
+    persistence = float(row.get('target_contact_persistence_mean') or 0.0)
     min_dist = row.get('target_min_distance_nm_mean')
     min_dist = 2.0 if min_dist is None else float(min_dist)
-    contact_deficit = max(0.0, 8.0 - contact) / 8.0
-    hotspot_deficit = max(0.0, 2.0 - hotspot) / 2.0
-    distance_penalty = max(0.0, min_dist - 1.0)
-    return ent + 10.0 * dis + 10.0 * clash + 2.0 * contact_deficit + 2.0 * hotspot_deficit + distance_penalty
+    # Severe clash is a hard scientific failure. The caller additionally hard-gates no-clash candidates.
+    clash_penalty = 1.0e6 if clash > 0.0 else 0.0
+    # Contact-shell score came from Stage20 sweep: it improved contact-F1 without using labels.
+    shell = abs(contact - 85.0) / 85.0
+    far_penalty = max(0.0, min_dist - 1.0)
+    return clash_penalty + ent + 2.0 * dis + shell - 1.5 * persistence - 0.003 * min(hotspot, 80.0) + far_penalty
 
 
 def mean(xs):
