@@ -91,6 +91,11 @@ def configure_stage12_loss(fm: Any, args: argparse.Namespace) -> dict[str, float
         "de_novo_multistate": True,
         "target_center_noise_scale_nm": args.target_center_noise_scale_nm,
         "latent_state_residual_noise_scale": args.latent_state_residual_noise_scale,
+        "lambda_seq": getattr(args, "lambda_seq", 0.5),
+        "lambda_struct": getattr(args, "lambda_struct", 1.0),
+        "lambda_state_seq": getattr(args, "lambda_state_seq", 0.15),
+        "lambda_seq_consensus": getattr(args, "lambda_seq_consensus", 0.05),
+        "lambda_anchor_disagreement": getattr(args, "lambda_anchor_disagreement", 0.03),
         "lambda_ae_seq": args.lambda_ae_seq,
         "lambda_seq_ae_consistency": args.lambda_seq_ae_consistency,
         "lambda_flow_gate_reg": args.lambda_flow_gate_reg,
@@ -708,7 +713,38 @@ def set_trainable(
     stage13_train_latent_repair: bool = False,
     stage14_train_bounded_latent_repair: bool = False,
     stage14_native_latent_warmup: bool = False,
+    stage26_sequence_only_trainable: bool = False,
 ) -> dict[str, Any]:
+    if stage26_sequence_only_trainable:
+        for p in model.parameters():
+            p.requires_grad = False
+        prefixes = [
+            # Stage26 isolates the on-policy shared-sequence problem.  Keep the
+            # pretrained/native geometry and target-interface field fixed so a
+            # sequence gain cannot be caused by moving the pose generator.
+            "cross_state_shared_seq_attention",
+            "shared_seq_token_norm",
+            "shared_seq_token_update",
+            "shared_seq_token_head",
+            "shared_seq_head",
+            "state_seq_head",
+            "shared_seq_consensus_gate",
+            "state_seq_condition_projector",
+        ]
+        for name, p in model.named_parameters():
+            if any(name.startswith(prefix) for prefix in prefixes):
+                p.requires_grad = True
+        return {
+            "phase": phase,
+            "stage13_heads_only": bool(stage13_heads_only),
+            "stage13_train_latent_repair": bool(stage13_train_latent_repair),
+            "stage14_train_bounded_latent_repair": bool(stage14_train_bounded_latent_repair),
+            "stage14_native_latent_warmup": bool(stage14_native_latent_warmup),
+            "stage26_sequence_only_trainable": True,
+            "prefixes": prefixes,
+            "trainable_params": sum(p.numel() for p in model.parameters() if p.requires_grad),
+            "total_params": sum(p.numel() for p in model.parameters()),
+        }
     if stage13_heads_only:
         for p in model.parameters():
             p.requires_grad = False
@@ -802,6 +838,7 @@ def run_loop(
         stage13_train_latent_repair=bool(getattr(args, "stage13_train_latent_repair", False)),
         stage14_train_bounded_latent_repair=bool(getattr(args, "stage14_enable_bounded_latent_repair", False)),
         stage14_native_latent_warmup=bool(getattr(args, "stage14_native_latent_warmup", False)),
+        stage26_sequence_only_trainable=bool(getattr(args, "stage26_sequence_only_trainable", False)),
     )
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=lr, weight_decay=0.01)
     fixed_subset = samples[: min(batch_size, len(samples))]
@@ -995,6 +1032,11 @@ def parse_args():
     parser.add_argument("--overfit4-steps", type=int, default=120)
     parser.add_argument("--pilot-steps", type=int, default=200)
     parser.add_argument("--eval-every", type=int, default=40)
+    parser.add_argument("--lambda-seq", type=float, default=0.5)
+    parser.add_argument("--lambda-struct", type=float, default=1.0)
+    parser.add_argument("--lambda-state-seq", type=float, default=0.15)
+    parser.add_argument("--lambda-seq-consensus", type=float, default=0.05)
+    parser.add_argument("--lambda-anchor-disagreement", type=float, default=0.03)
     parser.add_argument("--lambda-ae-seq", type=float, default=1.5)
     parser.add_argument("--lambda-seq-ae-consistency", type=float, default=0.15)
     parser.add_argument("--lambda-flow-gate-reg", type=float, default=0.03)
@@ -1083,6 +1125,16 @@ def parse_args():
         help=(
             "With --stage13-heads-only, additionally train local_latents_linear and "
             "latent sequence repair gates so sampled latents can move back toward the AE sequence manifold."
+        ),
+    )
+    parser.add_argument(
+        "--stage26-sequence-only-trainable",
+        action="store_true",
+        default=False,
+        help=(
+            "Freeze geometry/interface modules and train only shared/state sequence "
+            "coupling heads. This tests whether on-policy replay can repair the "
+            "shared-sequence readout without moving the pose generator."
         ),
     )
     parser.add_argument(
@@ -1179,6 +1231,7 @@ def main():
             ),
             "stage13_heads_only": bool(args.stage13_heads_only),
             "stage13_train_latent_repair": bool(args.stage13_train_latent_repair),
+            "stage26_sequence_only_trainable": bool(args.stage26_sequence_only_trainable),
             "stage14_enable_bounded_latent_repair": bool(args.stage14_enable_bounded_latent_repair),
             "stage22_enable_native_flow_coupling": bool(args.stage22_enable_native_flow_coupling),
             "stage24_enable_target_interface_field": bool(args.stage24_enable_target_interface_field),
