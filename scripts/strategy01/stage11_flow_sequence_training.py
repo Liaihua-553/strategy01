@@ -328,6 +328,12 @@ def set_trainable_stage11(model: torch.nn.Module, phase: str) -> dict[str, Any]:
             "local_latents_linear",
             "ca_linear",
             "interface_quality_head",
+            # MODIFIED 2026-05-12 Stage25A:
+            # Keep Stage24 target-interface field trainable in the default
+            # Stage12/13 mini fine-tune path; otherwise the new supervision logs
+            # losses but cannot learn a usable target-only interface field.
+            "target_interface_site_head",
+            "target_interface_guidance_scale",
         ]
         if phase == "seq_latent":
             prefixes = [

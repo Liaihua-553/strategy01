@@ -121,7 +121,26 @@ def main() -> None:
                 stage24_interface_hotspot_prior=args.stage24_interface_hotspot_prior,
             )
             final_x=smoke.get('final_x_identity') or {}
-            row={'seed':seed,'sample_idx':sample_idx,'sample_id':sample.get('sample_id'), 'target_id':sample.get('target_id'), 'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'), 'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'), **final_diag(smoke), **(smoke.get('target_geometry_proxy') or {}), 'stage18_clash_relief': smoke.get('stage18_clash_relief'), 'written_pdb_dirs': smoke.get('written_pdb_dirs') or []}
+            head_identity=smoke.get('identity') or {}
+            row={
+                'seed':seed,
+                'sample_idx':sample_idx,
+                'sample_id':sample.get('sample_id'),
+                'target_id':sample.get('target_id'),
+                # MODIFIED 2026-05-12 Stage25C:
+                # Keep both identities separate.  The explicit shared head is the
+                # model's intended one-sequence readout; final_x_ae is the sequence
+                # implied by the actually integrated local_latents.  A large gap
+                # means the flow trajectory is off the AE sequence manifold.
+                'shared_head_identity_mean':head_identity.get('shared_identity_mean'),
+                'ae_pred_state_identity_mean':head_identity.get('ae_state_identity_mean'),
+                'shared_identity_mean_posthoc':final_x.get('final_x_ae_shared_identity_mean'),
+                'ae_state_identity_mean_posthoc':final_x.get('final_x_ae_state_identity_mean'),
+                **final_diag(smoke),
+                **(smoke.get('target_geometry_proxy') or {}),
+                'stage18_clash_relief': smoke.get('stage18_clash_relief'),
+                'written_pdb_dirs': smoke.get('written_pdb_dirs') or []
+            }
             row['no_leak_score']=no_leak_score(row)
             cand.append(row)
         safe_cand=[r for r in cand if float(r.get('target_severe_clash_rate') or 0.0) <= 0.0]
@@ -136,7 +155,11 @@ def main() -> None:
     first_vals=[r['first_seed']['shared_identity_mean_posthoc'] for r in sample_rows]
     proxy_vals=[r['selected_by_proxy']['shared_identity_mean_posthoc'] for r in sample_rows]
     oracle_vals=[r['oracle_best']['shared_identity_mean_posthoc'] for r in sample_rows]
+    first_head_vals=[r['first_seed'].get('shared_head_identity_mean') for r in sample_rows]
+    proxy_head_vals=[r['selected_by_proxy'].get('shared_head_identity_mean') for r in sample_rows]
     result={'stage':'stage17_per_sample_multiseed_probe','status':'passed','checkpoint':str(args.checkpoint),'split':args.split,'sample_offset':int(args.sample_offset),'sample_count':len(selected),'nsteps':args.nsteps,'seeds':seeds,'contract':{'target_only_de_novo':True,'production_selection_uses_reference_labels':False,'posthoc_identity_is_diagnostic_only':True,'stage18_clash_relief':bool(args.stage18_enable_clash_relief),'stage22_native_flow_coupling':bool(args.stage22_enable_native_flow_coupling),'stage24_target_interface_field':bool(args.stage24_enable_target_interface_field),'stage24_interface_guidance':bool(args.stage24_enable_interface_guidance),'severe_clash_is_hard_gate':True},'stage18_relief_config':{'enabled':bool(args.stage18_enable_clash_relief),'clash_min_distance_nm':float(args.stage18_clash_min_distance_nm),'relief_step_nm':float(args.stage18_relief_step_nm),'relief_iters':int(args.stage18_relief_iters),'min_contact_count':int(args.stage18_min_contact_count)},'write_candidate_pdb_dir':str(args.write_candidate_pdb_dir) if args.write_candidate_pdb_dir is not None else None,'summary':{'first_seed_identity_mean':mean(first_vals),'proxy_selected_identity_mean':mean(proxy_vals),'oracle_identity_mean':mean(oracle_vals),'proxy_matches_oracle_rate':sum(1 for r in sample_rows if r['proxy_matches_oracle'])/max(1,len(sample_rows)),'safe_candidate_available_rate':sum(1 for r in sample_rows if r.get('safe_candidate_available'))/max(1,len(sample_rows)),'selected_safe_rate':sum(1 for r in sample_rows if r.get('selected_is_safe'))/max(1,len(sample_rows))},'samples':sample_rows,'model_meta':model_meta,'checkpoint_meta':ckpt_meta,'loss_cfg':loss_cfg}
+    result['summary']['first_seed_shared_head_identity_mean'] = mean(first_head_vals)
+    result['summary']['proxy_selected_shared_head_identity_mean'] = mean(proxy_head_vals)
     write_json(args.report_json, result)
     print(json.dumps({'status':'passed','report':str(args.report_json),'summary':result['summary']}, ensure_ascii=False, indent=2))
 

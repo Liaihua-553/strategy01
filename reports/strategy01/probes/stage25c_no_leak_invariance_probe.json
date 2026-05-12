@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "max_abs_diffs": {
+    "seq_logits_shared": 0.0,
+    "state_seq_logits": 0.0,
+    "bb_ca_states": 0.0,
+    "local_latents_states": 0.0,
+    "target_interface_logits_states": 0.0
+  },
+  "note": "Outputs should be invariant to true binder sequence/x1/interface labels under fixed x_t and target inputs."
+}

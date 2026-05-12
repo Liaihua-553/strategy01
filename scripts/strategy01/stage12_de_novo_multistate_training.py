@@ -94,8 +94,13 @@ def configure_stage12_loss(fm: Any, args: argparse.Namespace) -> dict[str, float
         "lambda_ae_seq": args.lambda_ae_seq,
         "lambda_seq_ae_consistency": args.lambda_seq_ae_consistency,
         "lambda_flow_gate_reg": args.lambda_flow_gate_reg,
-        "lambda_target_interface_site": args.lambda_target_interface_site,
-        "lambda_target_interface_center": args.lambda_target_interface_center,
+        "lambda_target_interface_site": getattr(args, "lambda_target_interface_site", 0.0),
+        "lambda_target_interface_center": getattr(args, "lambda_target_interface_center", 0.0),
+        "target_interface_positive_weight": getattr(args, "target_interface_positive_weight", 1.0),
+        "lambda_interface_shell": getattr(args, "lambda_interface_shell", 0.0),
+        "interface_shell_target_weight": getattr(args, "interface_shell_target_weight", 1.0),
+        "interface_shell_binder_weight": getattr(args, "interface_shell_binder_weight", 0.5),
+        "interface_shell_positive_weight": getattr(args, "interface_shell_positive_weight", 1.0),
         "ae_seq_cvar_topk": 2,
         "ae_seq_hard_state_alpha": args.ae_seq_hard_state_alpha,
         "ae_seq_hard_state_gamma": args.ae_seq_hard_state_gamma,
@@ -723,6 +728,12 @@ def set_trainable(
             "state_condition_projector",
             "state_token_norm",
             "interface_quality_head",
+            # MODIFIED 2026-05-12 Stage25A:
+            # Stage24 introduced target-interface field losses, but the new
+            # field head was not in the trainable prefix set.  Without this,
+            # sampling guidance used an effectively random target surface field.
+            "target_interface_site_head",
+            "target_interface_guidance_scale",
         ]
         if stage13_train_latent_repair:
             prefixes += [
@@ -1107,6 +1118,11 @@ def parse_args():
     parser.add_argument("--stage24-interface-hotspot-prior", type=float, default=0.25)
     parser.add_argument("--lambda-target-interface-site", type=float, default=0.0)
     parser.add_argument("--lambda-target-interface-center", type=float, default=0.0)
+    parser.add_argument("--target-interface-positive-weight", type=float, default=1.0)
+    parser.add_argument("--lambda-interface-shell", type=float, default=0.0)
+    parser.add_argument("--interface-shell-target-weight", type=float, default=1.0)
+    parser.add_argument("--interface-shell-binder-weight", type=float, default=0.5)
+    parser.add_argument("--interface-shell-positive-weight", type=float, default=1.0)
     parser.add_argument(
         "--stage14-latent-repair-max-norm",
         type=float,
@@ -1170,6 +1186,7 @@ def main():
             "stage24_interface_guidance_scale": float(args.stage24_interface_guidance_scale),
             "stage24_interface_guidance_max_shift_nm": float(args.stage24_interface_guidance_max_shift_nm),
             "stage24_interface_hotspot_prior": float(args.stage24_interface_hotspot_prior),
+            "target_interface_positive_weight": float(args.target_interface_positive_weight),
             "stage14_latent_repair_max_norm": float(args.stage14_latent_repair_max_norm),
             "stage14_native_latent_warmup": bool(args.stage14_native_latent_warmup),
         },

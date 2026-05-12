@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "loss_cfg": {
+    "de_novo_multistate": true,
+    "target_center_noise_scale_nm": 0.2,
+    "latent_state_residual_noise_scale": 0.05,
+    "lambda_ae_seq": 1.5,
+    "lambda_seq_ae_consistency": 0.15,
+    "lambda_flow_gate_reg": 0.03,
+    "lambda_target_interface_site": 0.2,
+    "lambda_target_interface_center": 0.1,
+    "target_interface_positive_weight": 1.0,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.0,
+    "ae_seq_hard_state_gamma": 0.0
+  },
+  "trainable_info": {
+    "phase": "mini",
+    "prefixes": [
+      "soft_sequence_feedback_projector",
+      "flow_gate_head",
+      "cross_state_shared_seq_attention",
+      "shared_seq_token_norm",
+      "shared_seq_token_update",
+      "shared_seq_to_state_projector",
+      "shared_seq_token_head",
+      "latent_sequence_repair_projector",
+      "latent_sequence_repair_gate",
+      "state_xt_bb_ca_projector",
+      "state_xt_latent_projector",
+      "shared_seq_head",
+      "state_seq_head",
+      "shared_seq_consensus_gate",
+      "state_seq_condition_projector",
+      "state_condition_projector",
+      "state_token_norm",
+      "local_latents_linear",
+      "ca_linear",
+      "interface_quality_head",
+      "target_interface_site_head",
+      "target_interface_guidance_scale",
+      "transformer_layers.10",
+      "transformer_layers.11",
+      "transformer_layers.12",
+      "transformer_layers.13"
+    ],
+    "trainable_params": 53869890,
+    "total_params": 345753147
+  },
+  "target_interface_site_head_trainable": true,
+  "target_interface_guidance_scale_trainable": true,
+  "target_interface_trainable_names": [
+    "target_interface_guidance_scale",
+    "target_interface_site_head.0.weight",
+    "target_interface_site_head.0.bias",
+    "target_interface_site_head.1.weight"
+  ]
+}

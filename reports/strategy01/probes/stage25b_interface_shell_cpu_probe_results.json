@@ -1,0 +1,530 @@
+{
+  "status": "passed",
+  "run_name": "stage25b_interface_shell_cpu_probe",
+  "device": "cpu",
+  "dataset": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage10_exactaug_training/stage10_exactaug_trainval.pt",
+  "train_count": 2,
+  "val_count": 2,
+  "contract": {
+    "de_novo_multistate_mode": true,
+    "forbidden_model_input_keys": [
+      "init_bb_ca_states",
+      "source_bb_ca_states",
+      "source_complex_paths",
+      "source_interface_contact_labels",
+      "source_interface_distance_labels"
+    ],
+    "true_binder_sequence_allowed_only_as_loss_label": true,
+    "bb_ca_flow_enabled": true,
+    "local_latents_flow_enabled": true,
+    "stage13_native_state_path": true,
+    "stage13_native_state_path_role": "Preserves the original Complexa target-conditioned generator state-wise; multistate training should improve shared-sequence/cross-state coupling without replacing the base flow.",
+    "stage13_heads_only": false,
+    "stage13_train_latent_repair": false,
+    "stage14_enable_bounded_latent_repair": true,
+    "stage22_enable_native_flow_coupling": true,
+    "stage24_enable_target_interface_field": true,
+    "stage24_enable_interface_guidance": false,
+    "stage24_interface_guidance_scale": 1.0,
+    "stage24_interface_guidance_max_shift_nm": 0.15,
+    "stage24_interface_hotspot_prior": 0.25,
+    "target_interface_positive_weight": 5.0,
+    "stage14_latent_repair_max_norm": 0.25,
+    "stage14_native_latent_warmup": false
+  },
+  "manifest_summary": {
+    "status": "passed",
+    "stage": "stage10_exactaug",
+    "notes": [
+      "Experimental V_exact is intentionally allowed into Stage10 training to strengthen exact interface supervision.",
+      "Exact holdout remains family/split_group separated for diagnostics; it is not a fully external benchmark once V_exact is used in training.",
+      "Variable binder/target lengths require Stage10 variable-length collate."
+    ],
+    "source_paths": {
+      "train": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_train.pt",
+      "val": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_merged_training/T_stage08b_val.pt",
+      "exact": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/data/strategy01/stage08b_vexact_tensor/stage08b_vexact_samples_ae_latents.pt"
+    },
+    "exact_train_fraction": 0.75,
+    "exact_train_groups": [
+      "06b6b82df6aa",
+      "095b2a929b3f",
+      "1088fb58162c",
+      "1199063295e3",
+      "1c8995b8b1de",
+      "233b65fe2aee",
+      "2464c4621457",
+      "2d210a7f0b34",
+      "31e9d33c070e",
+      "340ad9d1b636",
+      "3d55184ca7fe",
+      "4a683010f5ce",
+      "5082011b32ee",
+      "6a7f0302d575",
+      "74de758b9716",
+      "7e722986fb49",
+      "87f24a171107",
+      "8d2c8d621f8a",
+      "90aca2d3b3ce",
+      "94991d1021f5",
+      "956bf0c3d94a",
+      "99293b00467c",
+      "9b3ad16d60d1",
+      "a62b69154650",
+      "a95eccc78096",
+      "acdc493c2104",
+      "b755d773447a",
+      "c053b1b271b9",
+      "ccf6c760d8cd",
+      "d8a74511c002",
+      "d952e952cd15",
+      "e7e7f86a4ac0",
+      "ee265e002617",
+      "fab4c8e4ff78",
+      "fb5b6e084c18"
+    ],
+    "exact_val_groups": [
+      "02060ac11427",
+      "6d9a4910c4d4",
+      "828031e26137",
+      "9a201231192f",
+      "a1b83f6c1df0",
+      "d152cc784ade"
+    ],
+    "input_summary": {
+      "train": {
+        "count": 119,
+        "splits": {
+          "train": 119
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          8,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 22,
+          "2": 97
+        },
+        "family_count": 31
+      },
+      "val": {
+        "count": 30,
+        "splits": {
+          "val": 30
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          11,
+          89
+        ],
+        "target_len_minmax": [
+          43,
+          95
+        ],
+        "K": {
+          "3": 6,
+          "2": 24
+        },
+        "family_count": 7
+      },
+      "exact": {
+        "count": 48,
+        "splits": {
+          "val": 48
+        },
+        "source_tier": {
+          "exact_experimental": 48
+        },
+        "binder_len_minmax": [
+          7,
+          105
+        ],
+        "target_len_minmax": [
+          30,
+          184
+        ],
+        "K": {
+          "3": 48
+        },
+        "family_count": 41
+      }
+    },
+    "output_summary": {
+      "merged_train": {
+        "count": 161,
+        "splits": {
+          "train": 161
+        },
+        "source_tier": {
+          "train_boltz": 110,
+          "exact_experimental": 42,
+          "T_hybrid_silver": 9
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 64,
+          "2": 97
+        },
+        "family_count": 66
+      },
+      "merged_val": {
+        "count": 36,
+        "splits": {
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 28,
+          "exact_experimental": 6,
+          "T_hybrid_silver": 2
+        },
+        "binder_len_minmax": [
+          9,
+          95
+        ],
+        "target_len_minmax": [
+          30,
+          178
+        ],
+        "K": {
+          "3": 12,
+          "2": 24
+        },
+        "family_count": 13
+      },
+      "merged_all": {
+        "count": 197,
+        "splits": {
+          "train": 161,
+          "val": 36
+        },
+        "source_tier": {
+          "train_boltz": 138,
+          "exact_experimental": 48,
+          "T_hybrid_silver": 11
+        },
+        "binder_len_minmax": [
+          7,
+          145
+        ],
+        "target_len_minmax": [
+          30,
+          426
+        ],
+        "K": {
+          "3": 76,
+          "2": 121
+        },
+        "family_count": 79
+      }
+    }
+  },
+  "training": {},
+  "model_meta": {
+    "latent_dim": 8,
+    "checkpoint_compatible_keys": 457,
+    "checkpoint_incompatible_shape_keys": [],
+    "missing_keys_count": 639,
+    "missing_keys_sample": [
+      "native_flow_coupling_scale",
+      "target_interface_guidance_scale",
+      "ensemble_target_encoder.target_feature_projection.0.weight",
+      "ensemble_target_encoder.target_feature_projection.0.bias",
+      "ensemble_target_encoder.target_feature_projection.1.weight",
+      "ensemble_target_encoder.target_feature_projection.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.role_embedding.weight",
+      "ensemble_target_encoder.cross_state_fusion.q_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.k_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.v_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.out_proj.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.0.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.1.bias",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.weight",
+      "ensemble_target_encoder.cross_state_fusion.gate_proj.3.bias",
+      "ensemble_target_encoder.cross_state_fusion.norm.weight",
+      "ensemble_target_encoder.cross_state_fusion.norm.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.0.norm2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.in_proj_bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.self_attn.out_proj.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.linear2.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm1.bias",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.weight",
+      "ensemble_target_encoder.global_refinement.encoder.layers.1.norm2.bias",
+      "ensemble_target_encoder.state_summary_projection.0.weight",
+      "ensemble_target_encoder.state_summary_projection.0.bias",
+      "ensemble_target_encoder.state_summary_projection.1.weight",
+      "ensemble_target_encoder.state_summary_projection.1.bias",
+      "ensemble_target_encoder.state_summary_projection.3.weight",
+      "ensemble_target_encoder.state_summary_projection.3.bias",
+      "target2binder_cross_attention_layer.0.mhba.adaln_a.norm_cond.weight"
+    ],
+    "train_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/training_local_latents_multistate_stage04_probe.yaml"
+  },
+  "init_ckpt_meta": {
+    "loaded": true,
+    "path": "ckpts/stage12_de_novo_multistate/runs/stage25a_trainable_interface_field/stage12_pilot_final.pt",
+    "compatible_keys": 1096,
+    "incompatible_shape_keys": [],
+    "missing_keys": [],
+    "unexpected_keys": []
+  },
+  "stage12_loss_cfg": {
+    "de_novo_multistate": true,
+    "target_center_noise_scale_nm": 0.2,
+    "latent_state_residual_noise_scale": 0.05,
+    "lambda_ae_seq": 1.5,
+    "lambda_seq_ae_consistency": 0.15,
+    "lambda_flow_gate_reg": 0.03,
+    "lambda_target_interface_site": 0.25,
+    "lambda_target_interface_center": 0.05,
+    "target_interface_positive_weight": 5.0,
+    "lambda_interface_shell": 0.2,
+    "interface_shell_target_weight": 1.0,
+    "interface_shell_binder_weight": 0.5,
+    "interface_shell_positive_weight": 3.0,
+    "ae_seq_cvar_topk": 2,
+    "ae_seq_hard_state_alpha": 0.0,
+    "ae_seq_hard_state_gamma": 0.0
+  },
+  "stage15_teacher_self_conditioning": {
+    "enabled": true,
+    "prob": 1.0,
+    "scientific_role": "Expose training to model-generated clean self-conditioning used during de-novo sampling without source-pose or sequence leakage."
+  },
+  "stage16_t_window": {
+    "enabled": false,
+    "t_min": 0.55,
+    "t_max": 0.95,
+    "prob": 1.0,
+    "scientific_role": "Bias part of supervised flow training toward late denoising states where sampled local latents must stay AE-decodable into one shared binder sequence."
+  },
+  "stage12c_replay": {
+    "enabled": true,
+    "mix_prob": 0.35,
+    "rollout_steps": 4,
+    "collect_fraction": 0.6,
+    "warmup_steps": 60,
+    "max_loss_t": 0.75,
+    "teacher_blend": 0.65,
+    "safe_max_bb_ca_distance_nm": 0.55,
+    "safe_max_local_latents_distance": 0.75,
+    "safe_fallback_max_blend": 0.9,
+    "target_shell_max_center_distance_nm": 0.0,
+    "fixed_cache_enabled": true,
+    "fixed_cache_batches": 1,
+    "fixed_cache_refresh_every": 120,
+    "fixed_cache_levels": "easy:0.75",
+    "fixed_cache_curriculum_switches": "0.40,0.75",
+    "sampling_config": "/data/kfliao/general_model/strategy_repos/Strategy01_complexa_multistate_benchmarkbase/configs/pipeline/model_sampling.yaml",
+    "extra_weights": {
+      "ae_seq": 0.5,
+      "seq_ae_consistency": 0.2,
+      "contact": 0.15,
+      "distance": 0.05,
+      "clash": 0.1,
+      "base_loss_scale": 0.8
+    }
+  },
+  "probes": {
+    "initial_total": 16.048309326171875,
+    "losses": {
+      "multistate_total": 16.048309326171875,
+      "multistate_seq_justlog": 0.02874809317290783,
+      "multistate_state_seq_justlog": 0.11902885138988495,
+      "multistate_seq_consensus_justlog": 0.08857607841491699,
+      "multistate_anchor_disagreement_justlog": 0.017709802836179733,
+      "multistate_ae_seq_justlog": 0.824608564376831,
+      "multistate_ae_seq_cvar_justlog": 0.9763301610946655,
+      "multistate_ae_seq_hard_justlog": 0.9763301610946655,
+      "multistate_seq_ae_consistency_justlog": 0.40053871273994446,
+      "multistate_flow_gate_reg_justlog": 0.5625,
+      "multistate_flow_gate_anchor_update_justlog": 0.0,
+      "multistate_struct_justlog": 14.685632705688477,
+      "multistate_fm_mean_justlog": 13.432415008544922,
+      "multistate_contact_justlog": 0.3632407784461975,
+      "multistate_distance_justlog": 0.9085872173309326,
+      "multistate_clash_justlog": 0.004043745808303356,
+      "multistate_quality_proxy_justlog": 0.08157870173454285,
+      "multistate_target_interface_site_justlog": 0.8090208768844604,
+      "multistate_target_interface_center_justlog": 0.740401029586792,
+      "multistate_interface_shell_justlog": 6.424524784088135,
+      "multistate_anchor_persistence_justlog": 0.10055935382843018,
+      "multistate_self_geometry_justlog": 0.13183364272117615,
+      "multistate_mean_justlog": 15.121935844421387,
+      "multistate_cvar_justlog": 16.279815673828125,
+      "multistate_var_justlog": 5.548449993133545,
+      "multistate_state_0_justlog": 15.472455978393555,
+      "multistate_state_0_fm_justlog": 13.145727157592773,
+      "multistate_state_0_contact_justlog": 0.5911411046981812,
+      "multistate_state_0_distance_justlog": 1.1955658197402954,
+      "multistate_state_0_clash_justlog": 0.008386971428990364,
+      "multistate_state_0_target_interface_site_justlog": 0.9148977398872375,
+      "multistate_state_0_target_interface_center_justlog": 0.5166735649108887,
+      "multistate_state_0_interface_shell_justlog": 9.162439346313477,
+      "multistate_state_0_seq_justlog": 0.17082267999649048,
+      "multistate_state_0_ae_seq_justlog": 0.6362397074699402,
+      "multistate_state_0_flow_gate_anchor_justlog": 0.7224999666213989,
+      "multistate_state_1_justlog": 16.782241821289062,
+      "multistate_state_1_fm_justlog": 15.558362007141113,
+      "multistate_state_1_contact_justlog": 0.19050279259681702,
+      "multistate_state_1_distance_justlog": 0.5528734922409058,
+      "multistate_state_1_clash_justlog": 0.003620518371462822,
+      "multistate_state_1_target_interface_site_justlog": 0.6698656678199768,
+      "multistate_state_1_target_interface_center_justlog": 1.0500489473342896,
+      "multistate_state_1_interface_shell_justlog": 4.542514801025391,
+      "multistate_state_1_seq_justlog": 0.03726512938737869,
+      "multistate_state_1_ae_seq_justlog": 0.2618982791900635,
+      "multistate_state_1_flow_gate_anchor_justlog": 0.7224999666213989,
+      "multistate_state_2_justlog": 13.111108779907227,
+      "multistate_state_2_fm_justlog": 11.593154907226562,
+      "multistate_state_2_contact_justlog": 0.3080783486366272,
+      "multistate_state_2_distance_justlog": 0.9773223400115967,
+      "multistate_state_2_clash_justlog": 0.00012374675134196877,
+      "multistate_state_2_target_interface_site_justlog": 0.8422990441322327,
+      "multistate_state_2_target_interface_center_justlog": 0.6544803380966187,
+      "multistate_state_2_interface_shell_justlog": 5.568619728088379,
+      "multistate_state_2_seq_justlog": 0.09959068894386292,
+      "multistate_state_2_ae_seq_justlog": 1.12052321434021,
+      "multistate_state_2_flow_gate_anchor_justlog": 0.7224999666213989
+    },
+    "identity": {
+      "shared_identity_mean": 1.0,
+      "ae_state_identity_mean": 0.9166666865348816
+    },
+    "teacher_self_conditioning_diagnostics": {
+      "teacher_self_cond_bb_ca_mean_abs": 0.7814461588859558,
+      "teacher_self_cond_local_latents_mean_abs": 1.1408008337020874,
+      "teacher_self_conditioned": true
+    },
+    "replay": {
+      "total": 59.915348052978516,
+      "losses": {
+        "multistate_total": 66.97830200195312,
+        "multistate_seq_justlog": 3.5997958183288574,
+        "multistate_state_seq_justlog": 2.9032630920410156,
+        "multistate_seq_consensus_justlog": 0.36087891459465027,
+        "multistate_anchor_disagreement_justlog": 0.003460261505097151,
+        "multistate_ae_seq_justlog": 8.691914558410645,
+        "multistate_ae_seq_cvar_justlog": 9.04430103302002,
+        "multistate_ae_seq_hard_justlog": 9.04430103302002,
+        "multistate_seq_ae_consistency_justlog": 9.37614631652832,
+        "multistate_flow_gate_reg_justlog": 0.5625,
+        "multistate_flow_gate_anchor_update_justlog": 0.0,
+        "multistate_struct_justlog": 50.249534606933594,
+        "multistate_fm_mean_justlog": 52.170555114746094,
+        "multistate_contact_justlog": 0.41543465852737427,
+        "multistate_distance_justlog": 0.9683440327644348,
+        "multistate_clash_justlog": 0.007888268679380417,
+        "multistate_quality_proxy_justlog": 0.08157870173454285,
+        "multistate_target_interface_site_justlog": 0.8090208768844604,
+        "multistate_target_interface_center_justlog": 0.740401029586792,
+        "multistate_interface_shell_justlog": 8.094515800476074,
+        "multistate_anchor_persistence_justlog": 0.10553787648677826,
+        "multistate_self_geometry_justlog": 0.17564699053764343,
+        "multistate_mean_justlog": 54.21067810058594,
+        "multistate_cvar_justlog": 55.83045196533203,
+        "multistate_var_justlog": 7.310259819030762,
+        "multistate_state_0_justlog": 57.071868896484375,
+        "multistate_state_0_fm_justlog": 55.409515380859375,
+        "multistate_state_0_contact_justlog": 0.5432541370391846,
+        "multistate_state_0_distance_justlog": 1.0224320888519287,
+        "multistate_state_0_clash_justlog": 0.006144448183476925,
+        "multistate_state_0_target_interface_site_justlog": 0.9148977398872375,
+        "multistate_state_0_target_interface_center_justlog": 0.5166735649108887,
+        "multistate_state_0_interface_shell_justlog": 5.97557258605957,
+        "multistate_state_0_seq_justlog": 2.775599956512451,
+        "multistate_state_0_ae_seq_justlog": 8.631584167480469,
+        "multistate_state_0_flow_gate_anchor_justlog": 0.7224999666213989,
+        "multistate_state_1_justlog": 50.97113037109375,
+        "multistate_state_1_fm_justlog": 48.23011779785156,
+        "multistate_state_1_contact_justlog": 0.3221353590488434,
+        "multistate_state_1_distance_justlog": 0.7975420951843262,
+        "multistate_state_1_clash_justlog": 0.011193210259079933,
+        "multistate_state_1_target_interface_site_justlog": 0.6698656678199768,
+        "multistate_state_1_target_interface_center_justlog": 1.0500489473342896,
+        "multistate_state_1_interface_shell_justlog": 11.87231159210205,
+        "multistate_state_1_seq_justlog": 2.98527193069458,
+        "multistate_state_1_ae_seq_justlog": 7.317039489746094,
+        "multistate_state_1_flow_gate_anchor_justlog": 0.7224999666213989,
+        "multistate_state_2_justlog": 54.58904266357422,
+        "multistate_state_2_fm_justlog": 52.87202453613281,
+        "multistate_state_2_contact_justlog": 0.3809144198894501,
+        "multistate_state_2_distance_justlog": 1.0850577354431152,
+        "multistate_state_2_clash_justlog": 0.006327147129923105,
+        "multistate_state_2_target_interface_site_justlog": 0.8422990441322327,
+        "multistate_state_2_target_interface_center_justlog": 0.6544803380966187,
+        "multistate_state_2_interface_shell_justlog": 6.435663223266602,
+        "multistate_state_2_seq_justlog": 2.8246259689331055,
+        "multistate_state_2_ae_seq_justlog": 9.06995964050293,
+        "multistate_state_2_flow_gate_anchor_justlog": 0.7224999666213989,
+        "stage12_replay_extra_justlog": 6.33270788192749,
+        "stage12_replay_total_justlog": 73.3110122680664
+      },
+      "identity": {
+        "shared_identity_mean": 0.05000000074505806,
+        "ae_state_identity_mean": 0.21666668355464935
+      },
+      "diagnostics": {
+        "rollout_steps": 4,
+        "collect_step": 2,
+        "collect_t_raw": {
+          "bb_ca": 0.9090908765792847,
+          "local_latents": 0.25
+        },
+        "collect_t_loss": {
+          "bb_ca": 0.75,
+          "local_latents": 0.25
+        },
+        "bb_ca_replay_delta_nm": 0.7064929604530334,
+        "local_latents_replay_delta": 1.3279696702957153,
+        "teacher_blend": 0.65,
+        "effective_teacher_blend": 0.9,
+        "safe_replay_adjusted": true,
+        "safe_max_bb_ca_distance_nm": 0.55,
+        "safe_max_local_latents_distance": 0.75,
+        "raw_bb_ca_distance_to_clean_nm": 8.415714263916016,
+        "raw_local_latents_distance_to_clean": 14.546587944030762,
+        "bb_ca_distance_to_clean_nm": 0.841571569442749,
+        "local_latents_distance_to_clean": 1.45465886592865,
+        "target_shell_max_center_distance_nm": 0.0,
+        "stage13_native_state_path": true
+      }
+    }
+  }
+}

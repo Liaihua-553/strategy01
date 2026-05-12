@@ -542,6 +542,7 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
     l_quality_state = zeros_state
     l_target_interface_site_state = zeros_state
     l_target_interface_center_state = zeros_state
+    l_interface_shell_state = zeros_state
     if "interface_quality_logits" in nn_out and "interface_quality_labels" in batch:
         quality_logits = nn_out["interface_quality_logits"]
         quality_labels = batch["interface_quality_labels"].to(device=device, dtype=quality_logits.dtype)
@@ -562,6 +563,9 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
             site_raw = F.binary_cross_entropy_with_logits(
                 target_logits.float(), site_labels.float(), reduction="none"
             ).to(dtype)
+            pos_weight = float(_cfg_get(cfg, "target_interface_positive_weight", 1.0))
+            if pos_weight != 1.0:
+                site_raw = torch.where(site_labels > 0.5, site_raw * pos_weight, site_raw)
             l_target_interface_site_state = (site_raw * site_mask.float()).sum(dim=-1) / site_mask.float().sum(dim=-1).clamp_min(1.0)
 
             pred_weight = torch.sigmoid(target_logits).to(dtype) * site_mask.float()
@@ -571,6 +575,39 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
             has_positive = label_weight.sum(dim=-1) > 0
             center_raw = F.smooth_l1_loss(pred_center.float(), label_center.float(), reduction="none", beta=0.1).sum(dim=-1).to(dtype)
             l_target_interface_center_state = torch.where(has_positive, center_raw, torch.zeros_like(center_raw))
+
+    if contact_labels is not None:
+        # MODIFIED 2026-05-12 Stage25B:
+        # Pairwise contact BCE is too strict for multistate de-novo generation:
+        # the same shared binder may preserve target-side anchors while changing
+        # which binder residue realizes a contact in each state. This shell loss
+        # supervises interface coverage without exact residue-pair assignment.
+        labels = contact_labels.to(device=device, dtype=dtype)
+        pred_prob = torch.sigmoid((contact_cutoff - dists) / max(contact_temperature, 1e-6))
+        pred_prob = torch.nan_to_num(pred_prob, nan=0.0, posinf=1.0, neginf=0.0).clamp(1.0e-6, 1.0 - 1.0e-6)
+        pair_f = pair_mask.float()
+        valid_prob = pred_prob * pair_f
+
+        target_site_mask = pair_mask.any(dim=-1)
+        target_site_label = ((labels > 0.5) & pair_mask).any(dim=-1).to(dtype)
+        target_site_pred = 1.0 - torch.prod((1.0 - valid_prob).clamp(1.0e-6, 1.0), dim=-1)
+        target_shell_raw = F.binary_cross_entropy(target_site_pred.float(), target_site_label.float(), reduction="none").to(dtype)
+
+        binder_site_mask = pair_mask.any(dim=2)
+        binder_site_label = ((labels > 0.5) & pair_mask).any(dim=2).to(dtype)
+        binder_site_pred = 1.0 - torch.prod((1.0 - valid_prob).clamp(1.0e-6, 1.0), dim=2)
+        binder_shell_raw = F.binary_cross_entropy(binder_site_pred.float(), binder_site_label.float(), reduction="none").to(dtype)
+
+        shell_pos_weight = float(_cfg_get(cfg, "interface_shell_positive_weight", 1.0))
+        if shell_pos_weight != 1.0:
+            target_shell_raw = torch.where(target_site_label > 0.5, target_shell_raw * shell_pos_weight, target_shell_raw)
+            binder_shell_raw = torch.where(binder_site_label > 0.5, binder_shell_raw * shell_pos_weight, binder_shell_raw)
+        target_shell = (target_shell_raw * target_site_mask.float()).sum(dim=-1) / target_site_mask.float().sum(dim=-1).clamp_min(1.0)
+        binder_shell = (binder_shell_raw * binder_site_mask.float()).sum(dim=-1) / binder_site_mask.float().sum(dim=-1).clamp_min(1.0)
+        l_interface_shell_state = (
+            float(_cfg_get(cfg, "interface_shell_target_weight", 1.0)) * target_shell
+            + float(_cfg_get(cfg, "interface_shell_binder_weight", 0.5)) * binder_shell
+        )
 
     l_anchor = torch.zeros(b, device=device, dtype=dtype)
     if contact_labels is not None:
@@ -607,6 +644,7 @@ def _compute_interface_losses(flow_matcher: Any, cfg: Any, batch: dict, nn_out: 
         "quality_state": torch.where(state_present, l_quality_state, torch.zeros_like(l_quality_state)),
         "target_interface_site_state": torch.where(state_present, l_target_interface_site_state, torch.zeros_like(l_target_interface_site_state)),
         "target_interface_center_state": torch.where(state_present, l_target_interface_center_state, torch.zeros_like(l_target_interface_center_state)),
+        "interface_shell_state": torch.where(state_present, l_interface_shell_state, torch.zeros_like(l_interface_shell_state)),
         "anchor_sample": l_anchor,
         "self_geometry_sample": l_self,
     }
@@ -662,6 +700,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
     l_quality_state = torch.zeros_like(l_fm_state)
     l_target_interface_site_state = torch.zeros_like(l_fm_state)
     l_target_interface_center_state = torch.zeros_like(l_fm_state)
+    l_interface_shell_state = torch.zeros_like(l_fm_state)
     l_anchor = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     l_self = torch.zeros(b, device=device, dtype=l_fm_state.dtype)
     if _interface_enabled(cfg):
@@ -672,6 +711,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         l_quality_state = interface["quality_state"]
         l_target_interface_site_state = interface["target_interface_site_state"]
         l_target_interface_center_state = interface["target_interface_center_state"]
+        l_interface_shell_state = interface["interface_shell_state"]
         l_anchor = interface["anchor_sample"]
         l_self = interface["self_geometry_sample"]
 
@@ -683,6 +723,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         + float(_cfg_get(cfg, "lambda_quality_proxy", 0.0)) * l_quality_state
         + float(_cfg_get(cfg, "lambda_target_interface_site", 0.0)) * l_target_interface_site_state
         + float(_cfg_get(cfg, "lambda_target_interface_center", 0.0)) * l_target_interface_center_state
+        + float(_cfg_get(cfg, "lambda_interface_shell", 0.0)) * l_interface_shell_state
     )
     l_mean = torch.sum(l_state * weights, dim=1)
     cvar_topk = _cfg_get(cfg, "cvar_topk", 2)
@@ -735,6 +776,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         "multistate_quality_proxy_justlog": torch.sum(l_quality_state * weights, dim=1),
         "multistate_target_interface_site_justlog": torch.sum(l_target_interface_site_state * weights, dim=1),
         "multistate_target_interface_center_justlog": torch.sum(l_target_interface_center_state * weights, dim=1),
+        "multistate_interface_shell_justlog": torch.sum(l_interface_shell_state * weights, dim=1),
         "multistate_anchor_persistence_justlog": l_anchor,
         "multistate_self_geometry_justlog": l_self,
         "multistate_mean_justlog": l_mean,
@@ -749,6 +791,7 @@ def compute_multistate_loss(flow_matcher: Any, batch: dict, nn_out: dict[str, Te
         losses[f"multistate_state_{state_idx}_clash_justlog"] = l_clash_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_target_interface_site_justlog"] = l_target_interface_site_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_target_interface_center_justlog"] = l_target_interface_center_state[:, state_idx]
+        losses[f"multistate_state_{state_idx}_interface_shell_justlog"] = l_interface_shell_state[:, state_idx]
         losses[f"multistate_state_{state_idx}_seq_justlog"] = sequence_consensus["state_seq_state"][:, state_idx]
         losses[f"multistate_state_{state_idx}_ae_seq_justlog"] = ae_sequence["ae_seq_state"][:, state_idx]
         losses[f"multistate_state_{state_idx}_flow_gate_anchor_justlog"] = flow_gate_losses["flow_gate_anchor_sample"]
